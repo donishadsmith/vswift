@@ -177,7 +177,7 @@ categorical.cv.split  <- function(x = NULL, y = NULL, k = NULL, split = 0.8, mod
       # Assigning data split matrices to new variable 
       X.data <- X.train
       Y.data <- Y.train
-      } else{
+      }else{
         # After the first iteration the cv begins, the training set is assigned to a new variable
         X.data <- as.matrix(x[-c(folds[[i-1]]), ]) ; Y.data <- as.matrix(y[-c(folds[[i-1]])])
         X.val <- as.matrix(x[c(folds[[i-1]]),]) ; Y.val <- as.matrix(y[c(folds[[i-1]])])
@@ -215,7 +215,7 @@ categorical.cv.split  <- function(x = NULL, y = NULL, k = NULL, split = 0.8, mod
             evaluation.metrics[sprintf("Class %s Precision", category), j] <- true.pos/(true.pos + false.pos)
             evaluation.metrics[sprintf("Class %s Recall", category), j] <- true.pos/(true.pos + false.neg)
             }
-          } else{
+          }else{
           #Assign test set to new variable
           X.data <- X.val
           Y.data <- Y.val
