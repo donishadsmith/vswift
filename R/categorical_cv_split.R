@@ -1,4 +1,4 @@
-categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.8, model.type = NULL, stratified = FALSE, plot.metrics = NULL){
+categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.8, model.type = NULL, stratified = FALSE, plot.metrics = FALSE){
   " Parameters:
       -----------
       
