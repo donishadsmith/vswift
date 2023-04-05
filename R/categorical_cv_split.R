@@ -1,16 +1,17 @@
-categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.8, model.type = NULL, stratified = FALSE, plot.metrics = FALSE){
+categorical.cv.split  <- function(data = NULL, y.col = NULL,x.col = NULL,k = NULL, split = 0.8, model.type = NULL, stratified = FALSE, plot.metrics = TRUE){
   " Parameters:
       -----------
       
      `data`: the dataframe containing the response variable and predictors
-     `y.col`: the response variable to be analyzed
+     `y.col`: the response variable to be analyzed. Can be integer or character.
+     `x.col`: features to be used for analysis. Can be integer or character.
      `k`: a non-negative integer value less than 100 for k-fold cross validation
      `split`: a numeric value between 0.5 to 0.8 to determine the proportion of the dataset that will be used for training.
      `model.type`: The type of algorithm that will be used for data analysis. Currently, logistic regression, linear discriminant analysis (lda), and quadratic discriminant analysis (qda) are supported.
      `stratified`: If `TRUE`, stratefied sampling is used to maintain the relative proportion of the categories during data splitting.Default = NULL"
   
   # Checking if inputs are valid
-  error.handling(data = data, y.col = y.col, k = k, split = split, model.type = model.type, stratified = stratified, plot.metrics = plot.metrics)
+  error.handling(data = data, y.col = y.col, x.col = x.col, k = k, split = split, model.type = model.type, stratified = stratified, plot.metrics = plot.metrics)
   #Assign 1 to iterator for future looping
   iterator <- 1
   if(is.character(y.col)){
@@ -18,7 +19,12 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
   }
   #Remove rows with missing data
   cleaned_data <- data[complete.cases(data),]
-  x <-  cleaned_data[,-y.col]
+  if(is.null(x.col)){
+    x <-  cleaned_data[,-y.col]
+  } else{
+    x <-  cleaned_data[,x.col]
+  }
+  
   y <- cleaned_data[,y.col]
   
   #Get category names
@@ -129,6 +135,14 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
   model.type <- tolower(model.type)
   #Add it plus one to the iterator if k is not null
   iterator <- ifelse(!(is.null(k)), iterator + 1, iterator)
+  # Initialize output
+  output <- list()
+  output[['key']] <- categories.dict
+  output[[sprintf("%s models", model.type)]] <- list()
+  
+  if(!(is.null(k))){
+    output[[sprintf("%s models", model.type)]][["k-fold"]] <- list()
+  }
   #First iteration will always be the evaluation for the traditional data split method
   for(i in 1:iterator){
     if(i == 1){
@@ -155,6 +169,8 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
           #Assign test set to new variable
           X.data <- X.val
           Y.data <- Y.val
+        } else{
+          output[[sprintf("%s models", model.type)]][["data.split"]][[j]] <- model
         }
         # Get prediction
         switch(model.type,
@@ -182,7 +198,7 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
         X.data <- X.val
         Y.data <- Y.val
         
-      
+        output[[sprintf("%s models", model.type)]][["k-fold"]][[sprintf("Fold %s", i-1)]] <- model
         # Get prediction
         switch(model.type,
                "svm" = {prediction.vector <- as.numeric(predict(model, newdata = data.frame(X.data))) - 1},
@@ -190,7 +206,7 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
                "naivebayes" = {prediction.vector <- as.numeric(predict(model, newdata = data.frame(X.data)))},
                prediction.vector <- as.numeric(predict(model, newx = X.data)$class) - 1
         )
-        #Calculate classification accuracy for fold
+        # Calculate classification accuracy for fold
         k.metrics[which(k.metrics$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(Y.data == prediction.vector)/nrow(Y.data)
         for(category in names(categories.dict)){
           #Sum of category that was correctly guessed
@@ -248,11 +264,12 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
     }
   }
   # Create list of output depending on if k validation is done or not
-  if(is.null(k)){
-    output <- list('data.split' = set.metrics)
-    } else{
-      output <- list('data.split' = set.metrics,"k-fold" = k.metrics)
-      }
+  output[["data.frames"]] <- list()
+  output[["data.frames"]][["data.split"]] <- set.metrics
+
+  if(!(is.null(k))){
+    output[["data.frames"]][["k-fold"]] <- k.metrics
+    } 
   return(output)
   }
 
