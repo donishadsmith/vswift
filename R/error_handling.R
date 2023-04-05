@@ -1,7 +1,10 @@
-error.handling <- function(data = data, y.col = y.col,k = k,split = split, model.type = model.type, stratified = stratified, plot.metrics = plot.metrics){
+error.handling <- function(data = data, y.col = y.col,x.col = x.col,k = k,split = split, model.type = model.type, stratified = stratified, plot.metrics = plot.metrics){
   #Valid models
   valid.models <- c("lda","qda","logistic","svm","naivebayes")
   # Ensure k is not an invalid number
+  if(!(is.data.frame(data))){
+    stop("invalid input for data")
+  }
   if(any(k == 0, k < 0, k > 99,is.character(k), k != as.integer(k))){
     stop(sprintf("k = %s is not a valid input",k))
     }
@@ -17,6 +20,9 @@ error.handling <- function(data = data, y.col = y.col,k = k,split = split, model
   if(is.null(data)){
     stop("No input data")
   }
+  if(any(y.col == x.col, y.col %in% x.col)){
+    stop("response variable cannot also be a predictor")
+  }
   if(length(y.col) != 1){
     stop("length of y.col must be 1")
   }
@@ -30,6 +36,18 @@ error.handling <- function(data = data, y.col = y.col,k = k,split = split, model
         stop("y.col not in dataframe")
       }
     } else{
-      stop("y.col not a valid input")
+      stop("y.col must be an integer or character")
     }
+  if(!is.null(x.col)){
+    if(all(is.integer(x.col))){
+      check.x <- 1:dim(data)[1]
+    } else if(all(is.character(x.col))){
+      check.x <- colnames(data)[colnames(data) != y.col]
+    } else{
+      stop("x.col must be a character vector or integer vector")
+    }
+    if(!(all(x.col %in% check.x))){
+      stop("at least one predictor is not in dataframe")
+    }
+  }
 }
