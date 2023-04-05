@@ -169,10 +169,11 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
           true.pos <- sum(Y.data[which(Y.data == as.numeric(category))] == prediction.vector[which(Y.data  == as.numeric(category))])
           #Sum of the missed category
           false.neg <- abs(true.pos  - length(Y.data[which(Y.data  == as.numeric(category))]))
-          #Sum of the classified category
+          #Sum of the classified category; Taking "One Class vs. Rest" approach
           false.pos <- length(which(prediction.vector[-which(Y.data  == as.numeric(category))] == as.numeric(category)))
           set.metrics[which(set.metrics$Set == j),sprintf("Class %s Precision", categories.dict[category])] <- true.pos/(true.pos + false.pos)
           set.metrics[which(set.metrics$Set == j),sprintf("Class %s Recall", categories.dict[category])] <- true.pos/(true.pos + false.neg)
+          set.metrics[which(set.metrics$Set == j),sprintf("Class %s F1", categories.dict[category])] <- 2/(1/(true.pos/(true.pos + false.pos)) + 1/(true.pos/(true.pos + false.neg)))
         }
       }
     } else{
@@ -200,6 +201,7 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
           false.pos <- length(which(prediction.vector[-which(Y.data  == as.numeric(category))] == as.numeric(category)))
           k.metrics[which(k.metrics$Fold == sprintf("Fold %s",i-1)), sprintf("Class %s Precision", categories.dict[category])] <- true.pos/(true.pos + false.pos)
           k.metrics[which(k.metrics$Fold == sprintf("Fold %s",i-1)), sprintf("Class %s Recall", categories.dict[category])] <- true.pos/(true.pos + false.neg)
+          k.metrics[which(k.metrics$Fold == sprintf("Fold %s",i-1)), sprintf("Class %s F1", categories.dict[category])] <- 2/(1/(true.pos/(true.pos + false.pos)) + 1/(true.pos/(true.pos + false.neg)))
         }
         #Calculate final metrics and plot
       }
@@ -227,19 +229,19 @@ categorical.cv.split  <- function(data = NULL, y.col = NULL,k = NULL, split = 0.
               axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
             } else{
               # Get correct metric name for plot y title
-              y.name <- ifelse("Precision" %in% split.vector,"Precision","Recall")
+              y.name <- c("Precision","Recall","F1")[which(c("Precision","Recall","F1") %in% split.vector)]
               
               plot(x = 1:k, y = num.vector, ylim = c(0,1), xlab = "K-folds", ylab = y.name, main = paste("Category: ",categories.dict[[category.idx]]), xaxt = "n")
               axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
               # Add 1 to `category.idx` when `y.name == "Recall"` to get correct category plot title
-              if(y.name == "Recall"){
+              if(y.name == "F1"){
                 category.idx <- category.idx + 1
               }
             }
             # Add mean and standard deviation to the plot
             abline(h = mean(num.vector), col = "red", lwd = 1)
-            abline(h = mean(num.vector) + sd(num.vector), col = "blue", lty = 2, lwd = 1)
-            abline(h = mean(num.vector) - sd(num.vector), col = "blue", lty = 2, lwd = 1)
+            abline(h = mean(num.vector) + sd(num.vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
+            abline(h = mean(num.vector) - sd(num.vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
           }
         }
       }
