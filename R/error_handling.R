@@ -53,4 +53,7 @@ error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split
       stop("at least one predictor is not in dataframe")
     }
   }
+  if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
+    stop("logistic regression requires a binary variable")
+  }
 }
