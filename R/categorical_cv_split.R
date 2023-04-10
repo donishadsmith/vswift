@@ -36,6 +36,8 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   cat(sprintf("Stratified Sampling: %s\n\n", stratified))
   cat(sprintf("Plot Metrics: %s\n", plot_metrics))
   
+  #combine variable names
+  var_names <- c(response_var, feature_vec)
   # Get response and predictors
   if(is.character(y_col)){
     y_col <- which(colnames(data) == y_col)
@@ -48,7 +50,12 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     x <-  cleaned_data[,x_col]
   }
   y <- cleaned_data[,y_col]
-  
+  # Recreate new dataframe
+  data <- data.frame(y,x)
+  colnames(data) <- var_names
+  # Create formula string
+  formula_str <- paste(var_names[1], "~", paste(var_names[-1], collapse = " + "))
+  formula <- as.formula(formula_str)
   # Initialize output list
   categorical.cv.split_output <- list()
   
@@ -56,38 +63,39 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   # Convert y to numeric ranging starting with 0, while preserving original names in a dictionary
   categorical.cv.split_output[["class_dict"]] <- list()
   categories_length <- 0
-  for(category in names(table(y))){
-    if(is.numeric(y)){
-      y[which(y == as.numeric(category))] <- categories_length
+  for(category in names(table(data[,response_var]))){
+    if(is.numeric(data[,response_var])){
+      data[,response_var][which(data[,response_var] == as.numeric(category))] <- categories_length
     } else{
-      y[which(y == category)] <- categories_length
+      data[,response_var][which(data[,response_var] == category)] <- categories_length
     }
     categorical.cv.split_output[["class_dict"]][[as.character(categories_length)]] <- category
     categories_length <- categories_length + 1
   }
-  y <- as.numeric(y)
+  data[,response_var] <- as.numeric(data[,response_var])
   #Initialize output
   categorical.cv.split_output[["sample_indices"]] <- list()
   
   #Stratified sampling
   if(stratified == TRUE){
-    stratified.sampling_output <- stratified.sampling(type = "split", split = split, output = categorical.cv.split_output, y = y, random_seed = random_seed)
-    X_train <- as.matrix(x[stratified.sampling_output$training,]); Y_train <- as.matrix(y[stratified.sampling_output$training])
-    X_val <- as.matrix(x[stratified.sampling_output$test,]); Y_val <- as.matrix(y[stratified.sampling_output$test])
+    stratified.sampling_output <- stratified.sampling(type = "split", split = split, output = categorical.cv.split_output, data = data, response_var = response_var, random_seed = random_seed)
+    
+    training_set <- data[stratified.sampling_output$training,]
+    test_set <- data[stratified.sampling_output$test,]
     categorical.cv.split_output <- stratified.sampling_output$output
     class_indices <- stratified.sampling_output$class_indices
   } else{
     #Data split
     training_indices <- sample(1:nrow(x),size = round(nrow(x)*split,0),replace = F)
-    X_train <- as.matrix(x[training_indices,]);  Y_train <- as.matrix(y[training_indices])
-    X_val <- as.matrix(x[-training_indices,]); Y_val <- as.matrix(y[-training_indices])
+    training_set <- data[,training_indices]
+    test_set <- data[,-training_indices]
     categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(x))[training_indices]
     categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(x))[-training_indices]
   }
   #Create data table
   set_metrics <- data.frame(matrix(nrow = 2, ncol = 1))
   colnames(set_metrics) <- "Set"
-  set_metrics[1:2,"Set"] <- c("Training","Test")
+  set_metrics[1:2,"Set"] <- c("training","test")
   #Adding information to data frame
   if(!(is.null(k))){
     k_metrics <- data.frame(matrix(nrow = 1,ncol = 1))
@@ -100,11 +108,12 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     #Creating non-overlapping folds while adding rownames to matrix
     
     if(stratified == TRUE){
-      categorical.cv.split_output[["class_proportions"]] <- table(y)/sum(table(y))
+      categorical.cv.split_output[["class_proportions"]] <- table(data[,response_var])/sum(table(data[,response_var]))
       names(categorical.cv.split_output[["class_proportions"]]) <- as.vector(categorical.cv.split_output[["class_dict"]])
       # Initialize list to store fold proportions
       categorical.cv.split_output[["sample_proportions"]][["cv"]] <- list()
-      stratified.sampling_output <- stratified.sampling(type = "k-fold", output = categorical.cv.split_output, y = y,
+      stratified.sampling_output <- stratified.sampling(type = "k-fold", output = categorical.cv.split_output, data = data,
+                                               response_var = response_var,
                                                k_metrics = k_metrics, k = k,
                                                class_indices = class_indices,
                                                random_seed = random_seed)
@@ -113,8 +122,8 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
       k_metrics <- stratified.sampling_output$k_metrics
     } else{
       #Get floor
-      fold_size_vector <- rep(floor(nrow(x)/k),k)
-      excess <- nrow(x) - sum(fold_size_vector)
+      fold_size_vector <- rep(floor(nrow(data)/k),k)
+      excess <- nrow(data) - sum(fold_size_vector)
       if(excess > 0){
         folds_vector <- rep(1:k,excess)[1:excess]
         for(num in folds_vector){
@@ -149,30 +158,33 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   }
   # Convert variables to characters so that models will predict the original variable
   if(model_type != "logistic"){
-    y <- sapply(y, function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
-    Y_train <- sapply(Y_train, function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
-    Y_val <- sapply(Y_val, function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
+    data[,response_var] <- sapply(data[,response_var], function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
+    training_set[,response_var] <- sapply(training_set[,response_var], function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
+    test_set[,response_var] <- sapply(test_set[,response_var], function(x) categorical.cv.split_output[["class_dict"]][[as.character(x)]])
   }
-  
+  # Preseve the original data
+  original_data <- data
   #First iteration will always be the evaluation for the traditional data split method
   for(i in 1:iterator){
     if(i == 1){
       # Assigning data split matrices to new variable 
-      X_data <- X_train
-      Y_data <- Y_train
+      data <- training_set
     } else{
       # After the first iteration the cv begins, the training set is assigned to a new variable
-      X_data <- as.matrix(x[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]) ; Y_data <- as.matrix(y[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]])])
-      X_val <- as.matrix(x[c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]),]) ; Y_val <- as.matrix(y[c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]])])
+      data <- original_data[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+      validation_set <- original_data[c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+      #print(data[c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ])
+      
     }
     #Generate model depending on chosen model_type
+
     
     switch(model_type,
-           "lda" = {model <- MASS::lda(as.factor(Y_data) ~ X_data)},
-           "qda" = {model <- MASS::qda(as.factor(Y_data) ~ X_data)},
-           "logistic" = {model <- glm(Y_data ~ X_data, family = "binomial")},
-           "svm" = {model <- e1071::svm(as.factor(Y_data) ~ X_data)},
-           "naivebayes" = {model <- naivebayes::naive_bayes(x = X_data, y= as.factor(Y_data))}
+           "lda" = {model <- MASS::lda(formula, data = data)},
+           "qda" = {model <- MASS::qda(formula, data = data)},
+           "logistic" = {model <- glm(formula, data = data , family = "binomial")},
+           "svm" = {model <- e1071::svm(formula, data = data)},
+           "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = data)}
     )
     # Perform classification accuracy for training and test data split
     if(i == 1){
@@ -180,44 +192,44 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
         
         if(j == "test"){
           #Assign test set to new variable
-          X_data <- X_val
-          Y_data <- Y_val
+          data <- test_set
         } else{
           categorical.cv.split_output[[sprintf("%s models", model_type)]][["split"]][[j]] <- model
         }
+        
         # Get prediction
         switch(model_type,
-               "svm" = {prediction_vector <- predict(model, newdata = data.frame(X_data))},
+               "svm" = {prediction_vector <- predict(model, newdata = data)},
                "logistic" = {
-                 prediction_vector <- predict(model, newdata  = data.frame(X_data), type = "response")
+                 prediction_vector <- predict(model, newdata  = data, type = "response")
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
-               "naivebayes" = {prediction_vector <- predict(model, newdata = data.frame(X_data))},
-               prediction_vector <- predict(model, newx = X_data)$class
+               "naivebayes" = {prediction_vector <- predict(model, newdata = data)},
+               prediction_vector <- predict(model, newdata = data)$class
         )
-        set_metrics[which(set_metrics$Set == j),"Classification Accuracy"] <- sum(Y_data == prediction_vector)/length(Y_data)
+        set_metrics[which(set_metrics$Set == j),"Classification Accuracy"] <- sum(data[,response_var] == prediction_vector)/length(data[,response_var])
         # Plot metrics for training and test
-        if(all(j == "Test", plot_metrics == TRUE)){
+        if(all(j == "test", plot_metrics == TRUE)){
           plot(x = 1:2, y = set_metrics[1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
-          axis(1, at = 1:2, labels = c("Training","Test"))
+          axis(1, at = 1:2, labels = c("training","test"))
         }
         
         
         for(category in names(categorical.cv.split_output[["class_dict"]])){
           if(model_type == "logistic"){
             #Sum of category that was correctly guessed
-            true_pos <- sum(Y_data[which(Y_data == as.numeric(category))] == prediction_vector[which(Y_data  == as.numeric(category))])
+            true_pos <- sum(data[,response_var][which(data[,response_var] == as.numeric(category))] == prediction_vector[which(data[,response_var]  == as.numeric(category))])
             #Sum of the missed category
-            false_neg <- abs(true_pos  - length(Y_data[which(Y_data  == as.numeric(category))]))
+            false_neg <- abs(true_pos  - length(data[,response_var][which(data[,response_var]  == as.numeric(category))]))
             #Sum of the classified category; Taking "One Class vs. Rest" approach
-            false_pos <- length(which(prediction_vector[-which(Y_data  == as.numeric(category))] == as.numeric(category)))
+            false_pos <- length(which(prediction_vector[-which(data[,response_var]  == as.numeric(category))] == as.numeric(category)))
           } else{
             converted_category <- categorical.cv.split_output[["class_dict"]][[category]]
             #Sum of category that was correctly guessed
-            true_pos <- sum(Y_data[which(Y_data == converted_category)] == prediction_vector[which(Y_data  == converted_category)])
+            true_pos <- sum(data[,response_var][which(data[,response_var] == converted_category)] == prediction_vector[which(data[,response_var]  == converted_category)])
             #Sum of the missed category
-            false_neg <- abs(true_pos  - length(Y_data[which(Y_data  == converted_category)]))
+            false_neg <- abs(true_pos  - length(data[,response_var][which(data[,response_var]  == converted_category)]))
             #Sum of the classified category; Taking "One Class vs. Rest" approach
-            false_pos <- length(which(prediction_vector[-which(Y_data  == converted_category)] == converted_category))
+            false_pos <- length(which(prediction_vector[-which(data[,response_var]  == converted_category)] == converted_category))
           }
           set_metrics[which(set_metrics$Set == j),sprintf("Category: %s Precision", categorical.cv.split_output[["class_dict"]][[category]])] <- true_pos/(true_pos + false_pos)
           set_metrics[which(set_metrics$Set == j),sprintf("Category: %s Recall", categorical.cv.split_output[["class_dict"]][[category]])] <- true_pos/(true_pos + false_neg)
@@ -244,36 +256,35 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     } else{
       if(all(!(is.null(k)),(i-1) <= k)){
         #Assign validation set to new variables
-        X_data <- X_val
-        Y_data <- Y_val
+        data <- validation_set
         categorical.cv.split_output[[sprintf("%s models", model_type)]][["cv"]][[sprintf("fold %s", i-1)]] <- model
         # Get prediction
         switch(model_type,
-               "svm" = {prediction_vector <- predict(model, newdata = data.frame(X_data))},
+               "svm" = {prediction_vector <- predict(model, newdata = data)},
                "logistic" = {
-                 prediction_vector <- predict(model, newdata  = data.frame(X_data), type = "response")
+                 prediction_vector <- predict(model, newdata  = data, type = "response")
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
-               "naivebayes" = {prediction_vector <- predict(model, newdata = data.frame(X_data))},
-               prediction_vector <- predict(model, newx = X_data)$class
+               "naivebayes" = {prediction_vector <- predict(model, newdata = data)},
+               prediction_vector <- predict(model, newdata = data)$class
         )
         # Calculate classification accuracy for fold
-        k_metrics[which(k_metrics$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(Y_data == prediction_vector)/nrow(Y_data)
+        k_metrics[which(k_metrics$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(data[,response_var] == prediction_vector)/length(data[,response_var])
         for(category in names(categorical.cv.split_output[["class_dict"]])){
           if(model_type == "logistic"){
             #Sum of category that was correctly guessed
-            true_pos <- sum(Y_data[which(Y_data == as.numeric(category))] == prediction_vector[which(Y_data  == as.numeric(category))])
+            true_pos <- sum(data[,response_var][which(data[,response_var] == as.numeric(category))] == prediction_vector[which(data[,response_var]  == as.numeric(category))])
             #Sum of the missed category
-            false_neg <- abs(true_pos  - length(Y_data[which(Y_data  == as.numeric(category))]))
+            false_neg <- abs(true_pos  - length(data[,response_var][which(data[,response_var]  == as.numeric(category))]))
             #Sum of the classified category; Taking "One Class vs. Rest" approach
-            false_pos <- length(which(prediction_vector[-which(Y_data  == as.numeric(category))] == as.numeric(category)))
+            false_pos <- length(which(prediction_vector[-which(data[,response_var]  == as.numeric(category))] == as.numeric(category)))
           } else{
             converted_category <- categorical.cv.split_output[["class_dict"]][[category]]
             #Sum of category that was correctly guessed
-            true_pos <- sum(Y_data[which(Y_data == converted_category)] == prediction_vector[which(Y_data  == converted_category)])
+            true_pos <- sum(data[,response_var][which(data[,response_var] == converted_category)] == prediction_vector[which(data[,response_var]  == converted_category)])
             #Sum of the missed category
-            false_neg <- abs(true_pos  - length(Y_data[which(Y_data  == converted_category)]))
+            false_neg <- abs(true_pos  - length(data[,response_var][which(data[,response_var]  == converted_category)]))
             #Sum of the classified category; Taking "One Class vs. Rest" approach
-            false_pos <- length(which(prediction_vector[-which(Y_data  == converted_category)] == converted_category))
+            false_pos <- length(which(prediction_vector[-which(data[,response_var]  == converted_category)] == converted_category))
           }
           
           k_metrics[which(k_metrics$Fold == sprintf("Fold %s",i-1)), sprintf("Category: %s Precision", categorical.cv.split_output[["class_dict"]][[category]])] <- true_pos/(true_pos + false_pos)
