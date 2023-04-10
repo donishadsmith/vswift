@@ -1,4 +1,4 @@
-stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL, k_metrics = NULL, k = NULL,
+stratified.sampling <- function(type, output, data, response_var, split = NULL, fold_size = NULL, k_metrics = NULL, k = NULL,
                                 class_indices = NULL, random_seed = NULL){
   switch(type,
          "split" = {
@@ -7,10 +7,10 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
              set.seed(random_seed)
            }
            #Get proportions
-           categories_proportions <- table(y)/sum(table(y))
+           categories_proportions <- table(data[,response_var])/sum(table(data[,response_var]))
            #Split sizes
-           training_n <- length(y)*split
-           test_n <- length(y) - (length(y)*split)
+           training_n <- nrow(data)*split
+           test_n <- nrow(data) - (nrow(data)*split)
            training_indices <- c()
            test_indices <- c()
            #Create category list that will be used for the cross validation loop
@@ -18,11 +18,11 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
            output[["class_indices"]] <- list()
            for(category in names(output[["class_dict"]])){
              #Get the indices with the corresponding categories
-             indices <- which(y == as.numeric(category))
+             indices <- which(data[,response_var] == as.numeric(category))
              #Add them to list
              output[["class_indices"]][[category]] <- class_indices[[category]] <- indices
              training_indices <- c(training_indices,sample(indices,size = round(training_n*categories_proportions[[category]],0), replace = F))
-             
+            
              #Remove indices to not add to test set
              indices <- indices[!(indices %in% training_indices)]
              test_indices <- c(test_indices,sample(indices,size = round(test_n*categories_proportions[[category]],0), replace = F))
@@ -31,8 +31,8 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
            output[["sample_indices"]][["training"]] <- training_indices
            output[["sample_indices"]][["test"]] <- test_indices
            output[["sample_proportions"]] <- list()
-           output[["sample_proportions"]][["training"]] <- table(y[training_indices])/length(training_indices)
-           output[["sample_proportions"]][["test"]] <- table(y[test_indices])/length(test_indices)
+           output[["sample_proportions"]][["training"]] <- table(data[,response_var][training_indices])/sum(table(data[,response_var][training_indices]))
+           output[["sample_proportions"]][["test"]] <- table(data[,response_var][test_indices])/sum(table(data[,response_var][test_indices]))
            
            names(output[["class_indices"]]) <-  as.vector(output[["class_dict"]])
 
@@ -43,27 +43,26 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
            if(!is.null(random_seed)){
              set.seed(random_seed)
            }
-           categories_proportions <- table(y)/sum(table(y))
+           categories_proportions <- table(data[,response_var])/sum(table(data[,response_var]))
            for(i in 1:k){
              # Keep Initialize variable
              fold_idx <- c()
              k_metrics[i,"Fold"] <- sprintf("Fold %s",i)
              #fold size; try to undershoot for excess
-             fold_size <- floor(length(y)/k)
+             fold_size <- floor(nrow(data)/k)
              for(category in names(output[["class_dict"]])){
                fold_idx <- c(fold_idx, sample(class_indices[[category]],size = floor(fold_size*categories_proportions[[category]]), replace = F))
-               
                #Remove already selected indices
                class_indices[[category]] <- class_indices[[category]][-which(class_indices[[category]] %in% fold_idx)]
              }
              #Add indices to list
              output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
              # Update proportions
-             output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- table(y[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])/sum(table(y[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
+             output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])/sum(table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
            }
            #Deal with excess
            
-           excess <- length(y) - length(as.numeric(unlist(output[["sample_indices"]][["cv"]])))
+           excess <- nrow(data)- length(as.numeric(unlist(output[["sample_indices"]][["cv"]])))
            if(excess > 0){
              for(category in names(output[["class_dict"]])){
                fold_idx <- class_indices[[category]]
@@ -73,7 +72,7 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
                    #Add indices to list
                    output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- c(fold_idx[i],output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]])
                    # Get proportions
-                   output[["sample_proportions"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- table(y[output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]])/sum(table(y[output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]]))
+                   output[["sample_proportions"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]])/sum(table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]]))
                  }
                }
              }
@@ -82,3 +81,4 @@ stratified.sampling <- function(type, output, y, split = NULL, fold_size = NULL,
          }
   )
 }
+
