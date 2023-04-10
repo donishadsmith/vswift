@@ -147,6 +147,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   if(!(is.null(k))){
     categorical.cv.split_output[[sprintf("%s models", model_type)]][["cv"]] <- list()
   }
+  
   #First iteration will always be the evaluation for the traditional data split method
   for(i in 1:iterator){
     if(i == 1){
@@ -180,7 +181,9 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
         # Get prediction
         switch(model_type,
                "svm" = {prediction_vector <- as.numeric(predict(model, newdata = data.frame(X_data))) - 1},
-               "logistic" = {prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
+               "logistic" = {
+                 prediction_vector <- predict(model, newdata = data.frame(X_data), type = "response")
+                 prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- as.numeric(predict(model, newdata = data.frame(X_data)))},
                prediction_vector <- as.numeric(predict(model, newx = X_data)$class) - 1
         )
@@ -230,7 +233,9 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
         # Get prediction
         switch(model_type,
                "svm" = {prediction_vector <- as.numeric(predict(model, newdata = data.frame(X_data))) - 1},
-               "logistic" = {prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
+               "logistic" = {
+                 prediction_vector <- predict(model, newdata  = data.frame(X_data), type = "response")
+                 prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- as.numeric(predict(model, newdata = data.frame(X_data)))},
                prediction_vector <- as.numeric(predict(model, newx = X_data)$class) - 1
         )
