@@ -23,19 +23,24 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   
   # Print parameter information
   cat(sprintf("Model Type: %s\n\n", model_type))
-  cat(sprintf("Response Variable: %s\n\n", ifelse(is.character(y_col), y_col, colnames(data)[y_col])))
+  cat(sprintf("Response Variable: %s\n\n", response_var <- ifelse(is.character(y_col), y_col, colnames(data)[y_col])))
   if (is.null(x_col)) {
-    response_var <- ifelse(is.character(y_col), y_col, colnames(data)[y_col])
     feature_vec <- colnames(data)[colnames(data) != response_var]
   } else {
-    feature_vec <- ifelse(all(is.character(x_col)), x_col, colnames(data)[x_col])
+    if(all(is.character(x_col))){
+      feature_vec <- x_col
+    } else{
+      feature_vec <- colnames(data)[x_col]
+    }
+    
   }
   cat(sprintf("Features: %s\n\n", paste(feature_vec, collapse = ", ")))
+  cat(sprintf("Classes: %s\n\n", paste(names(table(data[,response_var])), collapse = ", ")))
   cat(sprintf("K: %s\n\n", k))
   cat(sprintf("Split: %s\n\n", split))
   cat(sprintf("Stratified Sampling: %s\n\n", stratified))
-  cat(sprintf("Plot Metrics: %s\n", plot_metrics))
-  
+  cat(sprintf("Plot Metrics: %s\n\n", plot_metrics))
+  cat(sprintf("Random Seed: %s\n", random_seed))
   #combine variable names
   var_names <- c(response_var, feature_vec)
   # Get response and predictors
@@ -58,11 +63,11 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   formula <- as.formula(formula_str)
   # Initialize output list
   categorical.cv.split_output <- list()
-  
   # Get category names
   # Convert y to numeric ranging starting with 0, while preserving original names in a dictionary
   categorical.cv.split_output[["class_dict"]] <- list()
   categories_length <- 0
+
   for(category in names(table(data[,response_var]))){
     if(is.numeric(data[,response_var])){
       data[,response_var][which(data[,response_var] == as.numeric(category))] <- categories_length
@@ -75,7 +80,6 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   data[,response_var] <- as.numeric(data[,response_var])
   #Initialize output
   categorical.cv.split_output[["sample_indices"]] <- list()
-  
   #Stratified sampling
   if(stratified == TRUE){
     stratified.sampling_output <- stratified.sampling(type = "split", split = split, output = categorical.cv.split_output, data = data, response_var = response_var, random_seed = random_seed)
@@ -151,10 +155,10 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
   #Add it plus one to the iterator if k is not null
   iterator <- ifelse(!(is.null(k)), iterator + 1, iterator)
   # Initialize list to store training models
-  categorical.cv.split_output[[sprintf("%s models", model_type)]] <- list()
+  categorical.cv.split_output[[paste0(model_type,"_models")]] <- list()
   
   if(!(is.null(k))){
-    categorical.cv.split_output[[sprintf("%s models", model_type)]][["cv"]] <- list()
+    categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
   }
   # Convert variables to characters so that models will predict the original variable
   if(model_type != "logistic"){
@@ -183,7 +187,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
            "lda" = {model <- MASS::lda(formula, data = data)},
            "qda" = {model <- MASS::qda(formula, data = data)},
            "logistic" = {model <- glm(formula, data = data , family = "binomial")},
-           "svm" = {model <- e1071::svm(formula, data = data)},
+           "svm" = {model <- e1071::svm(formula, data = data, kernel = "linear", degree = 3)},
            "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = data)}
     )
     # Perform classification accuracy for training and test data split
@@ -194,7 +198,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
           #Assign test set to new variable
           data <- test_set
         } else{
-          categorical.cv.split_output[[sprintf("%s models", model_type)]][["split"]][[j]] <- model
+          categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]][[j]] <- model
         }
         
         # Get prediction
@@ -234,9 +238,10 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
           set_metrics[which(set_metrics$Set == j),sprintf("Category: %s Precision", categorical.cv.split_output[["class_dict"]][[category]])] <- true_pos/(true_pos + false_pos)
           set_metrics[which(set_metrics$Set == j),sprintf("Category: %s Recall", categorical.cv.split_output[["class_dict"]][[category]])] <- true_pos/(true_pos + false_neg)
           set_metrics[which(set_metrics$Set == j),sprintf("Category: %s F1", categorical.cv.split_output[["class_dict"]][[category]])] <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
+          
           # Plot metrics for training and test
           
-          if(all(j == "Test", plot_metrics == TRUE)){
+          if(all(j == "test", plot_metrics == TRUE)){
             plot(x = 1:2, y = set_metrics[1:2,sprintf("Category: %s Precision", categorical.cv.split_output[["class_dict"]][[category]])] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
                  main = paste("Category:",categorical.cv.split_output[["class_dict"]][[category]]))
             axis(1, at = 1:2, labels = c("Training","Test"))
@@ -257,7 +262,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
       if(all(!(is.null(k)),(i-1) <= k)){
         #Assign validation set to new variables
         data <- validation_set
-        categorical.cv.split_output[[sprintf("%s models", model_type)]][["cv"]][[sprintf("fold %s", i-1)]] <- model
+        categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
         # Get prediction
         switch(model_type,
                "svm" = {prediction_vector <- predict(model, newdata = data)},
