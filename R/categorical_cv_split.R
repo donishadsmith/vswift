@@ -90,11 +90,11 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     class_indices <- stratified.sampling_output$class_indices
   } else{
     #Data split
-    training_indices <- sample(1:nrow(x),size = round(nrow(x)*split,0),replace = F)
+    training_indices <- sample(1:nrow(data),size = round(nrow(x)*split,0),replace = F)
     training_set <- data[,training_indices]
     test_set <- data[,-training_indices]
-    categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(x))[training_indices]
-    categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(x))[-training_indices]
+    categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(data))[training_indices]
+    categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(data))[-training_indices]
   }
   #Create data table
   set_metrics <- data.frame(matrix(nrow = 2, ncol = 1))
@@ -105,7 +105,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     k_metrics <- data.frame(matrix(nrow = 1,ncol = 1))
     colnames(k_metrics) <- "Fold"
     #Create folds; start with randomly shuffling indices
-    indices <- sample(1:nrow(x))
+    indices <- sample(1:nrow(data))
     # Initialize list to store fold indices
     categorical.cv.split_output[["sample_indices"]][["cv"]] <- list()
     
