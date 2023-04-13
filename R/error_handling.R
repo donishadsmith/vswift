@@ -1,4 +1,5 @@
-error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL, plot_metrics = NULL, random_seed = NULL){
+
+error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL){
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes")
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
@@ -56,4 +57,3 @@ error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split
   if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
     stop("logistic regression requires a binary variable")
   }
-}
