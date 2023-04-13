@@ -22,7 +22,7 @@ stratified.sampling <- function(type, output, data, response_var, split = NULL, 
              #Add them to list
              output[["class_indices"]][[category]] <- class_indices[[category]] <- indices
              training_indices <- c(training_indices,sample(indices,size = round(training_n*categories_proportions[[category]],0), replace = F))
-            
+             
              #Remove indices to not add to test set
              indices <- indices[!(indices %in% training_indices)]
              test_indices <- c(test_indices,sample(indices,size = round(test_n*categories_proportions[[category]],0), replace = F))
@@ -31,11 +31,14 @@ stratified.sampling <- function(type, output, data, response_var, split = NULL, 
            output[["sample_indices"]][["training"]] <- training_indices
            output[["sample_indices"]][["test"]] <- test_indices
            output[["sample_proportions"]] <- list()
+           # Store proportions of data and change list names
            output[["sample_proportions"]][["training"]] <- table(data[,response_var][training_indices])/sum(table(data[,response_var][training_indices]))
+           names(output[["sample_proportions"]][["training"]]) <- as.character(output[["class_dict"]])
+           # Store proportions of data and change list names
            output[["sample_proportions"]][["test"]] <- table(data[,response_var][test_indices])/sum(table(data[,response_var][test_indices]))
-           
+           names(output[["sample_proportions"]][["test"]]) <- as.character(output[["class_dict"]])
            names(output[["class_indices"]]) <-  as.vector(output[["class_dict"]])
-
+           
            stratified.sampling_output <- list("training" = training_indices, "test" = test_indices, "output" = output, "class_indices" = class_indices)
          },
          "k-fold" = {
@@ -81,4 +84,5 @@ stratified.sampling <- function(type, output, data, response_var, split = NULL, 
          }
   )
 }
+
 
