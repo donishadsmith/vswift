@@ -128,15 +128,13 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
       }
     }
   }
-  #Assign 1 or k to iterator
-  iterator <- ifelse(is.null(k),1,k)
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Add it plus one to the iterator if k is not null
-  iterator <- ifelse(!(is.null(k)), iterator + 1, iterator)
+  iterator <- ifelse(!is.null(k), iterator + 1, iterator)
   # Initialize list to store training models
   categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]] <- list()
-  if(!(is.null(k))){
+  if(!is.null(k)){
     categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
   }
   # Convert variables to characters so that models will predict the original variable
