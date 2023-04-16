@@ -1,5 +1,5 @@
+#Creat vshift class
 setClass(Class = "vshift", contains = "list")
-
 categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL, split = 0.8, model_type = NULL, stratified = FALSE,  random_seed = NULL){
   " Parameters:
       -----------
@@ -205,7 +205,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
         }
       }
     } else{
-      if(all(!(is.null(k)),(i-1) <= k)){
+      if(all(!is.null(k),(i-1) <= k)){
         #Assign validation data to new variables
         model_data <- validation_data
         categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
@@ -238,7 +238,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
       }
     }
     #Calculate mean, standard deviation, and standard error for cross validation
-    if(all(!(is.null(k)),(i-1) == k)){
+    if(all(!is.null(k),(i-1) == k)){
       idx <- nrow(categorical.cv.split_output[["metrics"]][["cv"]] )
       categorical.cv.split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
       #Calculate mean, standard deviation, and sd for each column except for fold
