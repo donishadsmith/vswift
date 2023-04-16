@@ -1,4 +1,4 @@
-k.fold <- function(X,Y,K,s.range,mod){
+continuous.cv.split <- function(X,Y,K,s.range,model_type, random_seed){
   set.seed(123)
   #Check to see if matrices match
   if(nrow(X) != nrow(Y)){
@@ -22,15 +22,15 @@ k.fold <- function(X,Y,K,s.range,mod){
       row_names <- c(row_names, sprintf("Fold %s MSE", i))
       #Create fold
       if (i == length(1:K)) {
-          #Folds may not have equal sizes
-          fold.idx <- rows
-        } else {
-          fold.idx <- rows[1:fold.size]
-          #Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds
-          rows <- rows[-c(1:fold.size)]
-        }
-        #Add indices to list
-        folds[[i]] <- fold.idx 
+        #Folds may not have equal sizes
+        fold.idx <- rows
+      } else {
+        fold.idx <- rows[1:fold.size]
+        #Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds
+        rows <- rows[-c(1:fold.size)]
+      }
+      #Add indices to list
+      folds[[i]] <- fold.idx 
     }
     row.names(table.mat) <- c(row_names, "Mean CV MSE","SD CV MSE","SE CV MSE","One Standard Rule")
     
@@ -73,8 +73,7 @@ k.fold <- function(X,Y,K,s.range,mod){
         
       }
     }
-    }
+  }
   
   return(outputs)
 }
-   
