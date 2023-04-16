@@ -6,6 +6,8 @@
            if(!is.null(random_seed)){
              set.seed(random_seed)
            }
+           #Initialize list; initializing for ordering output purposes
+           output[["class_indices"]] <- list()
            #Get proportions
            output[["class_proportions"]] <- table(data[,response_var])/sum(table(data[,response_var]))
            #Split sizes
@@ -17,7 +19,7 @@
              #Get the indices with the corresponding categories
              indices <- which(data[,response_var] == class)
              #Add them to list
-             class_indices[[class]] <-  indices
+             output[["class_indices"]][[class]] <- class_indices[[class]] <-  indices
              #Store indices for training set
              output[["sample_indices"]][["training"]] <- c(output[["sample_indices"]][["training"]] ,sample(indices,size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
              #Remove indices to not add to test set
@@ -29,7 +31,6 @@
            output[["sample_proportions"]][["training"]] <- table(data[,response_var][output[["sample_indices"]][["training"]]])/sum(table(data[,response_var][output[["sample_indices"]][["training"]]]))
            #Store proportions of data  in test set
            output[["sample_proportions"]][["test"]] <- table(data[,response_var][output[["sample_indices"]][["test"]]])/sum(table(data[,response_var][output[["sample_indices"]][["test"]]]))
-           output[["class_indices"]] <- class_indices
            #Output
            stratified.sampling_output <- list("output" = output)
          },

@@ -76,12 +76,12 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
     categorical.cv.split_output <- stratified.sampling_output$output
     }else{
       #Create test and training set
-      training_indices <- sample(1:nrow(data),size = round(nrow(x)*split,0),replace = F)
-      training_data <- data[,training_indices]
-      test_data <- data[,-training_indices]
+      training_indices <- sample(1:nrow(cleaned_data),size = round(nrow(cleaned_data)*split,0),replace = F)
+      training_data <- cleaned_data[training_indices,]
+      test_data <- cleaned_data[-training_indices,]
       #Store indices in list
-      categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(data))[training_indices]
-      categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(data))[-training_indices]
+      categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
+      categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
   }
   #Create data table
   categorical.cv.split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
@@ -106,8 +106,8 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       categorical.cv.split_output <- stratified.sampling_output$output
     }else{
       #Get floor
-      fold_size_vector <- rep(floor(nrow(data)/k),k)
-      excess <- nrow(data) - sum(fold_size_vector)
+      fold_size_vector <- rep(floor(nrow(cleaned_data)/k),k)
+      excess <- nrow(cleaned_data) - sum(fold_size_vector)
       if(excess > 0){
         folds_vector <- rep(1:k,excess)[1:excess]
         for(num in folds_vector){
