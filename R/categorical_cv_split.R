@@ -1,4 +1,4 @@
-#Creat vshift class
+#Create vshift class
 setClass(Class = "vshift", contains = "list")
 categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL, split = 0.8, model_type = NULL, stratified = FALSE,  random_seed = NULL){
   " Parameters:

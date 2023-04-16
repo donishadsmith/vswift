@@ -40,7 +40,7 @@ plot.vshift <- function(object){
         } else{
           # Get correct metric name for plot y title
           y_name <- c("Precision","Recall","F1")[which(c("Precision","Recall","F1") %in% split_vector)]
-          plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",object[["class_dict"]][[class_idx]]), xaxt = "n") 
+          plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
           axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
           # Add 1 to `class_idx` when `y_name == "Recall"` to get correct class plot title
           if(y_name == "F1"){
