@@ -1,6 +1,6 @@
 #Create vshift class
 setClass(Class = "vshift", contains = "list")
-categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL, split = 0.8, model_type = NULL, stratified = FALSE,  random_seed = NULL){
+categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = 0.8, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
   " Parameters:
       -----------
       
@@ -155,11 +155,11 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL,k = NUL
     }
     #Generate model depending on chosen model_type
     switch(model_type,
-           "lda" = {model <- MASS::lda(formula, data = model_data)},
-           "qda" = {model <- MASS::qda(formula, data = model_data)},
-           "logistic" = {model <- glm(formula, data = model_data , family = "binomial")},
-           "svm" = {model <- e1071::svm(formula, data = model_data, kernel = "linear", degree = 3)},
-           "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data)}
+           "lda" = {model <- MASS::lda(formula, data = model_data,...)},
+           "qda" = {model <- MASS::qda(formula, data = model_data,...)},
+           "logistic" = {model <- glm(formula, data = model_data , family = "binomial",...)},
+           "svm" = {model <- e1071::svm(formula, data = model_data,...)},
+           "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data,...)}
     )
     #Perform classification accuracy for training and test data split
     if(i == 1){
