@@ -1,7 +1,7 @@
-setClass(Class = "vshift", slots = c(object = "vshift", split = "logical", cv = "logical"))
+setClass(Class = "vswift", slots = c(object = "vswift", split = "logical", cv = "logical"))
 
-plot.vshift <- function(object, split = TRUE, cv = TRUE){
-  if(class(object) == "vshift"){
+plot.vswift <- function(object, split = TRUE, cv = TRUE){
+  if(class(object) == "vswift"){
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       # Plot metrics for training and test
       plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
