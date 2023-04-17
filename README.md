@@ -1,2 +1,2 @@
 # vswift
-Tools created for machine learning model evaluation. Currently only available in R and for categorical data analysis.
+Tools designed for evaluating machine learning models, exclusively available for R and optimized for categorical data analysis.
