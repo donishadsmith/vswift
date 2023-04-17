@@ -1,4 +1,5 @@
-.error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL){
+.error.handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
+                            call = NULL){
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes")
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
@@ -10,10 +11,6 @@
   }
   if(any(k %in% c(0,1), k < 0, k > 30,is.character(k), k != as.integer(k))){
     stop(sprintf("k = %s is not a valid input. `k` must be a non-negative integer between 2-30",k))
-  }
-  # Ensure model_type has been assigned
-  if(any(is.null(model_type), !(model_type %in% valid_models))){
-    stop(sprintf("%s is an invalid model_type", model_type))
   }
   # Ensure split is between 0.5 to 0.8
   if(any(is.character(split), split < 0.5, split > 0.9)){
@@ -53,7 +50,13 @@
       stop("at least one predictor is not in dataframe")
     }
   }
-  if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
-    stop("logistic regression requires a binary variable")
+  if(call == "categorical.cv.split"){
+    # Ensure model_type has been assigned
+    if(any(is.null(model_type), !(model_type %in% valid_models))){
+      stop(sprintf("%s is an invalid model_type", model_type))
+    }
+    if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
+      stop("logistic regression requires a binary variable")
+    }
   }
 }

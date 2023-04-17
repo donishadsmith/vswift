@@ -14,7 +14,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       `plot_metrics`: A logical value indicating whether to plot evaluation metrics - Classification Accuracy, Precision, Recall, F1. Default value is `FALSE`.
       `random_seed`: numerical value to set seed"
   #Checking if inputs are valid
-  .error.handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed)
+  .error.handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical.cv.split")
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -114,7 +114,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           fold_size_vector[num] <- fold_size_vector[num] + 1
         }
       }
-      # random shuffle
+      #random shuffle
       fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
       for(i in 1:k){
         #Add name to dataframe
