@@ -1,4 +1,4 @@
-categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
+categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
   " Parameters:
       -----------
       
@@ -12,7 +12,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       `plot_metrics`: A logical value indicating whether to plot evaluation metrics - Classification Accuracy, Precision, Recall, F1. Default value is `FALSE`.
       `random_seed`: numerical value to set seed"
   #Checking if inputs are valid
-  .error.handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical.cv.split")
+  .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical.cv.split")
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -49,71 +49,71 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   cat(sprintf("Missing Data: %s\n\n", nrow(data) - nrow(cleaned_data)))
   cat(sprintf("Sample Size: %s\n", nrow(cleaned_data)))
   #Initialize output list
-  categorical.cv.split_output <- list()
+  categorical_cv_split_output <- list()
   #Store classes
-  categorical.cv.split_output[["classes"]][[response_var]] <- names(table(cleaned_data[,response_var]))
+  categorical_cv_split_output[["classes"]][[response_var]] <- names(table(cleaned_data[,response_var]))
   #Create formula string
-  categorical.cv.split_output[["formula"]] <- formula <- as.formula(paste(response_var, "~", paste(feature_vec, collapse = " + ")))
+  categorical_cv_split_output[["formula"]] <- formula <- as.formula(paste(response_var, "~", paste(feature_vec, collapse = " + ")))
   #Get names and create a dictionary to convert to numeric if logistic model is chosen
   if(model_type == "logistic"){
     #Start at 0
     class_position <- 0
     for(class in names(table(cleaned_data[,response_var]))){
-      categorical.cv.split_output[["class_dictionary"]][[as.character(class)]] <- class_position 
+      categorical_cv_split_output[["class_dictionary"]][[as.character(class)]] <- class_position 
       class_position <- class_position  + 1
     }
   }
   if(stratified == TRUE){
     #Initialize list; initializing for ordering output purposes
-    categorical.cv.split_output[["class_indices"]] <- list()
+    categorical_cv_split_output[["class_indices"]] <- list()
     #Get proportions
-    categorical.cv.split_output[["class_proportions"]] <- table(cleaned_data[,response_var])/sum(table(cleaned_data[,response_var]))
+    categorical_cv_split_output[["class_proportions"]] <- table(cleaned_data[,response_var])/sum(table(cleaned_data[,response_var]))
     #Get the indices with the corresponding categories and ass to list
-    for(class in names(categorical.cv.split_output[["class_proportions"]])){
-      categorical.cv.split_output[["class_indices"]][[class]]  <- which(cleaned_data[,response_var] == class)
+    for(class in names(categorical_cv_split_output[["class_proportions"]])){
+      categorical_cv_split_output[["class_indices"]][[class]]  <- which(cleaned_data[,response_var] == class)
     }
   }
   #Stratified sampling
   if(!is.null(split)){
     if(stratified == TRUE){
-      #Get out of .stratified.sampling
-      stratified.sampling_output <- .stratified.sampling(data = cleaned_data,type = "split", split = split, output = categorical.cv.split_output, response_var = response_var, random_seed = random_seed)
+      #Get out of .stratified_sampling
+      stratified.sampling_output <- .stratified_sampling(data = cleaned_data,type = "split", split = split, output = categorical_cv_split_output, response_var = response_var, random_seed = random_seed)
       #Create training and test set
       training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$training,]
       test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$test,]
-      #Extract updated categorical.cv.split_output output list
-      categorical.cv.split_output <- stratified.sampling_output$output
+      #Extract updated categorical_cv_split_output output list
+      categorical_cv_split_output <- stratified.sampling_output$output
     }else{
       #Create test and training set
       training_indices <- sample(1:nrow(cleaned_data),size = round(nrow(cleaned_data)*split,0),replace = F)
       training_data <- cleaned_data[training_indices,]
       test_data <- cleaned_data[-training_indices,]
       #Store indices in list
-      categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
-      categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
+      categorical_cv_split_output[["sample_indices"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
+      categorical_cv_split_output[["sample_indices"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
     }
     #Create data table
-    categorical.cv.split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
-    colnames(categorical.cv.split_output[["metrics"]][["split"]]) <- "Set"
-    categorical.cv.split_output[["metrics"]][["split"]][1:2,"Set"] <- c("training","test")
+    categorical_cv_split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
+    colnames(categorical_cv_split_output[["metrics"]][["split"]]) <- "Set"
+    categorical_cv_split_output[["metrics"]][["split"]][1:2,"Set"] <- c("training","test")
   }
   #Adding information to data frame
   if(!is.null(k)){
-    categorical.cv.split_output[["metrics"]][["cv"]] <- data.frame(matrix(nrow = 1,ncol = 1))
-    colnames(categorical.cv.split_output[["metrics"]][["cv"]]) <- "Fold"
+    categorical_cv_split_output[["metrics"]][["cv"]] <- data.frame(matrix(nrow = 1,ncol = 1))
+    colnames(categorical_cv_split_output[["metrics"]][["cv"]]) <- "Fold"
     #Create folds; start with randomly shuffling indices
     indices <- sample(1:nrow(data))
     #Initialize list to store fold indices; third subindex needs to be initialized
-    categorical.cv.split_output[["sample_indices"]][["cv"]] <- list()
+    categorical_cv_split_output[["sample_indices"]][["cv"]] <- list()
     #Creating non-overlapping folds while adding rownames to matrix
     if(stratified == TRUE){
       #Initialize list to store fold proportions; third level
-      categorical.cv.split_output[["sample_proportions"]][["cv"]] <- list()
-      stratified.sampling_output <- .stratified.sampling(data = cleaned_data, type = "k-fold", output = categorical.cv.split_output,
+      categorical_cv_split_output[["sample_proportions"]][["cv"]] <- list()
+      stratified.sampling_output <- .stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output,
                                                         response_var = response_var, k = k,
                                                         random_seed = random_seed)
       #Collect output
-      categorical.cv.split_output <- stratified.sampling_output$output
+      categorical_cv_split_output <- stratified.sampling_output$output
     }else{
       #Get floor
       fold_size_vector <- rep(floor(nrow(cleaned_data)/k),k)
@@ -128,18 +128,18 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
       for(i in 1:k){
         #Add name to dataframe
-        categorical.cv.split_output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
+        categorical_cv_split_output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
         #Create fold with stratified or non stratified sampling
         fold_idx <- indices[1:fold_size_vector[i]]
         #Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds
         indices <- indices[-c(1:fold_size_vector[i])]
         #Add indices to list
-        categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
+        categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
       }
     }
     #Reorder list
-    metrics_position <- which(names(categorical.cv.split_output) == "metrics")
-    categorical.cv.split_output <- c(categorical.cv.split_output[-metrics_position],categorical.cv.split_output[metrics_position])
+    metrics_position <- which(names(categorical_cv_split_output) == "metrics")
+    categorical_cv_split_output <- c(categorical_cv_split_output[-metrics_position],categorical_cv_split_output[metrics_position])
     
   }
   #Ensure model type is lowercase
@@ -148,12 +148,12 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   iterator <- ifelse(is.null(k), 1, k + 1)
   #Initialize list to store training models
   if(!is.null(split)){
-    categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]] <- list()
+    categorical_cv_split_output[[paste0(model_type,"_models")]][["split"]] <- list()
     #Create iterator vector
     iterator_vector <- 1:iterator
   }
   if(!is.null(k)){
-    categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
+    categorical_cv_split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
     #Create iterator vector
     if(!is.null(split)){
       #Create iterator vector
@@ -166,9 +166,9 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   }
   #Convert variables to characters so that models will predict the original variable
   if(model_type == "logistic"){
-    cleaned_data[,response_var] <- sapply(data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
-    training_data[,response_var] <- sapply(training_data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
-    test_data[,response_var] <- sapply(test_data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
+    cleaned_data[,response_var] <- sapply(data[,response_var], function(x) categorical_cv_split_output[["class_dictionary"]][[as.character(x)]])
+    training_data[,response_var] <- sapply(training_data[,response_var], function(x) categorical_cv_split_output[["class_dictionary"]][[as.character(x)]])
+    test_data[,response_var] <- sapply(test_data[,response_var], function(x) categorical_cv_split_output[["class_dictionary"]][[as.character(x)]])
   }
   #First iteration will always be the evaluation for the traditional data split method
   for(i in iterator_vector){
@@ -177,8 +177,8 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       model_data <- training_data
     }else{
       #After the first iteration the cv begins, the training set is assigned to a new variable
-      model_data <- cleaned_data[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
-      validation_data <- cleaned_data[c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+      model_data <- cleaned_data[-c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+      validation_data <- cleaned_data[c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
     }
     #Generate model depending on chosen model_type
     switch(model_type,
@@ -191,10 +191,10 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
     #Create variables used in for loops to calculate precision, recall, and f1
     switch(model_type,
            "logistic" = {
-             classes <- as.numeric(unlist(categorical.cv.split_output[["class_dictionary"]]))
-             class_names <- names(categorical.cv.split_output[["class_dictionary"]])
+             classes <- as.numeric(unlist(categorical_cv_split_output[["class_dictionary"]]))
+             class_names <- names(categorical_cv_split_output[["class_dictionary"]])
            },
-           class_names <- classes <- categorical.cv.split_output[["classes"]][[response_var]])
+           class_names <- classes <- categorical_cv_split_output[["classes"]][[response_var]])
     #Perform classification accuracy for training and test data split
     if(i == 1){
       for(j in c("training","test")){
@@ -202,7 +202,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           #Assign test set to new variable
           model_data <- test_data
         } else{
-          categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]][[j]] <- model
+          categorical_cv_split_output[[paste0(model_type,"_models")]][["split"]][[j]] <- model
         }
         #Get prediction
         switch(model_type,
@@ -214,7 +214,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         #Calculate classification accuracy
-        categorical.cv.split_output[["metrics"]][["split"]][which(categorical.cv.split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
+        categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
         #Class positions to get the name of the class in class_names
         class_position <- 1
         for(class in classes){
@@ -225,9 +225,9 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           #Sum of the false positive
           false_pos <- length(which(prediction_vector[-which(model_data[,response_var] == class)] == class))
           #Add metrics to dataframe
-          categorical.cv.split_output[["metrics"]][["split"]][which(categorical.cv.split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
-          categorical.cv.split_output[["metrics"]][["split"]][which(categorical.cv.split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
-          categorical.cv.split_output[["metrics"]][["split"]][which(categorical.cv.split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s F1", class_names[class_position])] <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
+          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
+          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
+          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s F1", class_names[class_position])] <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
           class_position <- class_position + 1
         }
       }
@@ -235,7 +235,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       if(all(!is.null(k),(i-1) <= k)){
         #Assign validation data to new variables
         model_data <- validation_data
-        categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
+        categorical_cv_split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
         # Get prediction
         switch(model_type,
                "svm" = {prediction_vector <- predict(model, newdata = model_data)},
@@ -246,7 +246,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         #Calculate classification accuracy for fold
-        categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
+        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
         #Reset class positions to get the name of the class in class_names
         class_position <- 1
         for(class in classes){
@@ -257,28 +257,28 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           #Sum of the false positive
           false_pos <- length(which(prediction_vector[-which(model_data[,response_var] == class)] == class))
           #Add metrics to dataframe
-          categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
-          categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
-          categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s F1", class_names[class_position])] <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s F1", class_names[class_position])] <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
           class_position <- class_position + 1
         }
       }
     }
     #Calculate mean, standard deviation, and standard error for cross validation
     if(all(!is.null(k),(i-1) == k)){
-      idx <- nrow(categorical.cv.split_output[["metrics"]][["cv"]] )
-      categorical.cv.split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
+      idx <- nrow(categorical_cv_split_output[["metrics"]][["cv"]] )
+      categorical_cv_split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
       #Calculate mean, standard deviation, and sd for each column except for fold
-      for(colname in colnames(categorical.cv.split_output[["metrics"]][["cv"]] )[colnames(categorical.cv.split_output[["metrics"]][["cv"]] ) != "Fold"]){
+      for(colname in colnames(categorical_cv_split_output[["metrics"]][["cv"]] )[colnames(categorical_cv_split_output[["metrics"]][["cv"]] ) != "Fold"]){
         #Create vector containing corresponding column name values for each fold
-        num_vector <- categorical.cv.split_output[["metrics"]][["cv"]] [1:idx, colname]
-        categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
-        categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
-        categorical.cv.split_output[["metrics"]][["cv"]][which(categorical.cv.split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(k)
+        num_vector <- categorical_cv_split_output[["metrics"]][["cv"]] [1:idx, colname]
+        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
+        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
+        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(k)
       }
     }
     }
   #Make list a vswift class
-  class(categorical.cv.split_output) <- "vswift"
-  return(categorical.cv.split_output)
+  class(categorical_cv_split_output) <- "vswift"
+  return(categorical_cv_split_output)
 }
