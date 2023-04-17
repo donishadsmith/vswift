@@ -1,5 +1,5 @@
-#Create vshift class
-setClass(Class = "vshift", contains = "list")
+#Create vswift class
+setClass(Class = "vswift", contains = "list")
 categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
   " Parameters:
       -----------
@@ -177,7 +177,6 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
     if(i == 1){
       #Assigning data split matrices to new variable 
       model_data <- training_data
-      print(9)
     }else{
       #After the first iteration the cv begins, the training set is assigned to a new variable
       model_data <- cleaned_data[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
@@ -281,7 +280,7 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       }
     }
     }
-  #Make list a vshift class
-  class(categorical.cv.split_output) <- "vshift"
+  #Make list a vswift class
+  class(categorical.cv.split_output) <- "vswift"
   return(categorical.cv.split_output)
 }
