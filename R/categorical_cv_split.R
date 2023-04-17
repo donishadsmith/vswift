@@ -1,4 +1,3 @@
-#Create vswift class
 categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
   " Parameters:
       -----------
