@@ -1,31 +1,23 @@
 .stratified.sampling <- function(data,type, output, response_var, split = NULL, fold_size = NULL, k = NULL,
-                                 class_indices = NULL, random_seed = NULL){
+                                  random_seed = NULL){
   switch(type,
          "split" = {
            #Set seed
            if(!is.null(random_seed)){
              set.seed(random_seed)
            }
-           #Initialize list; initializing for ordering output purposes
-           output[["class_indices"]] <- list()
-           #Get proportions
-           output[["class_proportions"]] <- table(data[,response_var])/sum(table(data[,response_var]))
+           #Get class indices
+           class_indices <- output[["class_indices"]]
            #Split sizes
            training_n <- nrow(data)*split
            test_n <- nrow(data) - (nrow(data)*split)
-           #Initialize class indices list
-           class_indices <- list()
            for(class in names(output[["class_proportions"]])){
-             #Get the indices with the corresponding categories
-             indices <- which(data[,response_var] == class)
-             #Add them to list
-             output[["class_indices"]][[class]] <- class_indices[[class]] <-  indices
              #Store indices for training set
-             output[["sample_indices"]][["training"]] <- c(output[["sample_indices"]][["training"]] ,sample(indices,size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["training"]] <- c(output[["sample_indices"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
              #Remove indices to not add to test set
-             indices <- indices[!(indices %in% output[["sample_indices"]][["training"]] )]
+             class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["training"]])]
              #Add indices for test set
-             output[["sample_indices"]][["test"]] <- c(output[["sample_indices"]][["test"]] ,sample(indices,size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["test"]] <- c(output[["sample_indices"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
            }
            #Store proportions of data in training set
            output[["sample_proportions"]][["training"]] <- table(data[,response_var][output[["sample_indices"]][["training"]]])/sum(table(data[,response_var][output[["sample_indices"]][["training"]]]))

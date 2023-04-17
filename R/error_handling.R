@@ -9,6 +9,9 @@
   if(!is.data.frame(data)){
     stop("invalid input for data")
   }
+  if(all(is.null(split),is.null(k))){
+    stop("split and k cannot both be NULL")
+  }
   if(any(k %in% c(0,1), k < 0, k > 30,is.character(k), k != as.integer(k))){
     stop(sprintf("k = %s is not a valid input. `k` must be a non-negative integer between 2-30",k))
   }

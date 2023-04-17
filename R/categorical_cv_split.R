@@ -1,6 +1,6 @@
 #Create vshift class
 setClass(Class = "vshift", contains = "list")
-categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = 0.8, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
+categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL,...){
   " Parameters:
       -----------
       
@@ -65,15 +65,26 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       class_position <- class_position  + 1
     }
   }
-  #Stratified sampling
   if(stratified == TRUE){
-    #Get out of .stratified.sampling
-    stratified.sampling_output <- .stratified.sampling(data = cleaned_data,type = "split", split = split, output = categorical.cv.split_output, response_var = response_var, random_seed = random_seed)
-    #Create training and test set
-    training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$training,]
-    test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$test,]
-    #Extract updated categorical.cv.split_output output list
-    categorical.cv.split_output <- stratified.sampling_output$output
+    #Initialize list; initializing for ordering output purposes
+    categorical.cv.split_output[["class_indices"]] <- list()
+    #Get proportions
+    categorical.cv.split_output[["class_proportions"]] <- table(cleaned_data[,response_var])/sum(table(cleaned_data[,response_var]))
+    #Get the indices with the corresponding categories and ass to list
+    for(class in names(categorical.cv.split_output[["class_proportions"]])){
+      categorical.cv.split_output[["class_indices"]][[class]]  <- which(cleaned_data[,response_var] == class)
+    }
+  }
+  #Stratified sampling
+  if(!is.null(split)){
+    if(stratified == TRUE){
+      #Get out of .stratified.sampling
+      stratified.sampling_output <- .stratified.sampling(data = cleaned_data,type = "split", split = split, output = categorical.cv.split_output, response_var = response_var, random_seed = random_seed)
+      #Create training and test set
+      training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$training,]
+      test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$test,]
+      #Extract updated categorical.cv.split_output output list
+      categorical.cv.split_output <- stratified.sampling_output$output
     }else{
       #Create test and training set
       training_indices <- sample(1:nrow(cleaned_data),size = round(nrow(cleaned_data)*split,0),replace = F)
@@ -82,15 +93,16 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       #Store indices in list
       categorical.cv.split_output[["sample_indices"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
       categorical.cv.split_output[["sample_indices"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
+    }
+    #Create data table
+    categorical.cv.split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
+    colnames(categorical.cv.split_output[["metrics"]][["split"]]) <- "Set"
+    categorical.cv.split_output[["metrics"]][["split"]][1:2,"Set"] <- c("training","test")
   }
-  #Create data table
-  categorical.cv.split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
-  colnames(categorical.cv.split_output[["metrics"]][["split"]]) <- "Set"
-  categorical.cv.split_output[["metrics"]][["split"]][1:2,"Set"] <- c("training","test")
   #Adding information to data frame
   if(!is.null(k)){
     categorical.cv.split_output[["metrics"]][["cv"]] <- data.frame(matrix(nrow = 1,ncol = 1))
-    colnames(categorical.cv.split_output[["metrics"]][["cv"]] ) <- "Fold"
+    colnames(categorical.cv.split_output[["metrics"]][["cv"]]) <- "Fold"
     #Create folds; start with randomly shuffling indices
     indices <- sample(1:nrow(data))
     #Initialize list to store fold indices; third subindex needs to be initialized
@@ -127,27 +139,45 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
         categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
       }
     }
+    #Reorder list
+    metrics_position <- which(names(categorical.cv.split_output) == "metrics")
+    categorical.cv.split_output <- c(categorical.cv.split_output[-metrics_position],categorical.cv.split_output[metrics_position])
+    
   }
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Add it plus one to the iterator if k is not null
   iterator <- ifelse(is.null(k), 1, k + 1)
-  # Initialize list to store training models
-  categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]] <- list()
+  #Initialize list to store training models
+  if(!is.null(split)){
+    categorical.cv.split_output[[paste0(model_type,"_models")]][["split"]] <- list()
+    #Create iterator vector
+    iterator_vector <- 1:iterator
+  }
   if(!is.null(k)){
     categorical.cv.split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
+    #Create iterator vector
+    if(!is.null(split)){
+      #Create iterator vector
+      iterator_vector <- 1:iterator
+    } else{
+      #Create iterator vector
+      iterator_vector <- 2:iterator
+    }
+    
   }
-  # Convert variables to characters so that models will predict the original variable
+  #Convert variables to characters so that models will predict the original variable
   if(model_type == "logistic"){
     cleaned_data[,response_var] <- sapply(data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
     training_data[,response_var] <- sapply(training_data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
     test_data[,response_var] <- sapply(test_data[,response_var], function(x) categorical.cv.split_output[["class_dictionary"]][[as.character(x)]])
   }
   #First iteration will always be the evaluation for the traditional data split method
-  for(i in 1:iterator){
+  for(i in iterator_vector){
     if(i == 1){
       #Assigning data split matrices to new variable 
       model_data <- training_data
+      print(9)
     }else{
       #After the first iteration the cv begins, the training set is assigned to a new variable
       model_data <- cleaned_data[-c(categorical.cv.split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
@@ -161,6 +191,13 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
            "svm" = {model <- e1071::svm(formula, data = model_data,...)},
            "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data,...)}
     )
+    #Create variables used in for loops to calculate precision, recall, and f1
+    switch(model_type,
+           "logistic" = {
+             classes <- as.numeric(unlist(categorical.cv.split_output[["class_dictionary"]]))
+             class_names <- names(categorical.cv.split_output[["class_dictionary"]])
+           },
+           class_names <- classes <- categorical.cv.split_output[["classes"]][[response_var]])
     #Perform classification accuracy for training and test data split
     if(i == 1){
       for(j in c("training","test")){
@@ -181,13 +218,6 @@ categorical.cv.split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
         )
         #Calculate classification accuracy
         categorical.cv.split_output[["metrics"]][["split"]][which(categorical.cv.split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
-        #Calculate precision, recall, and f1
-        switch(model_type,
-               "logistic" = {
-                 classes <- as.numeric(unlist(categorical.cv.split_output[["class_dictionary"]]))
-                 class_names <- names(categorical.cv.split_output[["class_dictionary"]])
-               },
-                class_names <- classes <- categorical.cv.split_output[["classes"]][[response_var]])
         #Class positions to get the name of the class in class_names
         class_position <- 1
         for(class in classes){

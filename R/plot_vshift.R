@@ -1,28 +1,29 @@
-setClass(Class = "vshift", slots = c(object = "vshift"))
+setClass(Class = "vshift", slots = c(object = "vshift", split = "logical", cv = "logical"))
 
-plot.vshift <- function(object){
-  
+plot.vshift <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vshift"){
-    # Plot metrics for training and test
-    plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
-    axis(1, at = 1:2, labels = c("training","test"))
-    
-    for(class in as.character(object[["classes"]][[1]])){
-      plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Precision", class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
-           main = paste("Class:",class))
-      axis(1, at = 1:2, labels = c("Training","Test"))
+    if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
+      # Plot metrics for training and test
+      plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
+      axis(1, at = 1:2, labels = c("training","test"))
       
-      plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Recall", class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
-           main = paste("Class:",class))
-      axis(1, at = 1:2, labels = c("Training","Test"))
-      
-      plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s F1", class)] , ylim = c(0,1), xlab = "Set", ylab = "F1" , xaxt = "n",
-           main = paste("Class:",class))
-      axis(1, at = 1:2, labels = c("Training","Test"))
+      for(class in as.character(object[["classes"]][[1]])){
+        plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Precision", class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
+             main = paste("Class:",class))
+        axis(1, at = 1:2, labels = c("Training","Test"))
+        
+        plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Recall", class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
+             main = paste("Class:",class))
+        axis(1, at = 1:2, labels = c("Training","Test"))
+        
+        plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s F1", class)] , ylim = c(0,1), xlab = "Set", ylab = "F1" , xaxt = "n",
+             main = paste("Class:",class))
+        axis(1, at = 1:2, labels = c("Training","Test"))
+    }
     }
     
     # Plot metrics for training and test
-    if(is.data.frame(object[["metrics"]][["cv"]])){
+    if(all(is.data.frame(object[["metrics"]][["cv"]]), cv == TRUE)){
       #To get the correct class for plot title
       class_idx <- 1
       #Get the last row index subtracted by three to avoid getting mean, standard dev, and standard error
