@@ -17,10 +17,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   if(!is.null(random_seed)){
     set.seed(random_seed)
   }
-  #Print parameter information
-  cat(sprintf("Model Type: %s\n\n", model_type))
   #Creating response variable
-  cat(sprintf("Response Variable: %s\n\n", response_var <- ifelse(is.character(y_col), y_col, colnames(data)[y_col])))
+  response_var <- ifelse(is.character(y_col), y_col, colnames(data)[y_col])
   #Creating feature vector
   if (is.null(x_col)){
     feature_vec <- colnames(data)[colnames(data) != response_var]
@@ -31,12 +29,6 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       feature_vec <- colnames(data)[x_col]
     }
   }
-  cat(sprintf("Features: %s\n\n", paste(feature_vec, collapse = ", ")))
-  cat(sprintf("Classes: %s\n\n", paste(names(table(data[,response_var])), collapse = ", ")))
-  cat(sprintf("K: %s\n\n", k))
-  cat(sprintf("Split: %s\n\n", split))
-  cat(sprintf("Stratified Sampling: %s\n\n", stratified))
-  cat(sprintf("Random Seed: %s\n\n", random_seed))
   #Get response and predictors
   if(is.character(y_col)){
     y_col <- which(colnames(data) == y_col)
@@ -45,11 +37,19 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   cleaned_data <- data[complete.cases(data),]
   #Make response a factor
   cleaned_data[,response_var] <- factor(cleaned_data[,response_var])
-  #Print sample size and missing data for user transparency
-  cat(sprintf("Missing Data: %s\n\n", nrow(data) - nrow(cleaned_data)))
-  cat(sprintf("Sample Size: %s\n", nrow(cleaned_data)))
   #Initialize output list
   categorical_cv_split_output <- list()
+  categorical_cv_split_output[["information"]][["parameters"]] <- list()
+  categorical_cv_split_output[["information"]][["parameters"]][["features"]] <- feature_vec
+  categorical_cv_split_output[["information"]][["parameters"]][["response_variable"]]  <- response_var
+  categorical_cv_split_output[["information"]][["parameters"]][["model_type"]] <- model_type
+  categorical_cv_split_output[["information"]][["parameters"]][["k"]]  <- k
+  categorical_cv_split_output[["information"]][["parameters"]][["stratified"]]  <- stratified
+  categorical_cv_split_output[["information"]][["parameters"]][["split"]]  <- split
+  categorical_cv_split_output[["information"]][["parameters"]][["random_seed"]]  <- random_seed
+  categorical_cv_split_output[["information"]][["parameters"]][["missing_data"]]  <- nrow(data) - nrow(cleaned_data)
+  categorical_cv_split_output[["information"]][["parameters"]][["sample_size"]] <- nrow(cleaned_data)
+  categorical_cv_split_output[["information"]][["parameters"]][["additional_arguments"]] <- list(...)
   #Store classes
   categorical_cv_split_output[["classes"]][[response_var]] <- names(table(cleaned_data[,response_var]))
   #Create formula string
