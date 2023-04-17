@@ -1,6 +1,4 @@
-setClass(Class = "vswift", slots = c(object = "vswift", split = "logical", cv = "logical"))
-
-plot.vswift <- function(object, split = TRUE, cv = TRUE){
+"plot.vswift" <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vswift"){
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       # Plot metrics for training and test
