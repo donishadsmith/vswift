@@ -57,5 +57,4 @@
   } else{
     stop("object must be of class 'vswift'")
   }
-  
 }
