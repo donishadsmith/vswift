@@ -39,6 +39,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   cleaned_data[,response_var] <- factor(cleaned_data[,response_var])
   #Initialize output list
   categorical_cv_split_output <- list()
+  categorical_cv_split_output[["information"]][["analysis_type"]] <- "classification"
   categorical_cv_split_output[["information"]][["parameters"]] <- list()
   categorical_cv_split_output[["information"]][["parameters"]][["features"]] <- feature_vec
   categorical_cv_split_output[["information"]][["parameters"]][["response_variable"]]  <- response_var
@@ -50,6 +51,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   categorical_cv_split_output[["information"]][["parameters"]][["missing_data"]]  <- nrow(data) - nrow(cleaned_data)
   categorical_cv_split_output[["information"]][["parameters"]][["sample_size"]] <- nrow(cleaned_data)
   categorical_cv_split_output[["information"]][["parameters"]][["additional_arguments"]] <- list(...)
+  
   #Store classes
   categorical_cv_split_output[["classes"]][[response_var]] <- names(table(cleaned_data[,response_var]))
   #Create formula string

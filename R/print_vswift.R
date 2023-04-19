@@ -33,7 +33,6 @@
         #Print classification accuracy
         cat("Classication Accuracy: ", format(round(object[["metrics"]][["split"]][which(object[["metrics"]][["split"]]$Set == set),"Classification Accuracy"],2), nsmall = 2),"\n\n")
         #Print name of metrics
-        diff <- abs(nchar("Class:") - max_string_length)
         cat("Class:",rep("", max_string_length),"Precision:  Recall:  F-Score:\n\n")
         #For loop to obtain vector of values for each class
         for(class in unlist(object["classes"])){
@@ -52,35 +51,43 @@
           class_metrics <- sapply(object[["metrics"]][["split"]][which(object[["metrics"]][["split"]]$Set == "Training"),class_col], function(x) format(round(x,2), nsmall = 2))  
           #Add spacing
           padding <- nchar(paste("Class:",rep("", max_string_length),"Pre"))[1]
+          class_metrics <- c(class_metrics[1],rep("", 4),class_metrics[2],rep("", 5),class_metrics[3])
           cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics, collapse = " "),"\n")
           class_position <- class_position + 1
         }
         
       }
+      #Empty class_col or initialize variable
+      class_col <- c()
       
     }
     if(all(is.data.frame(object[["metrics"]][["cv"]]))){
       class_position <- 1 
+      #Get number of folds to select the correct rows for mean and stdev
       k <- object[["information"]][["parameters"]][["k"]]
+      #Print parameters name
       cat("\n\n","K-fold CV","\n")
       cat(rep("_",nchar("K-fold CV")),"\n\n")
       cat("Average Classication Accuracy: ", format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),"\n\n")
-      cat("Class:",rep("", 12),"Average Precision:  StDev Precision:  Average Recall:  StDev Recall:  Average F-score:  StDev F-score:\n\n")
+      cat("Class:",rep("", max_string_length),"Average Precision:  StDev Precision:  Average Recall:  StDev Recall:  Average F-score:  StDev F-score:\n\n")
+      #Go through column names, split the colnames and class name to see if the column name is the metric for that class
       for(class in unlist(object["classes"])){
-        class_col <- c()
         for(colname in colnames(object[["metrics"]][["split"]])){
           split_colname <- unlist(strsplit(colname,split = " "))
           split_classname <- unlist(strsplit(class,split = " ")) 
           if(all(split_classname %in% split_colname)){
+            #Store colnames for the class is variable
             class_col <- c(class_col, colname)
           }
         }
+        #Print metric corresponding to class
         mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
         sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        class_metrics <- c(mean_class_metrics[1],sd_class_metrics[1],mean_class_metrics[2],sd_class_metrics[2],
-                           mean_class_metrics[3],sd_class_metrics[3])
-        #cat(class,rep("",(15 + string_diff[class_position])),paste(class_metrics, collapse = "   "),"\n")
-        cat(class,rep("",(15 + string_diff[class_position])),paste(class_metrics),"\n")
+        class_metrics <- c(mean_class_metrics[1],rep("", 15),sd_class_metrics[1],rep("", 14),mean_class_metrics[2],rep("", 10),
+                           sd_class_metrics[2],rep("", 12),mean_class_metrics[3],rep("", 10),sd_class_metrics[3])
+        #Add spacing
+        padding <- nchar(paste("Class:",rep("", max_string_length),"Ave"))[1]
+        cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics),"\n")
         class_position <- class_position + 1
       }
       
