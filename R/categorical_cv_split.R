@@ -95,7 +95,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
     #Create data table
     categorical_cv_split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
     colnames(categorical_cv_split_output[["metrics"]][["split"]]) <- "Set"
-    categorical_cv_split_output[["metrics"]][["split"]][1:2,"Set"] <- c("training","test")
+    categorical_cv_split_output[["metrics"]][["split"]][1:2,"Set"] <- c("Training","Test")
   }
   #Adding information to data frame
   if(!is.null(k)){
@@ -197,8 +197,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
            class_names <- classes <- categorical_cv_split_output[["classes"]][[response_var]])
     #Perform classification accuracy for training and test data split
     if(i == 1){
-      for(j in c("training","test")){
-        if(j == "test"){
+      for(j in c("Training","Test")){
+        if(j == "Test"){
           #Assign test set to new variable
           model_data <- test_data
         } else{
@@ -221,9 +221,9 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           #Sum of true positives
           true_pos <- sum(model_data[,response_var][which(model_data[,response_var] == class)] == prediction_vector[which(model_data[,response_var] == class)])
           #Sum of false negatives
-          false_neg <- abs(true_pos - length(model_data[,response_var][which(model_data[,response_var]  == class)]))
+          false_neg <- sum(model_data[, response_var] == class & prediction_vector != class)
           #Sum of the false positive
-          false_pos <- length(which(prediction_vector[-which(model_data[,response_var] == class)] == class))
+          false_pos <- sum(prediction_vector == class) - true_pos
           #Add metrics to dataframe
           categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
           categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
@@ -253,9 +253,9 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
           #Sum of true positives
           true_pos <- sum(model_data[,response_var][which(model_data[,response_var] == class)] == prediction_vector[which(model_data[,response_var] == class)])
           #Sum of false negatives
-          false_neg <- abs(true_pos  - length(model_data[,response_var][which(model_data[,response_var]  == class)]))
+          false_neg <- sum(model_data[, response_var] == class & prediction_vector != class)
           #Sum of the false positive
-          false_pos <- length(which(prediction_vector[-which(model_data[,response_var] == class)] == class))
+          false_pos <- sum(prediction_vector == class) - true_pos
           #Add metrics to dataframe
           categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- true_pos/(true_pos + false_pos)
           categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- true_pos/(true_pos + false_neg)
@@ -271,7 +271,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
       #Calculate mean, standard deviation, and sd for each column except for fold
       for(colname in colnames(categorical_cv_split_output[["metrics"]][["cv"]] )[colnames(categorical_cv_split_output[["metrics"]][["cv"]] ) != "Fold"]){
         #Create vector containing corresponding column name values for each fold
-        num_vector <- categorical_cv_split_output[["metrics"]][["cv"]] [1:idx, colname]
+        num_vector <- categorical_cv_split_output[["metrics"]][["cv"]][1:idx, colname]
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(k)
