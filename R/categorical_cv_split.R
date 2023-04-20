@@ -35,8 +35,19 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
   }
   #Remove rows with missing data
   cleaned_data <- data[complete.cases(data),]
-  #Make response a factor
-  cleaned_data[,response_var] <- factor(cleaned_data[,response_var])
+  #Turn response column to character
+  #cleaned_data[,response_var] <- factor(cleaned_data[,response_var])
+  cleaned_data[,response_var] <- as.character(cleaned_data[,response_var])
+  #Get character columns
+  character_columns <- sapply(cleaned_data,function(x) is.character(x))
+  #Get character column names
+  character_columns <- colnames(cleaned_data)[character_columns]
+  #Turn to factor and get levels
+  data_levels <- list()
+  for(col in character_columns){
+    cleaned_data[,col] <- factor(cleaned_data[,col])
+    data_levels[[col]] <- levels(cleaned_data[,col])
+  }
   #Initialize output list
   categorical_cv_split_output <- list()
   categorical_cv_split_output[["information"]][["analysis_type"]] <- "classification"
@@ -177,10 +188,16 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
     if(i == 1){
       #Assigning data split matrices to new variable 
       model_data <- training_data
+      for(col in names(data_levels)){
+        levels(model_data[,col]) <- data_levels[[col]]
+      }
     }else{
       #After the first iteration the cv begins, the training set is assigned to a new variable
       model_data <- cleaned_data[-c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
       validation_data <- cleaned_data[c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+      for(col in names(data_levels)){
+        levels(model_data[,col]) <- levels(validation_data[,col]) <- data_levels[[col]]
+      }
     }
     #Generate model depending on chosen model_type
     switch(model_type,
@@ -215,6 +232,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
+        #Store dataframe
+        categorical_cv_split_output[["data"]][[j]] <- model_data
         #Calculate classification accuracy
         categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
         #Class positions to get the name of the class in class_names
@@ -247,6 +266,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL,x_col = NULL, k = NU
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
+        #Store dataframe
+        categorical_cv_split_output[["data"]][[sprintf("fold %s",i-1)]] <- model_data
         #Calculate classification accuracy for fold
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- sum(model_data[,response_var] == prediction_vector)/length(model_data[,response_var])
         #Reset class positions to get the name of the class in class_names

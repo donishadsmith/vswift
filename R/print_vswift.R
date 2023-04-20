@@ -36,7 +36,7 @@
         cat("Class:",rep("", max_string_length),"Precision:  Recall:  F-Score:\n\n")
         #For loop to obtain vector of values for each class
         for(class in unlist(object["classes"])){
-          #Create empty variable
+          #Empty class_col or initialize variable
           class_col<- c()
           #Go through column names, split the colnames and class name to see if the column name is the metric for that class
           for(colname in colnames(object[["metrics"]][["split"]])){
@@ -57,9 +57,6 @@
         }
         
       }
-      #Empty class_col or initialize variable
-      class_col <- c()
-      
     }
     if(all(is.data.frame(object[["metrics"]][["cv"]]))){
       class_position <- 1 
@@ -68,10 +65,17 @@
       #Print parameters name
       cat("\n\n","K-fold CV","\n")
       cat(rep("_",nchar("K-fold CV")),"\n\n")
-      cat("Average Classication Accuracy: ", format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),"\n\n")
-      cat("Class:",rep("", max_string_length),"Average Precision:  StDev Precision:  Average Recall:  StDev Recall:  Average F-score:  StDev F-score:\n\n")
+      classification_accuracy_metrics <- c(format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),
+                                         format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),"Classification Accuracy"],2), nsmall = 2))
+      
+      classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],classification_accuracy_metrics[2])
+      cat("Average Classication Accuracy: ", classification_accuracy_metrics ,"\n\n")
+      #cat("Class:",rep("", max_string_length),"Average Precision:  StDev Precision:  Average Recall:  StDev Recall:  Average F-score:  StDev F-score:\n\n")
+      cat("Class:",rep("", max_string_length),"Average Precision:  Average Recall:  Average F-score:\n\n")
       #Go through column names, split the colnames and class name to see if the column name is the metric for that class
-      for(class in unlist(object["classes"])){
+      for(class in as.character(unlist(object["classes"]))){
+        #Empty class_col or initialize variable
+        class_col <- c()
         for(colname in colnames(object[["metrics"]][["split"]])){
           split_colname <- unlist(strsplit(colname,split = " "))
           split_classname <- unlist(strsplit(class,split = " ")) 
@@ -82,15 +86,22 @@
         }
         #Print metric corresponding to class
         mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        class_metrics <- c(mean_class_metrics[1],rep("", 15),sd_class_metrics[1],rep("", 14),mean_class_metrics[2],rep("", 10),
-                           sd_class_metrics[2],rep("", 12),mean_class_metrics[3],rep("", 10),sd_class_metrics[3])
+        se_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+3)),class_col], function(x) format(round(x,2), nsmall = 2))  
+        se_metric_position <- 1
+        class_metrics <- c()
+        for(metric in mean_class_metrics){
+          class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, se_class_metrics[se_metric_position]))
+          se_metric_position <- se_metric_position + 1
+        }
+        class_metrics <- c(class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
         #Add spacing
-        padding <- nchar(paste("Class:",rep("", max_string_length),"Ave"))[1]
+        padding <- nchar(paste("Class:",rep("", max_string_length),"Av"))[1]
         cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics),"\n")
+        #Reset variables
         class_position <- class_position + 1
+        se_metric_position <- 1
+        class_metrics <- c()
       }
-      
     }
   }
 }
