@@ -5,7 +5,7 @@
       cat(sprintf("Model Type: %s\n\n", object[["information"]][["parameters"]][["model_type"]]))
       #Creating response variable
       cat(sprintf("Features: %s\n\n", paste(object[["information"]][["parameters"]][["features"]], collapse = ",")))
-      cat(sprintf("Response variable: %s\n\n", object[["information"]][["parameters"]][["response_variable"]]))
+      cat(sprintf("Response variable: %s\n\n", object[["information"]][["parameters"]][["responsd_variable"]]))
       cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
       cat(sprintf("K: %s\n\n", object[["information"]][["parameters"]][["k"]]))
       cat(sprintf("Split: %s\n\n", object[["information"]][["parameters"]][["split"]]))
@@ -86,12 +86,12 @@
         }
         #Print metric corresponding to class
         mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        se_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+3)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        se_metric_position <- 1
+        sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
+        sd_metric_position <- 1
         class_metrics <- c()
         for(metric in mean_class_metrics){
-          class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, se_class_metrics[se_metric_position]))
-          se_metric_position <- se_metric_position + 1
+          class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, sd_class_metrics[sd_metric_position]))
+          sd_metric_position <- sd_metric_position + 1
         }
         class_metrics <- c(class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
         #Add spacing
@@ -99,7 +99,7 @@
         cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics),"\n")
         #Reset variables
         class_position <- class_position + 1
-        se_metric_position <- 1
+        sd_metric_position <- 1
         class_metrics <- c()
       }
     }
