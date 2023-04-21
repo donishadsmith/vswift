@@ -102,8 +102,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       #Get out of .stratified_sampling
       stratified.sampling_output <- .stratified_sampling(data = cleaned_data,type = "split", split = split, output = categorical_cv_split_output, response_var = response_var, random_seed = random_seed)
       #Create training and test set
-      training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$training,]
-      test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$test,]
+      training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$split$training,]
+      test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$split$test,]
       #Extract updated categorical_cv_split_output output list
       categorical_cv_split_output <- stratified.sampling_output$output
     }else{
@@ -112,8 +112,9 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       training_data <- cleaned_data[training_indices,]
       test_data <- cleaned_data[-training_indices,]
       #Store indices in list
-      categorical_cv_split_output[["sample_indices"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
-      categorical_cv_split_output[["sample_indices"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
+      categorical_cv_split_output[["sample_indices"]][["split"]] <- list()
+      categorical_cv_split_output[["sample_indices"]][["split"]][["training"]] <- c(1:nrow(cleaned_data))[training_indices]
+      categorical_cv_split_output[["sample_indices"]][["split"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
     }
     #Create data table
     categorical_cv_split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
