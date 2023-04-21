@@ -9,10 +9,10 @@
            #Get class indices
            class_indices <- output[["class_indices"]]
            #Split sizes
-           training_n <- nrow(data)*split
-           test_n <- nrow(data) - (nrow(data)*split)
+           training_n <- round(nrow(data)*split,0)
+           test_n <- nrow(data) - training_n
            for(class in names(output[["class_proportions"]])){
-             # Check if sampling possible
+             #Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              #Store indices for training set
              output[["sample_indices"]][["training"]] <- c(output[["sample_indices"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
@@ -46,6 +46,7 @@
              #fold size; try to undershoot for excess
              fold_size <- floor(nrow(data)/k)
              for(class in names(output[["class_proportions"]])){
+               #Check if sampling possible
                .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
                #Check if sampling possible
                fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
