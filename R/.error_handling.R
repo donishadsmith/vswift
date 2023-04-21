@@ -1,7 +1,7 @@
 .error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
                             call = NULL){
   #Valid models
-  valid_models <- c("lda","qda","logistic","svm","naivebayes")
+  valid_models <- c("lda","qda","logistic","svm","naivebayes","nnet")
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
     stop("random_seed must be a numerical scalar value")
   }
