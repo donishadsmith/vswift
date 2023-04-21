@@ -23,7 +23,7 @@
   if(is.null(data)){
     stop("No input data")
   }
-  if(any(y_col == x_col, y_col %in% x_col)){
+  if(y_col %in% x_col){
     stop("response variable cannot also be a predictor")
   }
   if(length(y_col) != 1){
@@ -42,7 +42,7 @@
     stop("y_col must be an integer or character")
   }
   if(!is.null(x_col)){
-    if(all(is.integer(x_col))){
+    if(all(is.numeric(x_col))){
       check_x <- 1:dim(data)[1]
     } else if(all(is.character(x_col))){
       check_x <- colnames(data)[colnames(data) != y_col]

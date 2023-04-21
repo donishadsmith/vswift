@@ -27,7 +27,7 @@
       for(set in c("Training","Test")){
         #Variable for which class string length to print to ensure all values have equal spacing
         class_position <- 1 
-        #Print name of the set metrics to be printed and add undercores
+        #Print name of the set metrics to be printed and add underscores
         cat("\n\n",set,"\n")
         cat(rep("_",nchar(set)),"\n\n")
         #Print classification accuracy
@@ -51,7 +51,11 @@
           class_metrics <- sapply(object[["metrics"]][["split"]][which(object[["metrics"]][["split"]]$Set == "Training"),class_col], function(x) format(round(x,2), nsmall = 2))  
           #Add spacing
           padding <- nchar(paste("Class:",rep("", max_string_length),"Pre"))[1]
-          class_metrics <- c(class_metrics[1],rep("", 4),class_metrics[2],rep("", 5),class_metrics[3])
+          if(class_metrics[1] == "NaN"){
+            class_metrics <- c(class_metrics[1],rep("", 5),class_metrics[2],rep("", 5),class_metrics[3])
+          }else{
+            class_metrics <- c(class_metrics[1],rep("", 4),class_metrics[2],rep("", 5),class_metrics[3])
+          }
           cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics, collapse = " "),"\n")
           class_position <- class_position + 1
         }
@@ -93,7 +97,11 @@
           class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, sd_class_metrics[sd_metric_position]))
           sd_metric_position <- sd_metric_position + 1
         }
-        class_metrics <- c(class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
+        if(class_metrics[1] == "NaN (NA)"){
+          class_metrics <- c(rep("", 3),class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
+        }else{
+          class_metrics <- c(class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
+        }
         #Add spacing
         padding <- nchar(paste("Class:",rep("", max_string_length),"Av"))[1]
         cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics),"\n")
