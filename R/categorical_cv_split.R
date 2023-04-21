@@ -1,15 +1,4 @@
 categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observation = FALSE, save_models = FALSE, save_data = FALSE,...){
-  " Parameters:
-      -----------
-      `data`: A dataframe containing the response variable and predictors.
-      `y_col`: The name of the response variable to be analyzed.
-      `x_col`: A vector of column indices or a vector of column names indicating the predictors to be used. If `NULL`, all columns except for the response variable will be used as predictors. Default value is `NULL`.
-      `k`: A non-negative integer value up to 30 for k-fold cross-validation.
-      `split`: A numeric value between 0.5 and 0.9 to determine the proportion of the dataset that will be used for training.
-      `model_type`: The type of algorithm to be used for data analysis. Currently supported options include logistic regression, linear discriminant analysis (LDA), quadratic discriminant analysis (QDA), support vector machine (SVM), and naive Bayes.
-      `stratified`: A logical value indicating whether to use stratified sampling during data splitting. If `TRUE`, the relative proportion of categories in the response variable is maintained in the training and test datasets. Default value is `NULL`.
-      `plot_metrics`: A logical value indicating whether to plot evaluation metrics - Classification Accuracy, Precision, Recall, F1. Default value is `FALSE`.
-      `random_seed`: numerical value to set seed"
   #Checking if inputs are valid
   .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical.cv.split")
   #Set seed

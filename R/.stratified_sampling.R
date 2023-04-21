@@ -11,22 +11,25 @@
            #Split sizes
            training_n <- round(nrow(data)*split,0)
            test_n <- nrow(data) - training_n
+           #Initialize list
+           output[["sample_indices"]][["split"]] <- list()
+           output[["sample_proportions"]][["split"]] <- list()
            for(class in names(output[["class_proportions"]])){
              #Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              #Store indices for training set
-             output[["sample_indices"]][["training"]] <- c(output[["sample_indices"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
              #Remove indices to not add to test set
-             class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["training"]])]
+             class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
              # Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
              #Add indices for test set
-             output[["sample_indices"]][["test"]] <- c(output[["sample_indices"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
            }
            #Store proportions of data in training set
-           output[["sample_proportions"]][["training"]] <- table(data[,response_var][output[["sample_indices"]][["training"]]])/sum(table(data[,response_var][output[["sample_indices"]][["training"]]]))
+           output[["sample_proportions"]][["split"]][["training"]] <- table(data[,response_var][output[["sample_indices"]][["split"]][["training"]]])/sum(table(data[,response_var][output[["sample_indices"]][["split"]][["training"]]]))
            #Store proportions of data  in test set
-           output[["sample_proportions"]][["test"]] <- table(data[,response_var][output[["sample_indices"]][["test"]]])/sum(table(data[,response_var][output[["sample_indices"]][["test"]]]))
+           output[["sample_proportions"]][["split"]][["test"]] <- table(data[,response_var][output[["sample_indices"]][["split"]][["test"]]])/sum(table(data[,response_var][output[["sample_indices"]][["split"]][["test"]]]))
            #Output
            stratified_sampling_output <- list("output" = output)
          },
