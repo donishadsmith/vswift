@@ -1,7 +1,11 @@
-.error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
+.error_handling <<- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, alpha = NULL,stratified = NULL,  random_seed = NULL,
                             call = NULL){
   #Valid models
-  valid_models <- c("lda","qda","logistic","svm","naivebayes","nnet")
+  if(call == "categorical_cv_split"){
+    valid_models <- c("lda","qda","logistic","svm","naivebayes","nnet")
+  }else if(call == "continuous_cv_split"){
+    valid_models <- c("linear","ridge","lasso","elastic")
+  }
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
     stop("random_seed must be a numerical scalar value")
   }
@@ -33,33 +37,50 @@
     if(!(y_col %in% c(1:ncol(data)))){
       stop("y_col out of range")
     }
-    
-  } else if (is.character(y_col)){
+  }else if (is.character(y_col)){
     if(!(y_col %in% colnames(data))){
       stop("y_col not in dataframe")
     }
-  } else{
+  }else{
     stop("y_col must be an integer or character")
   }
   if(!is.null(x_col)){
     if(all(is.numeric(x_col))){
       check_x <- 1:dim(data)[1]
-    } else if(all(is.character(x_col))){
+    }else if(all(is.character(x_col))){
       check_x <- colnames(data)[colnames(data) != y_col]
-    } else{
+    }else{
       stop("x_col must be a character vector or integer vector")
     }
     if(!(all(x_col %in% check_x))){
       stop("at least one predictor is not in dataframe")
     }
   }
-  if(call == "categorical.cv.split"){
-    # Ensure model_type has been assigned
+  #Ensure model_type has been assigned
+  if(call == "categorical_cv_split" || call == "continuous_cv_split"){
     if(any(is.null(model_type), !(model_type %in% valid_models))){
       stop(sprintf("%s is an invalid model_type", model_type))
     }
     if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
       stop("logistic regression requires a binary variable")
+    }
+    if(model_type == "elastic"){
+      if(any(!is.numeric(alpha),!is.null(alpha) & alpha <= 0 || alpha >= 1)){
+        stop("alpha must be a numerical value between 0 to 1")
+      }
+    }
+  }
+  if(call == "continuous_cv_split"){
+    if(!is.numeric(data[,y_col])){
+      stop("response variable must be numeric")
+    }
+    if(!is.null(lambda)){
+      if(!all(is.numeric(lambda))){
+        stop("lambda must be a numerical vector or scalar")
+      }
+      if(!model_type %in% valid_models[2:4]){
+        stop("lambda not valid for linear regression")
+      }
     }
   }
 }

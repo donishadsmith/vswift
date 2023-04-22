@@ -1,6 +1,12 @@
 categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observation = FALSE, save_models = FALSE, save_data = FALSE,...){
+  #Ensure model type is lowercase
+  model_type <- tolower(model_type)
   #Checking if inputs are valid
-  .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical.cv.split")
+  .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
+  #Check if additional arguments are valid
+  if(length(list(...)) > 0){
+    .check_additional_arguments(model_type = model_type,  call = "categorical_cv_split", ...)
+  }
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -16,10 +22,6 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     }else{
       feature_vec <- colnames(data)[x_col]
     }
-  }
-  #Get response and predictors
-  if(is.character(y_col)){
-    y_col <- which(colnames(data) == y_col)
   }
   #Remove rows with missing data
   cleaned_data <- data[complete.cases(data),]
@@ -106,14 +108,11 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       categorical_cv_split_output[["sample_indices"]][["split"]][["test"]] <- c(1:nrow(cleaned_data))[-training_indices]
     }
     #Create data table
-    categorical_cv_split_output[["metrics"]][["split"]] <- data.frame(matrix(nrow = 2, ncol = 1))
-    colnames(categorical_cv_split_output[["metrics"]][["split"]]) <- "Set"
-    categorical_cv_split_output[["metrics"]][["split"]][1:2,"Set"] <- c("Training","Test")
+    categorical_cv_split_output[["metrics"]][["split"]] <- data.frame("Set" = c("Training","Test"))
   }
   #Adding information to data frame
   if(!is.null(k)){
-    categorical_cv_split_output[["metrics"]][["cv"]] <- data.frame(matrix(nrow = 1,ncol = 1))
-    colnames(categorical_cv_split_output[["metrics"]][["cv"]]) <- "Fold"
+    categorical_cv_split_output[["metrics"]][["cv"]] <- data.frame("Fold" = NA)
     #Create folds; start with randomly shuffling indices
     indices <- sample(1:nrow(data))
     #Initialize list to store fold indices; third subindex needs to be initialized
@@ -154,8 +153,6 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     metrics_position <- which(names(categorical_cv_split_output) == "metrics")
     categorical_cv_split_output <- c(categorical_cv_split_output[-metrics_position],categorical_cv_split_output[metrics_position])
   }
-  #Ensure model type is lowercase
-  model_type <- tolower(model_type)
   #Add it plus one to the iterator if k is not null
   iterator <- ifelse(is.null(k), 1, k + 1)
   #Initialize list to store training models
@@ -178,7 +175,6 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       #Create iterator vector
       iterator_vector <- 2:iterator
     }
-    
   }
   #Convert variables to characters so that models will predict the original variable
   if(model_type == "logistic"){

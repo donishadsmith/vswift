@@ -1,6 +1,6 @@
 stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, stratified = FALSE, random_seed = NULL,create_data = TRUE){
   #Check input
-  .error_handling(data = data, y_col = y_col, k = k, split = split, stratified = stratified, random_seed = random_seed, call = "split")
+  .error_handling(data = data, y_col = y_col, k = k, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
