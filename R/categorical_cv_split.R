@@ -5,7 +5,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
   .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
   #Check if additional arguments are valid
   if(length(list(...)) > 0){
-    .check_additional_arguments(model_type = model_type,  call = "categorical_cv_split", ...)
+    .check_additional_arguments(model_type = model_type,  call = "categorical_cv_split",...)
   }
   #Set seed
   if(!is.null(random_seed)){

@@ -1,27 +1,27 @@
-.check_additional_arguments <<- function(model_type = NULL, call = NULL,...){
-  if(call == "categorical_cv_split"){
+.check_additional_arguments <<- function(model_type = NULL,...){
     additional_args <- names(list(...))
     switch(model_type,
            "lda" = {
-             valid_args <- names(formals(MASS:::lda.default))[!names(formals(MASS:::lda.default)) %in% c("CV","x")]
+             valid_args <- c("grouping","prior","method","nu")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "qda" = {
-             valid_args <- names(formals(MASS:::qda.default))[!names(formals(MASS:::qda.default)) %in% c("CV","x")]
+             valid_args <- c("grouping","prior","method","nu")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "logistic" = {
-             valid_args <- names(formals(glm))[!names(formals(glm)) %in% c("formula","data","family")]
+             valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","typw")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "svm" = {
-             valid_args <- names(formals(e1071:::svm.default))[!names(formals(e1071:::svm.default)) %in% c("x","y")]
+             valid_args <- c("scale","type","kernal","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
+                             "shrinking","cross","probability","fitted")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "naivebayes" = {
-             valid_args <- names(formals(naivebayes:::naive_bayes.default))[!names(formals(naivebayes:::naive_bayes.default)) %in% c("x","y")]
+             valid_args <- c("prior","laplace","usekernel","usepoisson")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "nnet" = {
-             valid_args <- names(formals(nnet:::nnet.default))[!names(formals(nnet:::nnet.default)) %in% c("x","y")]
+             valid_args <- c("weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit",
+                             "Hess","trace","MaxNWts","abstol","reltol")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]}
     )
-  }
   if(length(invalid_args) > 0){
     if(model_type %in% c("lda","qda")){
       stop(sprintf("the following arguments are invalid for %s or is incompatable with %s: %s",paste0(model_type,".default"),call,paste(invalid_args,collapse = ",")))
