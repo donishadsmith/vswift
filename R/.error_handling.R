@@ -2,7 +2,7 @@
                             call = NULL,...){
   #Valid models
   if(call == "categorical_cv_split"){
-    valid_models <- c("lda","qda","logistic","svm","naivebayes","nnet")
+    valid_models <- c("lda","qda","logistic","svm","naivebayes","nnet","knn")
   }
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
     stop("random_seed must be a numerical scalar value")

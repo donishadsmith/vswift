@@ -48,7 +48,7 @@
             }
           }
           #Print metric corresponding to class
-          class_metrics <- sapply(object[["metrics"]][["split"]][which(object[["metrics"]][["split"]]$Set == "Training"),class_col], function(x) format(round(x,2), nsmall = 2))  
+          class_metrics <- sapply(object[["metrics"]][["split"]][which(object[["metrics"]][["split"]]$Set == set),class_col], function(x) format(round(x,2), nsmall = 2))  
           #Add spacing
           padding <- nchar(paste("Class:",rep("", max_string_length),"Pre"))[1]
           if(class_metrics[1] == "NaN"){

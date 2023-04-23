@@ -211,7 +211,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
            "logistic" = {model <- glm(formula, data = model_data , family = "binomial",...)},
            "svm" = {model <- e1071::svm(formula, data = model_data,...)},
            "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data,...)},
-           "nnet" = {model <- nnet::nnet(formula = formula, data = model_data,...)}
+           "nnet" = {model <- nnet::nnet(formula = formula, data = model_data,...)},
+           "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data,...)}
     )
     #Create variables used in for loops to calculate precision, recall, and f1
     switch(model_type,
@@ -247,6 +248,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
                "nnet" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+               "knn" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         #Calculate classification accuracy
@@ -295,6 +297,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
                "nnet" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+               "knn" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         if(save_data == TRUE){
