@@ -1,10 +1,10 @@
 "plot.vswift" <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vswift"){
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
-      # Plot metrics for training and test
+      #Plot metrics for training and test
       plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
       axis(1, at = 1:2, labels = c("training","test"))
-      
+      #Iterate over classes
       for(class in as.character(object[["classes"]][[1]])){
         plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Precision", class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
              main = paste("Class:",class))
@@ -19,7 +19,6 @@
         axis(1, at = 1:2, labels = c("Training","Test"))
     }
     }
-    
     # Plot metrics for training and test
     if(all(is.data.frame(object[["metrics"]][["cv"]]), cv == TRUE)){
       #To get the correct class for plot title
@@ -36,7 +35,7 @@
         if("Classification" %in% split_vector){
           plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
           axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
-        } else{
+        }else{
           # Get correct metric name for plot y title
           y_name <- c("Precision","Recall","F1")[which(c("Precision","Recall","F1") %in% split_vector)]
           plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
@@ -46,14 +45,12 @@
             class_idx <- class_idx + 1
           }
         }
-        # Add mean and standard deviation to the plot
+        #Add mean and standard deviation to the plot
         abline(h = mean(num_vector), col = "red", lwd = 1)
         abline(h = mean(num_vector) + sd(num_vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
         abline(h = mean(num_vector) - sd(num_vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
       }
-      
     }
-    
   } else{
     stop("object must be of class 'vswift'")
   }
