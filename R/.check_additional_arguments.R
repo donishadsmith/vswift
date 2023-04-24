@@ -1,4 +1,4 @@
-.check_additional_arguments <<- function(model_type = NULL,...){
+.check_additional_arguments <- function(model_type = NULL,...){
     additional_args <- names(list(...))
     switch(model_type,
            "lda" = {

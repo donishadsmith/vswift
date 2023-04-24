@@ -1,4 +1,4 @@
-.remove_untrained_observations <<- function(trained_data,test_data,response_var,fold = NULL){
+.remove_untrained_observations <- function(trained_data,test_data,response_var,fold = NULL){
   check_predictor_levels <- list()
   for(col in colnames(trained_data[colnames(trained_data) != response_var])){
     if(is.character(trained_data[,col]) | is.factor(trained_data[,col])){

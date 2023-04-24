@@ -1,4 +1,4 @@
-.stratified_sampling <<- function(data,type, output, response_var, split = NULL, fold_size = NULL, k = NULL,
+.stratified_sampling <- function(data,type, output, response_var, split = NULL, fold_size = NULL, k = NULL,
                                   random_seed = NULL){
   switch(type,
          "split" = {

@@ -5,7 +5,7 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
   if(!is.null(random_seed)){
     set.seed(random_seed)
   }
-  #Initialize stratifiedlist for out
+  #Initialize stratified list for out
   output <- list()
   #Stratified splitting
   if(stratified == TRUE){

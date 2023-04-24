@@ -1,4 +1,4 @@
-.error_handling <<- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
+.error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
                             call = NULL,...){
   #Valid models
   if(call == "categorical_cv_split"){
