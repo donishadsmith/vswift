@@ -1,0 +1,249 @@
+#Helper function for categorical_cv_split and stratified_split to check if inputs are valid
+.error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
+                            call = NULL,...){
+  #Valid models
+  valid_models <- c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
+                    "randomforest")
+  if(all(!is.null(random_seed),!is.numeric(random_seed))){
+    stop("random_seed must be a numerical scalar value")
+  }
+  # Ensure k is not an invalid number
+  if(!is.data.frame(data)){
+    stop("invalid input for data")
+  }
+  if(all(is.null(split),is.null(k))){
+    stop("split and k cannot both be NULL")
+  }
+  if(any(k %in% c(0,1), k < 0, k > 30,is.character(k), k != as.integer(k))){
+    stop(sprintf("k = %s is not a valid input. `k` must be a non-negative integer between 2-30",k))
+  }
+  # Ensure split is between 0.5 to 0.8
+  if(any(is.character(split), split < 0.5, split > 0.9)){
+    stop("Input a split that is between 0.5 and 0.8")
+  }
+  # Ensure y and x matrices are valid
+  if(is.null(data)){
+    stop("No input data")
+  }
+  if(y_col %in% x_col){
+    stop("response variable cannot also be a predictor")
+  }
+  if(length(y_col) != 1){
+    stop("length of y_col must be 1")
+  }
+  if(is.numeric(y_col)){
+    if(!(y_col %in% c(1:ncol(data)))){
+      stop("y_col out of range")
+    }
+  }else if (is.character(y_col)){
+    if(!(y_col %in% colnames(data))){
+      stop("y_col not in dataframe")
+    }
+  }else{
+    stop("y_col must be an integer or character")
+  }
+  if(!is.null(x_col)){
+    if(all(is.numeric(x_col))){
+      check_x <- 1:dim(data)[1]
+    }else if(all(is.character(x_col))){
+      check_x <- colnames(data)[colnames(data) != y_col]
+    }else{
+      stop("x_col must be a character vector or integer vector")
+    }
+    if(!(all(x_col %in% check_x))){
+      stop("at least one predictor is not in dataframe")
+    }
+  }
+  #Ensure model_type has been assigned
+  if(call == "categorical_cv_split"){
+    if(any(is.null(model_type), !(model_type %in% valid_models))){
+      stop(sprintf("%s is an invalid model_type", model_type))
+    }
+    if(all(model_type == "logistic", length(levels(as.factor(data[,y_col]))) != 2)){
+      stop("logistic regression requires a binary variable")
+    }
+  }
+}
+#Helper function for categorical_cv_split to check if additional arguments are valid
+.check_additional_arguments <- function(model_type = NULL,...){
+  additional_args <- names(list(...))
+  switch(model_type,
+         "lda" = {
+           valid_args <- c("grouping","prior","method","nu")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "qda" = {
+           valid_args <- c("grouping","prior","method","nu")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "logistic" = {
+           valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","typw")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "svm" = {
+           valid_args <- c("scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
+                           "shrinking","cross","probability","fitted")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "naivebayes" = {
+           valid_args <- c("prior","laplace","usekernel","usepoisson")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "ann" = {
+           valid_args <- c("weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit",
+                           "Hess","trace","MaxNWts","abstol","reltol")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "knn" = {
+           valid_args <- c("kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+         "decisiontree" = {
+           valid_args <- c("weights","method","parms","control","cost")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]
+         },
+         "randomforest" = {
+           valid_args <- c("ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize",
+                           "nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox",
+                           "norm.votes","do.trace","keep.forest","corr.bias","keep.inbag")
+           invalid_args <- additional_args[which(!additional_args %in% valid_args)]}
+         
+  )
+  if(length(invalid_args) > 0){
+    if(model_type %in% c("lda","qda")){
+      stop(sprintf("the following arguments are invalid for %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
+    }else if(model_type %in% c("logistic","linear")){
+      stop(sprintf("the following arguments are invalid for glm function or is incompatable with categorical_cv_split: %s",model_type,paste(invalid_args,collapse = ",")))
+    }else if(model_type == "svm"){
+      stop(sprintf("the following arguments are invalid for  %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
+    }else if(model_type == "naivebayes"){
+      stop(sprintf("the following arguments are invalid for naive_bayes.default or is incompatable with %s: %s",paste(invalid_args,collapse = ",")))
+    }else if(model_type == "ann"){
+      stop(sprintf("the following arguments are invalid for %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
+    }else if(model_type == "knn"){
+      stop(sprintf("the following arguments are invalid for train.kknn or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
+    }else if(model_type == "decisiontree"){
+      stop(sprintf("the following arguments are invalid for rpart or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
+    }else if(model_type == "randomforest"){
+      stop(sprintf("the following arguments are invalid for randomForest or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
+    }
+  }
+}
+
+
+#Helper function for categorical_cv_split for stratified sampling
+.stratified_sampling <- function(data,type, output, response_var, split = NULL, fold_size = NULL, k = NULL,
+                                 random_seed = NULL){
+  switch(type,
+         "split" = {
+           #Set seed
+           if(!is.null(random_seed)){
+             set.seed(random_seed)
+           }
+           #Get class indices
+           class_indices <- output[["class_indices"]]
+           #Split sizes
+           training_n <- round(nrow(data)*split,0)
+           test_n <- nrow(data) - training_n
+           #Initialize list
+           output[["sample_indices"]][["split"]] <- list()
+           output[["sample_proportions"]][["split"]] <- list()
+           for(class in names(output[["class_proportions"]])){
+             #Check if sampling possible
+             .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
+             #Store indices for training set
+             output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
+             #Remove indices to not add to test set
+             class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
+             # Check if sampling possible
+             .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
+             #Add indices for test set
+             output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
+           }
+           #Store proportions of data in training set
+           output[["sample_proportions"]][["split"]][["training"]] <- table(data[,response_var][output[["sample_indices"]][["split"]][["training"]]])/sum(table(data[,response_var][output[["sample_indices"]][["split"]][["training"]]]))
+           #Store proportions of data  in test set
+           output[["sample_proportions"]][["split"]][["test"]] <- table(data[,response_var][output[["sample_indices"]][["split"]][["test"]]])/sum(table(data[,response_var][output[["sample_indices"]][["split"]][["test"]]]))
+           #Output
+           stratified_sampling_output <- list("output" = output)
+         },
+         "k-fold" = {
+           #Set seed
+           if(!is.null(random_seed)){
+             set.seed(random_seed)
+           }
+           #Get class indices
+           class_indices <- output[["class_indices"]]
+           #Initialize sample_indices for cv since it will be three levels
+           output[["sample_indices"]][["cv"]] <- list()
+           for(i in 1:k){
+             #Keep initializing variable
+             fold_idx <- c()
+             output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
+             #fold size; try to undershoot for excess
+             fold_size <- floor(nrow(data)/k)
+             for(class in names(output[["class_proportions"]])){
+               #Check if sampling possible
+               .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
+               #Check if sampling possible
+               fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
+               #Remove already selected indices
+               class_indices[[class]] <- class_indices[[class]][-which(class_indices[[class]] %in% fold_idx)]
+             }
+             #Add indices to list
+             output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
+             #Update proportions
+             output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])/sum(table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
+           }
+           #Deal with excess indices
+           excess <- nrow(data) - length(as.numeric(unlist(output[["sample_indices"]][["cv"]])))
+           if(excess > 0){
+             for(class in names(output[["class_proportions"]])){
+               fold_idx <- class_indices[[class]]
+               if(length(fold_idx) > 0){
+                 leftover <- rep(1:k,length(fold_idx))[1:length(fold_idx)]
+                 for(i in 1:length(leftover)){
+                   #Add indices to list
+                   output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- c(fold_idx[i],output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]])
+                   #Update class proportions
+                   output[["sample_proportions"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]])/sum(table(data[,response_var][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]]))
+                 }
+               }
+             }
+           }
+           #Output
+           stratified_sampling_output <- list("output" = output)
+         }
+  )
+}
+
+#Helper function for .stratified_sampling to error check
+.stratified_check <- function(class,class_indices,output,n){
+  if(round(n*output[["class_proportions"]][[class]],0) == 0){
+    stop(sprintf("0 indices selected for %s class\n not enough samples for stratified sampling",class))
+  }
+  if(round(n*output[["class_proportions"]][[class]],0) > length(class_indices[[class]])){
+    stop(sprintf("not enough samples of %s class for stratified sampling",class))
+  }
+}
+#Helper function for categorical_cv_split to remove unobserved data
+.remove_untrained_observations <- function(trained_data,test_data,response_var,fold = NULL){
+  check_predictor_levels <- list()
+  for(col in colnames(trained_data[colnames(trained_data) != response_var])){
+    if(is.character(trained_data[,col]) | is.factor(trained_data[,col])){
+      check_predictor_levels[[col]] <- names(table(trained_data[,col]))[which(as.numeric(table(trained_data[,col])) != 0)]
+    }
+  }
+  
+  #Check new columns and set certain predictors in NA if the model has not been trained on
+  for(col in colnames(test_data)[colnames(test_data) != response_var]){
+    if(is.character(test_data[,col]) | is.factor(test_data[,col])){
+      missing <- names(table(test_data[,col]))[which(!(names(table(test_data[,col])) %in% check_predictor_levels[[col]]))]
+      if(length(missing) > 0){
+        delete_rows <- which(test_data[,col] %in% missing)
+        observations <- row.names(test_data)[delete_rows]
+        if(is.null(fold)){
+          warning(sprintf("for predictor `%s` in test set has at least one class the model has not trained on\n these observations have been removed: %s", col,paste(observations, collapse = ",")))
+        } else{
+          warning(sprintf("for predictor `%s` in validation set - fold %s has at least one class the model has not trained on\n these observations have been removed: %s", col,fold, paste(observations, collapse = ",")))
+        }
+        test_data <- test_data[-delete_rows,] 
+      }
+    }
+  }
+  return(test_data)
+}
+
