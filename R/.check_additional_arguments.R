@@ -17,13 +17,22 @@
            "naivebayes" = {
              valid_args <- c("prior","laplace","usekernel","usepoisson")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-           "nnet" = {
+           "ann" = {
              valid_args <- c("weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit",
                              "Hess","trace","MaxNWts","abstol","reltol")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "knn" = {
              valid_args <- c("kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
+           "decisiontree" = {
+             valid_args <- c("weights","method","parms","control","cost")
+             invalid_args <- additional_args[which(!additional_args %in% valid_args)]
+           },
+           "randomforest" = {
+             valid_args <- c("ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize",
+                             "nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox",
+                             "norm.votes","do.trace","keep.forest","corr.bias","keep.inbag")
+             invalid_args <- additional_args[which(!additional_args %in% valid_args)]}
            
     )
   if(length(invalid_args) > 0){
@@ -35,10 +44,14 @@
       stop(sprintf("the following arguments are invalid for  %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
     }else if(model_type == "naivebayes"){
       stop(sprintf("the following arguments are invalid for naive_bayes.default or is incompatable with %s: %s",paste(invalid_args,collapse = ",")))
-    }else if(model_type == "nnet"){
+    }else if(model_type == "ann"){
       stop(sprintf("the following arguments are invalid for %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
     }else if(model_type == "knn"){
       stop(sprintf("the following arguments are invalid for train.kknn or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
+    }else if(model_type == "decisiontree"){
+      stop(sprintf("the following arguments are invalid for rpart or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
+    }else if(model_type == "randomforest"){
+      stop(sprintf("the following arguments are invalid for randomForest or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
     }
   }
 }

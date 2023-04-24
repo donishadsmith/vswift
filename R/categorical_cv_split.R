@@ -206,13 +206,16 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     }
     #Generate model depending on chosen model_type
     switch(model_type,
+           #Use double colon to avoid cluttering user space
            "lda" = {model <- MASS::lda(formula, data = model_data,...)},
            "qda" = {model <- MASS::qda(formula, data = model_data,...)},
            "logistic" = {model <- glm(formula, data = model_data , family = "binomial",...)},
            "svm" = {model <- e1071::svm(formula, data = model_data,...)},
            "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data,...)},
-           "nnet" = {model <- nnet::nnet(formula = formula, data = model_data,...)},
-           "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data,...)}
+           "ann" = {model <- ann::ann(formula = formula, data = model_data,...)},
+           "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data,...)},
+           "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data,...)},
+           "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data,...)}
     )
     #Create variables used in for loops to calculate precision, recall, and f1
     switch(model_type,
@@ -247,8 +250,15 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
                  prediction_vector <- predict(model, newdata  = model_data, type = "response")
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-               "nnet" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+               "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
                "knn" = {prediction_vector <- predict(model, newdata = model_data)},
+               "decisiontree" = {
+                 prediction_df <- predict(model, newdata = model_data)
+                 prediction_vector <- c()
+                 #Iterate over dataframe and select colname with the highest probability
+                 for(row in 1:nrow(prediction_df)){
+                   prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
+               "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         #Calculate classification accuracy
@@ -263,10 +273,13 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
           false_neg <- sum(model_data[, response_var] == class & prediction_vector != class)
           #Sum of the false positive
           false_pos <- sum(prediction_vector == class) - true_pos
+          #Sum true negative
+          true_neg <- sum(model_data[, response_var] != class & prediction_vector != class)
           #Calculate metrics and store in dataframe
           precision <- true_pos/(true_pos + false_pos)
           recall <- true_pos/(true_pos + false_neg)
-          f1 <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
+          f1 <- 2*(precision*recall)/(precision+recall)
+          #Add information to dataframes
           categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- precision
           categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- recall
           categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s F1", class_names[class_position])] <- f1
@@ -296,8 +309,14 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
                  prediction_vector <- predict(model, newdata  = model_data, type = "response")
                  prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
                "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-               "nnet" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+               "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
                "knn" = {prediction_vector <- predict(model, newdata = model_data)},
+               "decisiontree" = {
+                 prediction_df <- predict(model, newdata = model_data)
+                 prediction_vector <- c()
+                 for(row in 1:nrow(prediction_df)){
+                   prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
+               "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
                prediction_vector <- predict(model, newdata = model_data)$class
         )
         if(save_data == TRUE){
@@ -319,7 +338,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
           #Calculate metrics and store in dataframe
           precision <- true_pos/(true_pos + false_pos)
           recall <- true_pos/(true_pos + false_neg)
-          f1 <- 2/(1/(true_pos/(true_pos + false_pos)) + 1/(true_pos/(true_pos + false_neg)))
+          f1 <- 2*(precision*recall)/(precision+recall)
           #Add metrics to dataframe
           categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- precision
           categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- recall
