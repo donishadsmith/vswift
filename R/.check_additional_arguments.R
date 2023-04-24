@@ -11,7 +11,7 @@
              valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","typw")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "svm" = {
-             valid_args <- c("scale","type","kernal","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
+             valid_args <- c("scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
                              "shrinking","cross","probability","fitted")
              invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
            "naivebayes" = {
