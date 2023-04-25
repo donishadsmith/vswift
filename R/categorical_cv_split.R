@@ -1,8 +1,8 @@
-categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observation = FALSE, save_models = FALSE, save_data = FALSE,...){
+categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observation = FALSE, save_models = FALSE, save_data = FALSE,...){
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Checking if inputs are valid
-  .error_handling(data = data, y_col = y_col, x_col = x_col, k = k, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
+  .error_handling(data = data, y_col = y_col, x_col = x_col, fold_n = fold_n, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
   #Check if additional arguments are valid
   if(length(list(...)) > 0){
     .check_additional_arguments(model_type = model_type, ...)
@@ -57,7 +57,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
   categorical_cv_split_output[["information"]][["parameters"]][["features"]] <- feature_vec
   categorical_cv_split_output[["information"]][["parameters"]][["response_variable"]]  <- response_var
   categorical_cv_split_output[["information"]][["parameters"]][["model_type"]] <- model_type
-  categorical_cv_split_output[["information"]][["parameters"]][["k"]]  <- k
+  categorical_cv_split_output[["information"]][["parameters"]][["fold_n"]]  <- fold_n
   categorical_cv_split_output[["information"]][["parameters"]][["stratified"]]  <- stratified
   categorical_cv_split_output[["information"]][["parameters"]][["split"]]  <- split
   categorical_cv_split_output[["information"]][["parameters"]][["random_seed"]]  <- random_seed
@@ -111,7 +111,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     categorical_cv_split_output[["metrics"]][["split"]] <- data.frame("Set" = c("Training","Test"))
   }
   #Adding information to data frame
-  if(!is.null(k)){
+  if(!is.null(fold_n)){
     categorical_cv_split_output[["metrics"]][["cv"]] <- data.frame("Fold" = NA)
     #Create folds; start with randomly shuffling indices
     indices <- sample(1:nrow(data))
@@ -122,23 +122,23 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       #Initialize list to store fold proportions; third level
       categorical_cv_split_output[["sample_proportions"]][["cv"]] <- list()
       stratified.sampling_output <- .stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output,
-                                                        response_var = response_var, k = k,
+                                                        response_var = response_var, fold_n = fold_n,
                                                         random_seed = random_seed)
       #Collect output
       categorical_cv_split_output <- stratified.sampling_output$output
     }else{
       #Get floor
-      fold_size_vector <- rep(floor(nrow(cleaned_data)/k),k)
+      fold_size_vector <- rep(floor(nrow(cleaned_data)/fold_n),fold_n)
       excess <- nrow(cleaned_data) - sum(fold_size_vector)
       if(excess > 0){
-        folds_vector <- rep(1:k,excess)[1:excess]
+        folds_vector <- rep(1:fold_n,excess)[1:excess]
         for(num in folds_vector){
           fold_size_vector[num] <- fold_size_vector[num] + 1
         }
       }
       #random shuffle
       fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
-      for(i in 1:k){
+      for(i in 1:fold_n){
         #Add name to dataframe
         categorical_cv_split_output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
         #Create fold with stratified or non stratified sampling
@@ -153,8 +153,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     metrics_position <- which(names(categorical_cv_split_output) == "metrics")
     categorical_cv_split_output <- c(categorical_cv_split_output[-metrics_position],categorical_cv_split_output[metrics_position])
   }
-  #Add it plus one to the iterator if k is not null
-  iterator <- ifelse(is.null(k), 1, k + 1)
+  #Add it plus one to the iterator if fold_n is not null
+  iterator <- ifelse(is.null(fold_n), 1, fold_n + 1)
   #Initialize list to store training models
   if(!is.null(split)){
     if(save_models == TRUE){
@@ -163,7 +163,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
     #Create iterator vector
     iterator_vector <- 1:iterator
   }
-  if(!is.null(k)){
+  if(!is.null(fold_n)){
     if(save_models == TRUE){
       categorical_cv_split_output[[paste0(model_type,"_models")]][["cv"]] <- list()
     }
@@ -292,7 +292,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
         }
       }
     } else{
-      if(all(!is.null(k),(i-1) <= k)){
+      if(all(!is.null(fold_n),(i-1) <= fold_n)){
         #Assign validation data to new variables
         if(remove_untrained_observation == TRUE){
           model_data <- .remove_untrained_observations(trained_data = model_data, test_data = validation_data, response_var = response_var, fold = i-1)
@@ -353,7 +353,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
       }
     }
     #Calculate mean, standard deviation, and standard error for cross validation
-    if(all(!is.null(k),(i-1) == k)){
+    if(all(!is.null(fold_n),(i-1) == fold_n)){
       idx <- nrow(categorical_cv_split_output[["metrics"]][["cv"]] )
       categorical_cv_split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
       #Calculate mean, standard deviation, and sd for each column except for fold
@@ -362,7 +362,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, k = N
         num_vector <- categorical_cv_split_output[["metrics"]][["cv"]][1:idx, colname]
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
         categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
-        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(k)
+        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(fold_n)
       }
     }
   }

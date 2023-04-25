@@ -7,7 +7,7 @@
       cat(sprintf("Features: %s\n\n", paste(object[["information"]][["parameters"]][["features"]], collapse = ",")))
       cat(sprintf("Response variable: %s\n\n", object[["information"]][["parameters"]][["responsd_variable"]]))
       cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
-      cat(sprintf("K: %s\n\n", object[["information"]][["parameters"]][["k"]]))
+      cat(sprintf("Fold size: %s\n\n", object[["information"]][["parameters"]][["fold_n"]]))
       cat(sprintf("Split: %s\n\n", object[["information"]][["parameters"]][["split"]]))
       cat(sprintf("Stratified Sampling: %s\n\n", object[["information"]][["parameters"]][["stratified"]]))
       cat(sprintf("Random Seed: %s\n\n", object[["information"]][["parameters"]][["random_seed"]]))
@@ -65,7 +65,7 @@
     if(all(is.data.frame(object[["metrics"]][["cv"]]))){
       class_position <- 1 
       #Get number of folds to select the correct rows for mean and stdev
-      k <- object[["information"]][["parameters"]][["k"]]
+      fold_n <- object[["information"]][["parameters"]][["fold_n"]]
       #Print parameters name
       cat("\n\n","K-fold CV","\n")
       cat(rep("_",nchar("K-fold CV")),"\n\n")
@@ -89,8 +89,8 @@
           }
         }
         #Print metric corresponding to class
-        mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((k+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
+        mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((fold_n+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
+        sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((fold_n+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
         sd_metric_position <- 1
         class_metrics <- c()
         for(metric in mean_class_metrics){

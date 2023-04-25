@@ -1,6 +1,6 @@
-stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, stratified = FALSE, random_seed = NULL,create_data = TRUE){
+stratified_split <- function(data = NULL, y_col = NULL, split = NULL, fold_n = NULL, stratified = FALSE, random_seed = NULL,create_data = TRUE){
   #Check input
-  .error_handling(data = data, y_col = y_col, k = k, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
+  .error_handling(data = data, y_col = y_col, fold_n = fold_n, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -54,7 +54,7 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
         output[["data"]][["split"]][["test"]] <- data[output[["sample_indices"]][["split"]][["test"]],]
       }
     }
-    if(!is.null(k)){
+    if(!is.null(fold_n)){
       #Create class indices variable
       class_indices <- output[["class_indices"]]
       #Initialize list to store indices, proportions, and data
@@ -63,11 +63,11 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
       if(create_data == TRUE){
         output[["data"]][["cv"]] <- list()
       }
-      for(i in 1:k){
+      for(i in 1:fold_n){
         #Keep initializing variable
         fold_idx <- c()
         #fold size; try to undershoot for excess
-        fold_size <- floor(nrow(data)/k)
+        fold_size <- floor(nrow(data)/fold_n)
         for(class in as.character(output[["classes"]][[y_col]])){
           #Check if sampling possible
           .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
@@ -87,7 +87,7 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
         for(class in names(output[["class_proportions"]])){
           fold_idx <- class_indices[[class]]
           if(length(fold_idx) > 0){
-            leftover <- rep(1:k,length(fold_idx))[1:length(fold_idx)]
+            leftover <- rep(1:fold_n,length(fold_idx))[1:length(fold_idx)]
             for(i in 1:length(leftover)){
               #Add indices to list
               output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- c(fold_idx[i],output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]])
@@ -99,7 +99,7 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
       }
       if(create_data == TRUE){
         #Split data
-        for(i in 1:k){
+        for(i in 1:fold_n){
           output[["data"]][["cv"]][[sprintf("fold %s",i)]] <- data[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]],]
         }
       }
@@ -117,21 +117,21 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, k = NULL, 
         output[["data"]][["split"]][["test"]] <- data[output[["sample_indices"]][["split"]][["test"]],]
       }
     }
-    if(!is.null(k)){
+    if(!is.null(fold_n)){
       #Create folds; start with randomly shuffling indices
       indices <- sample(1:nrow(data))
       #Get floor
-      fold_size_vector <- rep(floor(nrow(data)/k),k)
+      fold_size_vector <- rep(floor(nrow(data)/fold_n),fold_n)
       excess <- nrow(data) - sum(fold_size_vector)
       if(excess > 0){
-        folds_vector <- rep(1:k,excess)[1:excess]
+        folds_vector <- rep(1:fold_n,excess)[1:excess]
         for(num in folds_vector){
           fold_size_vector[num] <- fold_size_vector[num] + 1
         }
       }
       #random shuffle
       fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
-      for(i in 1:k){
+      for(i in 1:fold_n){
         #Create fold with stratified or non stratified sampling
         fold_idx <- indices[1:fold_size_vector[i]]
         #Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds

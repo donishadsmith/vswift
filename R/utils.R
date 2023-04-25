@@ -1,5 +1,5 @@
 #Helper function for categorical_cv_split and stratified_split to check if inputs are valid
-.error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,k = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
+.error_handling <- function(data = NULL, y_col = NULL,x_col = NULL,fold_n = NULL,split = NULL, model_type = NULL, stratified = NULL,  random_seed = NULL,
                             call = NULL,...){
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
@@ -7,15 +7,12 @@
   if(all(!is.null(random_seed),!is.numeric(random_seed))){
     stop("random_seed must be a numerical scalar value")
   }
-  # Ensure k is not an invalid number
+  # Ensure fold_n is not an invalid number
   if(!is.data.frame(data)){
     stop("invalid input for data")
   }
-  if(all(is.null(split),is.null(k))){
-    stop("split and k cannot both be NULL")
-  }
-  if(any(k %in% c(0,1), k < 0, k > 30,is.character(k), k != as.integer(k))){
-    stop(sprintf("k = %s is not a valid input. `k` must be a non-negative integer between 2-30",k))
+  if(any(fold_n %in% c(0,1), fold_n < 0, fold_n > 30,is.character(fold_n), fold_n != as.integer(fold_n))){
+    stop(sprintf("fold_n = %s is not a valid input. `fold_n` must be a non-negative integer between 2-30",fold_n))
   }
   # Ensure split is between 0.5 to 0.8
   if(any(is.character(split), split < 0.5, split > 0.9)){

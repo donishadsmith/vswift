@@ -25,7 +25,7 @@
       class_idx <- 1
       #Get the last row index subtracted by three to avoid getting mean, standard dev, and standard error
       idx <- nrow(object[["metrics"]][["cv"]]) - 3
-      k <- idx
+      fold_n <- idx
       #Initialize new metrics
       for(colname in colnames(object[["metrics"]][["cv"]])[colnames(object[["metrics"]][["cv"]]) != "Fold"]){
         num_vector <- object[["metrics"]][["cv"]][1:idx, colname]
@@ -33,13 +33,13 @@
         split_vector <- unlist(strsplit(colname, split = " "))
         # depending on column name, plotting is handled slightly differently
         if("Classification" %in% split_vector){
-          plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
-          axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
+          plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
+          axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
         }else{
           # Get correct metric name for plot y title
           y_name <- c("Precision","Recall","F1")[which(c("Precision","Recall","F1") %in% split_vector)]
-          plot(x = 1:k, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
-          axis(side = 1, at = as.integer(1:k), labels = as.integer(1:k))
+          plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
+          axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
           # Add 1 to `class_idx` when `y_name == "Recall"` to get correct class plot title
           if(y_name == "F1"){
             class_idx <- class_idx + 1
@@ -47,8 +47,8 @@
         }
         #Add mean and standard deviation to the plot
         abline(h = mean(num_vector), col = "red", lwd = 1)
-        abline(h = mean(num_vector) + sd(num_vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
-        abline(h = mean(num_vector) - sd(num_vector)/sqrt(k), col = "blue", lty = 2, lwd = 1)
+        abline(h = mean(num_vector) + sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
+        abline(h = mean(num_vector) - sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
       }
     }
   } else{
