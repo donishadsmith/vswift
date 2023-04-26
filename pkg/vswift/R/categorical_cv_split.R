@@ -150,7 +150,7 @@ categorical_cv_split <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n
     if(stratified == TRUE){
       #Initialize list to store fold proportions; third level
       categorical_cv_split_output[["sample_proportions"]][["cv"]] <- list()
-      stratified.sampling_output <- vswift:::.stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output,
+      stratified.sampling_output <- vswift:::.stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output, k = fold_n,
                                                         response_var = response_var,random_seed = random_seed)
       #Collect output
       categorical_cv_split_output <- stratified.sampling_output$output
