@@ -1,4 +1,4 @@
-categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observation = FALSE, save_models = FALSE, save_data = FALSE,...){
+categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observations = FALSE, save_models = FALSE, save_data = FALSE,...){
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Checking if inputs are valid
@@ -212,7 +212,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
            "logistic" = {model <- glm(formula, data = model_data , family = "binomial",...)},
            "svm" = {model <- e1071::svm(formula, data = model_data,...)},
            "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data,...)},
-           "ann" = {model <- ann::ann(formula = formula, data = model_data,...)},
+           "ann" = {model <- nnet::nnet(formula = formula, data = model_data,...)},
            "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data,...)},
            "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data,...)},
            "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data,...)}
@@ -229,7 +229,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
       for(j in c("Training","Test")){
         if(j == "Test"){
           #Assign validation data to new variables
-          if(remove_untrained_observation == TRUE){
+          if(remove_untrained_observations == TRUE){
             model_data <- .remove_untrained_observations(trained_data = model_data, test_data = test_data, response_var = response_var)
           }else{
             model_data <- test_data
@@ -294,7 +294,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
     } else{
       if(all(!is.null(fold_n),(i-1) <= fold_n)){
         #Assign validation data to new variables
-        if(remove_untrained_observation == TRUE){
+        if(remove_untrained_observations == TRUE){
           model_data <- .remove_untrained_observations(trained_data = model_data, test_data = validation_data, response_var = response_var, fold = i-1)
         }else{
           model_data <- validation_data
