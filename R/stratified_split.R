@@ -1,6 +1,20 @@
-stratified_split <- function(data = NULL, y_col = NULL, split = NULL, fold_n = NULL, stratified = FALSE, random_seed = NULL,create_data = TRUE){
+#' stratified_split
+#' 
+#' stratified_split is used to perform train-rest splitting or k-folds on data.
+#' 
+#' 
+#' @param data A data frame.
+#' @param y_col A numerical index or character name for the response variable.
+#' @param fold_n A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
+#' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified,train-test splitting will not be done.
+#' @param random_seed A numerical value for the random seed to be used. Default is NULL.
+#' @param create_data A logical value to create all training and test/validation data frames. Default set to FALSE. 
+#' @return a list
+#' @export
+
+stratified_split <- function(data = NULL, y_col = NULL, fold_n = NULL, split = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
   #Check input
-  .error_handling(data = data, y_col = y_col, fold_n = fold_n, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
+  vswift:::.error_handling(data = data, y_col = y_col, fold_n = fold_n, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   #Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -34,13 +48,13 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, fold_n = N
       output[["sample_proportions"]][["split"]] <- list()
       for(class in as.character(output[["classes"]][[y_col]])){
         #Check if sampling possible
-        .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
+        vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
         #Store indices for training set
         output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
         #Remove indices to not add to test set
         class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
         #Check if sampling possible
-        .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
+        vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
         #Add indices for test set
         output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
       }
@@ -70,7 +84,7 @@ stratified_split <- function(data = NULL, y_col = NULL, split = NULL, fold_n = N
         fold_size <- floor(nrow(data)/fold_n)
         for(class in as.character(output[["classes"]][[y_col]])){
           #Check if sampling possible
-          .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
+          vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
           #Check if sampling possible
           fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
           #Remove already selected indices

@@ -66,13 +66,13 @@
   additional_args <- names(list(...))
   switch(model_type,
          "lda" = {
-           valid_args <- c("grouping","prior","method","nu")
+           valid_args <- c(C)
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
          "qda" = {
            valid_args <- c("grouping","prior","method","nu")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
          "logistic" = {
-           valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","typw")
+           valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
          "svm" = {
            valid_args <- c("scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
@@ -140,13 +140,13 @@
            output[["sample_proportions"]][["split"]] <- list()
            for(class in names(output[["class_proportions"]])){
              #Check if sampling possible
-             .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
+             vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              #Store indices for training set
              output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
              #Remove indices to not add to test set
              class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
              # Check if sampling possible
-             .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
+             vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
              #Add indices for test set
              output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
            }
@@ -174,7 +174,7 @@
              fold_size <- floor(nrow(data)/k)
              for(class in names(output[["class_proportions"]])){
                #Check if sampling possible
-               .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
+               vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
                #Check if sampling possible
                fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
                #Remove already selected indices
@@ -217,7 +217,7 @@
   }
 }
 #Helper function for categorical_cv_split to remove unobserved data
-.remove_untrained_observations <- function(trained_data,test_data,response_var,fold = NULL){
+.remove_obs <- function(trained_data,test_data,response_var,fold = NULL){
   check_predictor_levels <- list()
   for(col in colnames(trained_data[colnames(trained_data) != response_var])){
     if(is.character(trained_data[,col]) | is.factor(trained_data[,col])){

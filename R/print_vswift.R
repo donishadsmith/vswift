@@ -1,4 +1,12 @@
-"print.vswift"<- function(object, parameters = TRUE, performance = TRUE){
+#' print.vswift
+#' 
+#' print.vswift is print parameter information and/or model evaluation metrics from a vswift object.
+#' 
+#' @param object An object of class vswift.
+#' @param parameters A logical value to print parameter information from vswift object. Default = FALSE.
+#' @param metrics A logical value to print model evaluation metrics from vswift object. Default = FALSE.
+#' @export
+"print.vswift"<- function(object, parameters = FALSE, metrics = FALSE){
   if(class(object) == "vswift"){
     if(parameters == TRUE){
       #Print parameter information
@@ -16,13 +24,13 @@
       cat(sprintf("Sample Size: %s\n\n", object[["information"]][["parameters"]][["sample_size"]]))
     }
   }
-  #Print performance
-  if(performance == TRUE){
+  #Print metrics
+  if(metrics == TRUE){
     #Calculate string length of classes
     string_length <- sapply(unlist(object["classes"]), function(x) nchar(x))
     max_string_length <- max(string_length)
     string_diff <- max_string_length - string_length 
-    #Print performance metrics for train test set if the dataframe exists
+    #Print metrics metrics for train test set if the dataframe exists
     if(is.data.frame(object[["metrics"]][["split"]])){
       for(set in c("Training","Test")){
         #Variable for which class string length to print to ensure all values have equal spacing

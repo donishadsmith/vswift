@@ -1,11 +1,40 @@
-categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_untrained_observations = FALSE, save_models = FALSE, save_data = FALSE,...){
+#' categorical_cv_split
+#' 
+#' categorical_cv_split is used to perform a train-test split and/or k-fold cross validation on classification data
+#' 
+#' 
+#' @param data A data frame.
+#' @param y_col A numerical index or character name for the response variable.
+#' @param x_col A numerical or character vector of the features. If left empty, all variables in the data frame except for the response variable will be used as features.
+#' @param fold_n A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
+#' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified,train-test splitting will not be done.
+#' @param model_type A character value indicating the type of classification algorithm to use. Options: "lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree","randomforest".
+#' @param stratified A logical value indicating is stratified sampling should be used.
+#' @param random_seed A numerical value for the random seed to be used. Default is NULL.
+#' @param save_models A logical value to save the models used for training during train-test splitting and or k-fold cross validation. Default set to FALSE. 
+#' @param save_data A logical value to save all training and test/validation sets used for during train-test splitting and or k-fold cross validation. Default set to FALSE. 
+#' @param remove_obs A logical value to remove observations with categorical features from the test/validation set that have not been observed during model training. Note some algorithms may produce an error if this occurs. Default set to FALSE.
+#' @param ... Additional arguments specific to the chosen classification algorithm.
+#'   - For "lda" (lda from MASS), default settings are used, can modify arguments: "grouping","prior","method","nu"
+#'   - For "qda" (qda from MASS), default settings are used, can modify arguments: "grouping","prior","method","nu"
+#'   - For "logistic" (glm from base),default settings are used, with exception of `family = "binomial"`, can modify arguments: "weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type"
+#'   - For "svm" (svm from e1071), default settings are used, can modify arguments: "scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon","shrinking","cross","probability","fitted"
+#'   - For "naivebayes" (naivebayes from naive_bayes), default settings are used, can modify arguments: "prior","laplace","usekernel","usepoisson"
+#'   - For "ann" (nnet from nnet), default settings are used, can modify arguments: "weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit","Hess","trace","MaxNWts","abstol","reltol"
+#'   - For "knn" (train.kknn from kknn), default settings are used, can modify arguments: "kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel"
+#'   - For "decisiontree" (rpart from rpart), default settings are used, can modify arguments: "weights","method","parms","control","cost"
+#'   - For "randomforest" (randomForest from randomForest), default settings are used, can modify arguments: "ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize","nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox","norm.votes","do.trace","keep.forest","corr.bias","keep.inbag"
+#' 
+#' @return An object of class vswift
+#' @export
+categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Checking if inputs are valid
-  .error_handling(data = data, y_col = y_col, x_col = x_col, fold_n = fold_n, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
+  vswift:::.error_handling(data = data, y_col = y_col, x_col = x_col, fold_n = fold_n, split = split, model_type = model_type, stratified = stratified, random_seed = random_seed, call = "categorical_cv_split")
   #Check if additional arguments are valid
   if(length(list(...)) > 0){
-    .check_additional_arguments(model_type = model_type, ...)
+    vswift:::.check_additional_arguments(model_type = model_type, ...)
   }
   #Set seed
   if(!is.null(random_seed)){
@@ -91,7 +120,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
   if(!is.null(split)){
     if(stratified == TRUE){
       #Get out of .stratified_sampling
-      stratified.sampling_output <- .stratified_sampling(data = cleaned_data,type = "split", split = split, output = categorical_cv_split_output, response_var = response_var, random_seed = random_seed)
+      stratified.sampling_output <- vswift:::.stratified_sampling(data = cleaned_data,type = "split", split = split, output = categorical_cv_split_output, response_var = response_var, random_seed = random_seed)
       #Create training and test set
       training_data <- cleaned_data[stratified.sampling_output$output$sample_indices$split$training,]
       test_data <- cleaned_data[stratified.sampling_output$output$sample_indices$split$test,]
@@ -121,7 +150,7 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
     if(stratified == TRUE){
       #Initialize list to store fold proportions; third level
       categorical_cv_split_output[["sample_proportions"]][["cv"]] <- list()
-      stratified.sampling_output <- .stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output,
+      stratified.sampling_output <- vswift:::.stratified_sampling(data = cleaned_data, type = "k-fold", output = categorical_cv_split_output,
                                                         response_var = response_var, fold_n = fold_n,
                                                         random_seed = random_seed)
       #Collect output
@@ -229,8 +258,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
       for(j in c("Training","Test")){
         if(j == "Test"){
           #Assign validation data to new variables
-          if(remove_untrained_observations == TRUE){
-            model_data <- .remove_untrained_observations(trained_data = model_data, test_data = test_data, response_var = response_var)
+          if(remove_obs == TRUE){
+            model_data <- vswift:::.remove_obs(trained_data = model_data, test_data = test_data, response_var = response_var)
           }else{
             model_data <- test_data
           }
@@ -294,8 +323,8 @@ categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_
     } else{
       if(all(!is.null(fold_n),(i-1) <= fold_n)){
         #Assign validation data to new variables
-        if(remove_untrained_observations == TRUE){
-          model_data <- .remove_untrained_observations(trained_data = model_data, test_data = validation_data, response_var = response_var, fold = i-1)
+        if(remove_obs == TRUE){
+          model_data <- vswift:::.remove_obs(trained_data = model_data, test_data = validation_data, response_var = response_var, fold = i-1)
         }else{
           model_data <- validation_data
         }

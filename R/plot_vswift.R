@@ -1,4 +1,12 @@
-"plot.vswift" <- function(object, split = TRUE, cv = TRUE){
+#' plot.vswift
+#' 
+#' plot.vswift plot model evaluation metrics from a vswift object.
+#' 
+#' @param object An object of class vswift.
+#' @param split A logical value to plot metrics for train-test splitting results. Default = FALSE.
+#' @param cv A logical value to plot metrics for k-fold cross validation results. Default = FALSE.
+#' @export
+"plot.vswift" <- function(object, split = FALSE, cv = FALSE){
   if(class(object) == "vswift"){
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       #Plot metrics for training and test
