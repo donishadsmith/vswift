@@ -16,4 +16,5 @@ install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
 
 library(vswift)
 
+help(package = "vswift")
 ```
