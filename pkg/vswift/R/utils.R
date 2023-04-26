@@ -122,7 +122,7 @@
 
 
 #Helper function for categorical_cv_split for stratified sampling
-.stratified_sampling <- function(data,type, output, response_var, split = NULL, fold_size = NULL, k = NULL,
+.stratified_sampling <- function(data,type, output, response_var, split = NULL, k = NULL,
                                  random_seed = NULL){
   switch(type,
          "split" = {
