@@ -2,7 +2,7 @@
 #'
 #' A package for simple classification model evaluation.
 #'
-#' @aliases vswift
+#' @name vswift
 #' @docType package
 #' @title vswift
 #' @description A package that allows for model evaluation using train-test splitting and k-fold cross validation using several popular classification
