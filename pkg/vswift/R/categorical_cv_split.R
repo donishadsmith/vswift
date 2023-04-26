@@ -27,7 +27,7 @@
 #' 
 #' @return An object of class vswift
 #' @export
-categorical_cv_split  <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
+categorical_cv_split <- function(data = NULL, y_col = NULL, x_col = NULL, fold_n = NULL, split = NULL, model_type = NULL, stratified = FALSE,  random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
   #Ensure model type is lowercase
   model_type <- tolower(model_type)
   #Checking if inputs are valid
