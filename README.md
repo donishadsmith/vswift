@@ -10,10 +10,9 @@ To install and use vswift:
 ```R
 install.packages("devtools")
 
-library(devtools)
-
-install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
+devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
 
 library(vswift)
 
+help(package = "vswift")
 ```
