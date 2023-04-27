@@ -1,12 +1,23 @@
-#' plot.vswift
-#' 
-#' plot.vswift plot model evaluation metrics from a vswift object.
-#' 
+#' @title plot.vswift
+#' @description 
+#' Plot model evaluation metrics from a vswift object.
+#'
 #' @param object An object of class vswift.
-#' @param split A logical value to plot metrics for train-test splitting results. Default = FALSE.
-#' @param cv A logical value to plot metrics for k-fold cross validation results. Default = FALSE.
+#' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.
+#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Default = TRUE.
+#' @return A ggplot object representing the evaluation metrics plot.
+#' @examples
+#' data(iris)
+#' 
+#' ## Apply qda to the iris dataset
+#'
+#' qda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
+#' model_type = "qda", stratified = TRUE, random_seed = 123)
+#' 
+#' plot(qda_mod, cv = FALSE)
+#' 
 #' @export
-"plot.vswift" <- function(object, split = FALSE, cv = FALSE){
+"plot.vswift" <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vswift"){
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       #Plot metrics for training and test

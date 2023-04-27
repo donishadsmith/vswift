@@ -1,137 +1,68 @@
-#' categorical_cv_split
-#' 
-#' categorical_cv_split is used to perform a train-test split and/or k-fold cross validation on classification data
-#' 
-#' 
-#' @param data A data frame.
-#' @param y_col The numerical index or name for the response variable in the data frame.
-#' @param x_col A vector of numerical indices or names for the features to be used in the data frame. If not specified, all variables in the data frame except for the response variable will be used as features.
-#' @param fold_n A numerical value from 3 to 30 indicating the number of folds to use. If not specified, k-fold cross validation will not be performed.
-#' @param split A numerical value from 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.
-#' @param model_type A character indicating the type of classification algorithm to use. Options: "lda" (Linear Discriminant Analysis),"qda" (Quadratic Discriminant Analysis),"logistic" (Logistic Regression)
-#' ,"svm" (Support Vector Machine),"naivebayes" (Naive Bayes),"ann" (Artificial Neural Network),"knn" (K-Nearest Neighbors),"decisiontree" (Decision Tree),"randomforest" (Random Forest).
-#' Note that for "knn", the optimal k will be used unless `ks = ` is used as an additional argument and for "ann" `size = ` must be used as an additional argument.
-#' @param stratified A logical value specifying if stratified sampling should be used.
-#' @param random_seed A numerical value for the random seed to be used. Default is set to NULL.
-#' @param save_models A logical value to save the models used for training during train-test splitting and/or k-fold cross validation. Default is set to FALSE. 
-#' @param save_data A logical value to save all training and test/validation sets used for during train-test splitting and or k-fold cross validation. Default is set to FALSE. 
-#' @param remove_obs A logical value to remove observations with categorical features from the test/validation set that have not been observed during model training. 
-#' Note some algorithms may produce an error if this occurs. Default set to FALSE.
+#' Perform Train-Test Split and/or K-Fold Cross-Validation for Classification Data
+#'
+#' `categorical_cv_split` performs a train-test split and/or k-fold cross validation
+#' on classification data using various classification algorithms.
+#'
+#' @param data A data frame containing the dataset.
+#' @param y_col The response variable's numerical index or name in the data frame.
+#' @param x_col A vector of numerical indices or names for the features in the data frame.
+#'              If not specified, all variables except the response variable will be used as features.
+#' @param fold_n An integer between 3 and 30 for the number of folds to use. If not specified,
+#'               k-fold cross validation will not be performed.
+#' @param split A number between 0.5 and 0.9 for the proportion of data to use for the training set,
+#'              leaving the rest for the test set. If not specified, train-test splitting will not be done.
+#' @param model_type A character string indicating the classification algorithm to use. Available options:
+#'                   "lda", "qda", "logistic", "svm", "naivebayes", "ann", "knn", "decisiontree", "randomforest".
+#'                   For "knn", the optimal k will be used unless specified with `ks =`.
+#'                   For "ann", `size =` must be specified as an additional argument.
+#' @param stratified A logical value indicating if stratified sampling should be used.
+#' @param random_seed A numerical value for the random seed. Default is NULL.
+#' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.
+#' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.
+#' @param remove_obs A logical value to remove observations with categorical features from the test/validation set
+#'                   that have not been observed during model training. Some algorithms may produce an error if this occurs. Default is FALSE.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
+#'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.
 #' 
-#'   - For "lda" (lda from MASS), default settings are used, but you can modify the following arguments:
-#'     - grouping
-#'     - prior
-#'     - method 
-#'     - nu
-#'   - For "qda" (qda from MASS), default settings are used, but you can modify the following arguments:
-#'     - grouping
-#'     - prior
-#'     - method
-#'     - nu
-#'   - For "logistic" (glm from base), default settings are used, with exception of `family = "binomial"`, but you can modify the following arguments: 
-#'     - weights
-#'     - starts
-#'     - etastart
-#'     - mustart
-#'     - offset
-#'     - control
-#'     - contrasts
-#'     - intercept
-#'     - singular.ok
-#'     - type
-#'   - For "svm" (svm from e1071), default settings are used, but you can modify the following arguments: 
-#'     - scale
-#'     - type
-#'     - kernel
-#'     - degree
-#'     - gamma
-#'     - coef0
-#'     - cost
-#'     - nu
-#'     - class.weights
-#'     - cachesize
-#'     - tolerance
-#'     - epsilon
-#'     - shrinking
-#'     - cross
-#'     - probability
-#'     - fitted
-#'   - For "naivebayes" (naivebayes from naive_bayes), default settings are used, but you can modify the following arguments:
-#'     - prior
-#'     - laplace
-#'     - usekernel
-#'     - usepoisson
-#'   - For "ann" (nnet from nnet), default settings are used, but you can modify the following arguments: 
-#'     - weights
-#'     - size
-#'     - Wts
-#'     - mask
-#'     - linout
-#'     - entropy
-#'     - softmax
-#'     - skip
-#'     - rang
-#'     - decay
-#'     - maxit
-#'     - Hess
-#'     - trace
-#'     - MaxNWts
-#'     - abstol
-#'     - reltol
-#'   - For "knn" (train.kknn from kknn), default settings are used, but you can modify the following arguments: 
-#'     - kmax
-#'     - ks
-#'     - distance
-#'     - kernel
-#'     - ykernel
-#'     - scale
-#'     - contrasts
-#'   - For "decisiontree" (rpart from rpart), default settings are used, but you can modify the following arguments: 
-#'     - weights
-#'     - method
-#'     - parms
-#'     - control
-#'     - cost 
-#'   - For "randomforest" (randomForest from randomForest), default settings are used, but you can modify the following arguments: 
-#'     - ntree
-#'     - mtry
-#'     - weights
-#'     - replace
-#'     - classwt
-#'     - cutoff
-#'     - strata
-#'     - nodesize
-#'     - maxnodes
-#'     - importance
-#'     - localImp
-#'     - nPerm
-#'     - proximity
-#'     - oob.prox
-#'     - norm.votes
-#'     - do.trace
-#'     - keep.forest
-#'     - corr.bias
-#'     - keep.inbag
+#' @section Model-specific additional arguments:
+#'   Each model type accepts additional arguments specific to the classification algorithm. The available arguments for each model type are:
+#'
+#'   - "lda": grouping, prior, method, nu
+#'   - "qda": grouping, prior, method, nu
+#'   - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type
+#'   - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
+#'   - "naivebayes": prior, laplace, usekernel, usepoisson
+#'   - "ann": weights, size, Wts, mask, linout, entropy, softmax, censored, skip, rang, decay, maxit, Hess, trace, MaxNWts, abstol, reltol
+#'   - "knn": kmax, ks, distance, kernel, scale, contrasts, ykernel
+#'   - "decisiontree": weights, method, parms, control, cost
+#'   - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
 #' 
-#' @return An object of class vswift
+#' @section Functions used from packages for each model type:
+#'
+#'   - "lda": lda() from MASS package
+#'   - "qda": qda() from MASS package
+#'   - "logistic": glm() from base package with family = "binomial"
+#'   - "svm": svm() from e1071 package
+#'   - "naivebayes": naive_bayes() from naivebayes package
+#'   - "ann": nnet() from nnet package
+#'   - "knn": train.kknn() from kknn package
+#'   - "decisiontree": rpart() from rpart package
+#'   - "randomforest": randomForest() from randomForest package                  
+
+#' @return A list containing the results of train-test splitting and/or k-fold cross-validation,
+#'         including performance metrics, saved models (if specified), and saved datasets (if specified).
+#' 
+#' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
 #' 
 #' @examples
-#' 
+#' # Load an example dataset
 #' data(iris)
-#' 
-#' ## Use all predictors with k-nearest neighbors and specify the number of neighbors to use with additional argument `ks = 5`
-#' knn_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5
-#' , model_type = "knn", stratified = TRUE, random_seed = 123, ks = 5)
-#' 
-#' ## Use some predictors with artificial neural network and specificy additional argument `size = 3`
-#' ann_mod <- categorical_cv_split(data = iris, y_col = "Species", x_col = 1:3, split = 0.8, fold_n = 5
-#' , model_type = "ann", stratified = TRUE, random_seed = 123, size = 3)
-#' 
-#' print(knn_mod)
-#' 
-#' print(ann_mod)
-#' 
+#'
+#' # Perform a train-test split with an 80% training set using LDA
+#' result <- categorical_cv_split(iris, y_col = "Species", split = 0.8, model_type = "lda")
+#'
+#' # Perform 5-fold cross-validation using QDA
+#' result <- categorical_cv_split(iris, y_col = "Species", fold_n = 5, model_type = "qda")
 #' @export
 categorical_cv_split <- function(data = NULL, y_col = NULL, x_col = NULL, split = NULL, fold_n = NULL, model_type = NULL, stratified = FALSE, random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
   #Ensure model type is lowercase

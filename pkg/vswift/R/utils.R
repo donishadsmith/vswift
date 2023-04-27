@@ -62,64 +62,35 @@
   }
 }
 #Helper function for categorical_cv_split to check if additional arguments are valid
-.check_additional_arguments <- function(model_type = NULL,...){
+.check_additional_arguments <- function(model_type = NULL, ...){
   additional_args <- names(list(...))
-  switch(model_type,
-         "lda" = {
-           valid_args <- c(C)
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "qda" = {
-           valid_args <- c("grouping","prior","method","nu")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "logistic" = {
-           valid_args <- c("weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "svm" = {
-           valid_args <- c("scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon",
-                           "shrinking","cross","probability","fitted")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "naivebayes" = {
-           valid_args <- c("prior","laplace","usekernel","usepoisson")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "ann" = {
-           valid_args <- c("weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit",
-                           "Hess","trace","MaxNWts","abstol","reltol")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "knn" = {
-           valid_args <- c("kmax","ks","distance","kernel","scale","contrasts","ykernel")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
-         "decisiontree" = {
-           valid_args <- c("weights","method","parms","control","cost")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]
-         },
-         "randomforest" = {
-           valid_args <- c("ntree","mtry","weights","replace","classwt","cutoff","strata",
-                           "nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox",
-                           "norm.votes","do.trace","keep.forest","corr.bias","keep.inbag")
-           invalid_args <- additional_args[which(!additional_args %in% valid_args)]}
-         
+  
+  # Helper function to generate error message
+  error_message <- function(model_name, invalid_args) {
+    sprintf("The following arguments are invalid for %s or are incompatible with categorical_cv_split: %s",
+            model_name, paste(invalid_args, collapse = ","))
+  }
+  
+  # List of valid arguments for each model type
+  valid_args_list <- list(
+    "lda" = c("grouping", "prior", "method", "nu"),
+    "qda" = c("grouping", "prior", "method", "nu"),
+    "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type"),
+    "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
+    "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
+    "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
+    "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
+    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
+    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag")
   )
-  if(length(invalid_args) > 0){
-    if(model_type %in% c("lda","qda")){
-      stop(sprintf("the following arguments are invalid for %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
-    }else if(model_type %in% c("logistic","linear")){
-      stop(sprintf("the following arguments are invalid for glm function or is incompatable with categorical_cv_split: %s",model_type,paste(invalid_args,collapse = ",")))
-    }else if(model_type == "svm"){
-      stop(sprintf("the following arguments are invalid for  %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
-    }else if(model_type == "naivebayes"){
-      stop(sprintf("the following arguments are invalid for naive_bayes.default or is incompatable with %s: %s",paste(invalid_args,collapse = ",")))
-    }else if(model_type == "ann"){
-      stop(sprintf("the following arguments are invalid for %s or is incompatable with categorical_cv_split: %s",paste0(model_type,".default"),paste(invalid_args,collapse = ",")))
-    }else if(model_type == "knn"){
-      stop(sprintf("the following arguments are invalid for train.kknn or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
-    }else if(model_type == "decisiontree"){
-      stop(sprintf("the following arguments are invalid for rpart or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
-    }else if(model_type == "randomforest"){
-      stop(sprintf("the following arguments are invalid for randomForest or is incompatable with categorical_cv_split: %s",paste(invalid_args,collapse = ",")))
-    }
+  
+  valid_args <- valid_args_list[[model_type]]
+  invalid_args <- additional_args[which(!additional_args %in% valid_args)]
+  
+  if (length(invalid_args) > 0) {
+    stop(error_message(model_type, invalid_args))
   }
 }
-
 
 #Helper function for categorical_cv_split for stratified sampling
 .stratified_sampling <- function(data,type, output, response_var, split = NULL, k = NULL,

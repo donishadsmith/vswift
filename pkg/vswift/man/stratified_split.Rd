@@ -7,8 +7,8 @@
 stratified_split(
   data = NULL,
   y_col = NULL,
-  fold_n = NULL,
   split = NULL,
+  fold_n = NULL,
   stratified = FALSE,
   random_seed = NULL,
   create_data = FALSE
@@ -19,17 +19,23 @@ stratified_split(
 
 \item{y_col}{A numerical index or character name for the response variable.}
 
-\item{fold_n}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
+\item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.}
 
-\item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified,train-test splitting will not be done.}
+\item{fold_n}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
 
 \item{random_seed}{A numerical value for the random seed to be used. Default is NULL.}
 
-\item{create_data}{A logical value to create all training and test/validation data frames. Default set to FALSE.}
+\item{create_data}{A logical value indicating whether to create all training and test/validation data frames. Default set to FALSE.}
 }
 \value{
 a list
 }
 \description{
-stratified_split is used to perform train-rest splitting or k-folds on data.
+Perform train-test splitting or k-fold cross-validation on data using stratified sampling.
+}
+\examples{
+
+data(iris)
+
+stratified_list <- stratified_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5)
 }

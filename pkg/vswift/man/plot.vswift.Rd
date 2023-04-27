@@ -4,15 +4,29 @@
 \alias{plot.vswift}
 \title{plot.vswift}
 \usage{
-\method{plot}{vswift}(object, split = FALSE, cv = FALSE)
+\method{plot}{vswift}(object, split = TRUE, cv = TRUE)
 }
 \arguments{
 \item{object}{An object of class vswift.}
 
-\item{split}{A logical value to plot metrics for train-test splitting results. Default = FALSE.}
+\item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
 
-\item{cv}{A logical value to plot metrics for k-fold cross validation results. Default = FALSE.}
+\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Default = TRUE.}
+}
+\value{
+A ggplot object representing the evaluation metrics plot.
 }
 \description{
-plot.vswift plot model evaluation metrics from a vswift object.
+Plot model evaluation metrics from a vswift object.
+}
+\examples{
+data(iris)
+
+## Apply qda to the iris dataset
+
+qda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
+model_type = "qda", stratified = TRUE, random_seed = 123)
+
+plot(qda_mod, cv = FALSE)
+
 }

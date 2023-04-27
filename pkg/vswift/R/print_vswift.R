@@ -1,12 +1,24 @@
-#' print.vswift
-#' 
-#' print.vswift is print parameter information and/or model evaluation metrics from a vswift object.
-#' 
+#' @title print.vswift
+#' @description 
+#' Print parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
+#'
 #' @param object An object of class vswift.
-#' @param parameters A logical value to print parameter information from vswift object. Default = FALSE.
-#' @param metrics A logical value to print model evaluation metrics from vswift object. Default = FALSE.
+#' @param parameters A logical value indicating whether to print parameter information from the vswift object. Default is set to TRUE.
+#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. This will display the precision, recall, and f-score for each class.
+#' If the vswift object contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
+#' will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default is set to TRUE.
+#'
+#' @examples
+#' data(iris)
+#' ## Apply lda to the iris dataset
+#'
+#' lda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
+#' model_type = "lda", stratified = TRUE, random_seed = 123)
+#'
+#' print(lda_mod)
+#'
 #' @export
-"print.vswift"<- function(object, parameters = FALSE, metrics = FALSE){
+"print.vswift"<- function(object, parameters = TRUE, metrics = TRUE){
   if(class(object) == "vswift"){
     if(parameters == TRUE){
       #Print parameter information
