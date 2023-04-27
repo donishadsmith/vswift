@@ -32,7 +32,7 @@ categorical_cv_split(
 
 \item{model_type}{A character value indicating the type of classification algorithm to use. Options: "lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree","randomforest".}
 
-\item{stratified}{A logical value indicating is stratified sampling should be used.}
+\item{stratified}{A logical value specifying if stratified sampling should be used.}
 
 \item{random_seed}{A numerical value for the random seed to be used. Default is NULL.}
 
@@ -43,15 +43,49 @@ categorical_cv_split(
 \item{save_data}{A logical value to save all training and test/validation sets used for during train-test splitting and or k-fold cross validation. Default set to FALSE.}
 
 \item{...}{Additional arguments specific to the chosen classification algorithm.
-- For "lda" (lda from MASS), default settings are used, can modify arguments: "grouping","prior","method","nu"
-- For "qda" (qda from MASS), default settings are used, can modify arguments: "grouping","prior","method","nu"
-- For "logistic" (glm from base),default settings are used, with exception of `family = "binomial"`, can modify arguments: "weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type"
-- For "svm" (svm from e1071), default settings are used, can modify arguments: "scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon","shrinking","cross","probability","fitted"
-- For "naivebayes" (naivebayes from naive_bayes), default settings are used, can modify arguments: "prior","laplace","usekernel","usepoisson"
-- For "ann" (nnet from nnet), default settings are used, can modify arguments: "weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit","Hess","trace","MaxNWts","abstol","reltol"
-- For "knn" (train.kknn from kknn), default settings are used, can modify arguments: "kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel"
-- For "decisiontree" (rpart from rpart), default settings are used, can modify arguments: "weights","method","parms","control","cost"
-- For "randomforest" (randomForest from randomForest), default settings are used, can modify arguments: "ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize","nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox","norm.votes","do.trace","keep.forest","corr.bias","keep.inbag"}
+
+  - For "lda" (lda from MASS), default settings are used, but you can modify the following arguments:
+  
+    - grouping
+    
+    - prior
+    
+    - method 
+    
+    - nu
+    
+  - For "qda" (qda from MASS), default settings are used, but you can modify the following arguments:
+    
+    - grouping
+    
+    - prior
+    
+    - method
+    
+    - nu
+    
+  - For "logistic" (glm from base),default settings are used, with exception of `family = "binomial"`, but you can modify the following arguments: 
+  
+    - weigths
+    
+    - starts
+    
+    - etastart
+    
+    - mustart
+    
+    - offset
+    
+    - control
+    
+    -
+  "weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type"
+  - For "svm" (svm from e1071), default settings are used, can modify arguments: "scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon","shrinking","cross","probability","fitted"
+  - For "naivebayes" (naivebayes from naive_bayes), default settings are used, can modify arguments: "prior","laplace","usekernel","usepoisson"
+  - For "ann" (nnet from nnet), default settings are used, can modify arguments: "weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit","Hess","trace","MaxNWts","abstol","reltol"
+  - For "knn" (train.kknn from kknn), default settings are used, can modify arguments: "kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel"
+  - For "decisiontree" (rpart from rpart), default settings are used, can modify arguments: "weights","method","parms","control","cost"
+  - For "randomforest" (randomForest from randomForest), default settings are used, can modify arguments: "ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize","nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox","norm.votes","do.trace","keep.forest","corr.bias","keep.inbag"}
 }
 \value{
 An object of class vswift
