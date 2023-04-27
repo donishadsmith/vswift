@@ -19,6 +19,7 @@ Imports:
     nnet,
     kknn,
     rpart,
+    randomForest,
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

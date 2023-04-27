@@ -86,14 +86,14 @@
                            "Hess","trace","MaxNWts","abstol","reltol")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
          "knn" = {
-           valid_args <- c("kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel")
+           valid_args <- c("kmax","ks","distance","kernel","scale","contrasts","ykernel")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]},
          "decisiontree" = {
            valid_args <- c("weights","method","parms","control","cost")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]
          },
          "randomforest" = {
-           valid_args <- c("ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize",
+           valid_args <- c("ntree","mtry","weights","replace","classwt","cutoff","strata",
                            "nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox",
                            "norm.votes","do.trace","keep.forest","corr.bias","keep.inbag")
            invalid_args <- additional_args[which(!additional_args %in% valid_args)]}

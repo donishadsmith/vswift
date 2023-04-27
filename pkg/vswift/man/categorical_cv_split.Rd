@@ -8,8 +8,8 @@ categorical_cv_split(
   data = NULL,
   y_col = NULL,
   x_col = NULL,
-  fold_n = NULL,
   split = NULL,
+  fold_n = NULL,
   model_type = NULL,
   stratified = FALSE,
   random_seed = NULL,
@@ -22,74 +22,146 @@ categorical_cv_split(
 \arguments{
 \item{data}{A data frame.}
 
-\item{y_col}{A numerical index or character name for the response variable.}
+\item{y_col}{The numerical index or name for the response variable in the data frame.}
 
-\item{x_col}{A numerical or character vector of the features. If left empty, all variables in the data frame except for the response variable will be used as features.}
+\item{x_col}{A vector of numerical indices or names for the features to be used in the data frame. If not specified, all variables in the data frame except for the response variable will be used as features.}
 
-\item{fold_n}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
+\item{split}{A numerical value from 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.}
 
-\item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified,train-test splitting will not be done.}
+\item{fold_n}{A numerical value from 3 to 30 indicating the number of folds to use. If not specified, k-fold cross validation will not be performed.}
 
-\item{model_type}{A character value indicating the type of classification algorithm to use. Options: "lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree","randomforest".}
+\item{model_type}{A character indicating the type of classification algorithm to use. Options: "lda" (Linear Discriminant Analysis),"qda" (Quadratic Discriminant Analysis),"logistic" (Logistic Regression)
+,"svm" (Support Vector Machine),"naivebayes" (Naive Bayes),"ann" (Artificial Neural Network),"knn" (K-Nearest Neighbors),"decisiontree" (Decision Tree),"randomforest" (Random Forest).
+Note that for "knn", the optimal k will be used unless `ks = ` is used as an additional argument and for "ann" `size = ` must be used as an additional argument.}
 
 \item{stratified}{A logical value specifying if stratified sampling should be used.}
 
-\item{random_seed}{A numerical value for the random seed to be used. Default is NULL.}
+\item{random_seed}{A numerical value for the random seed to be used. Default is set to NULL.}
 
-\item{remove_obs}{A logical value to remove observations with categorical features from the test/validation set that have not been observed during model training. Note some algorithms may produce an error if this occurs. Default set to FALSE.}
+\item{remove_obs}{A logical value to remove observations with categorical features from the test/validation set that have not been observed during model training. 
+Note some algorithms may produce an error if this occurs. Default set to FALSE.}
 
-\item{save_models}{A logical value to save the models used for training during train-test splitting and or k-fold cross validation. Default set to FALSE.}
+\item{save_models}{A logical value to save the models used for training during train-test splitting and/or k-fold cross validation. Default is set to FALSE.}
 
-\item{save_data}{A logical value to save all training and test/validation sets used for during train-test splitting and or k-fold cross validation. Default set to FALSE.}
+\item{save_data}{A logical value to save all training and test/validation sets used for during train-test splitting and or k-fold cross validation. Default is set to FALSE.}
 
 \item{...}{Additional arguments specific to the chosen classification algorithm.
 
   - For "lda" (lda from MASS), default settings are used, but you can modify the following arguments:
-  
     - grouping
-    
     - prior
-    
     - method 
-    
     - nu
-    
   - For "qda" (qda from MASS), default settings are used, but you can modify the following arguments:
-    
     - grouping
-    
     - prior
-    
     - method
-    
     - nu
-    
-  - For "logistic" (glm from base),default settings are used, with exception of `family = "binomial"`, but you can modify the following arguments: 
-  
-    - weigths
-    
+  - For "logistic" (glm from base), default settings are used, with exception of `family = "binomial"`, but you can modify the following arguments: 
+    - weights
     - starts
-    
     - etastart
-    
     - mustart
-    
     - offset
-    
     - control
-    
-    -
-  "weights","start","etastart","mustart","offset","control","contrasts","intercept","singular.ok","type"
-  - For "svm" (svm from e1071), default settings are used, can modify arguments: "scale","type","kernel","degree","gamma","coef0","cost","nu","class.weights","cachesize","tolerance","epsilon","shrinking","cross","probability","fitted"
-  - For "naivebayes" (naivebayes from naive_bayes), default settings are used, can modify arguments: "prior","laplace","usekernel","usepoisson"
-  - For "ann" (nnet from nnet), default settings are used, can modify arguments: "weights","size","Wts","mask","linout","entropy","softmax","censored","skip","rang","decay","maxit","Hess","trace","MaxNWts","abstol","reltol"
-  - For "knn" (train.kknn from kknn), default settings are used, can modify arguments: "kmax","ks","kmax","distance","kernel","scale","contrasts","ykernel"
-  - For "decisiontree" (rpart from rpart), default settings are used, can modify arguments: "weights","method","parms","control","cost"
-  - For "randomforest" (randomForest from randomForest), default settings are used, can modify arguments: "ntree","mtry","weights","replace","classwt","cutoff","strata","sampsize","nodesize","maxnodes","importance","localImp","nPerm","proximity","oob.prox","norm.votes","do.trace","keep.forest","corr.bias","keep.inbag"}
+    - contrasts
+    - intercept
+    - singular.ok
+    - type
+  - For "svm" (svm from e1071), default settings are used, but you can modify the following arguments: 
+    - scale
+    - type
+    - kernel
+    - degree
+    - gamma
+    - coef0
+    - cost
+    - nu
+    - class.weights
+    - cachesize
+    - tolerance
+    - epsilon
+    - shrinking
+    - cross
+    - probability
+    - fitted
+  - For "naivebayes" (naivebayes from naive_bayes), default settings are used, but you can modify the following arguments:
+    - prior
+    - laplace
+    - usekernel
+    - usepoisson
+  - For "ann" (nnet from nnet), default settings are used, but you can modify the following arguments: 
+    - weights
+    - size
+    - Wts
+    - mask
+    - linout
+    - entropy
+    - softmax
+    - skip
+    - rang
+    - decay
+    - maxit
+    - Hess
+    - trace
+    - MaxNWts
+    - abstol
+    - reltol
+  - For "knn" (train.kknn from kknn), default settings are used, but you can modify the following arguments: 
+    - kmax
+    - ks
+    - distance
+    - kernel
+    - ykernel
+    - scale
+    - contrasts
+  - For "decisiontree" (rpart from rpart), default settings are used, but you can modify the following arguments: 
+    - weights
+    - method
+    - parms
+    - control
+    - cost 
+  - For "randomforest" (randomForest from randomForest), default settings are used, but you can modify the following arguments: 
+    - ntree
+    - mtry
+    - weights
+    - replace
+    - classwt
+    - cutoff
+    - strata
+    - nodesize
+    - maxnodes
+    - importance
+    - localImp
+    - nPerm
+    - proximity
+    - oob.prox
+    - norm.votes
+    - do.trace
+    - keep.forest
+    - corr.bias
+    - keep.inbag}
 }
 \value{
 An object of class vswift
 }
 \description{
 categorical_cv_split is used to perform a train-test split and/or k-fold cross validation on classification data
+}
+\examples{
+
+data(iris)
+
+## Use all predictors with k-nearest neighbors and specify the number of neighbors to use with additional argument `ks = 5`
+knn_mod <- categorical_cv_split(data = data, y_col = "Species", split = 0.8, fold_n = 5
+, model_type = "knn", stratified = TRUE, random_seed = 123, ks = 5)
+
+## Use some predictors with artificial neural network and specificy additional argument `size = 3`
+ann_mod <- categorical_cv_split(data = data, y_col = "Species", x_col = 1:3, split = 0.8, fold_n = 5
+, model_type = "ann", stratified = TRUE, random_seed = 123, size = 3)
+
+print(knn_mod)
+
+print(ann_mod)
+
 }
