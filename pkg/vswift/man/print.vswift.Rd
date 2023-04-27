@@ -2,7 +2,7 @@
 % Please edit documentation in R/print_vswift.R
 \name{print.vswift}
 \alias{print.vswift}
-\title{print.vswift}
+\title{Print parameter information and/or model evaluation metrics.}
 \usage{
 \method{print}{vswift}(object, parameters = TRUE, metrics = TRUE)
 }
@@ -16,7 +16,7 @@ If the vswift object contains information for train-test splitting, the classifi
 will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default is set to TRUE.}
 }
 \description{
-Print parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
+`print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
 }
 \examples{
 # Load an example dataset

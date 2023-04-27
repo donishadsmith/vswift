@@ -1,4 +1,4 @@
-#' Perform Train-Test Split and/or K-Fold Cross-Validation for Classification Data
+#' Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data
 #'
 #' `categorical_cv_split` performs a train-test split and/or k-fold cross validation
 #' on classification data using various classification algorithms.

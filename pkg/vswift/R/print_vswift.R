@@ -1,7 +1,7 @@
-#' @title print.vswift
-#' @description 
-#' Print parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
+#' Print parameter information and/or model evaluation metrics.
 #'
+#' `print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object. 
+#' 
 #' @param object An object of class vswift.
 #' @param parameters A logical value indicating whether to print parameter information from the vswift object. Default is set to TRUE.
 #' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. This will display the precision, recall, and f-score for each class.

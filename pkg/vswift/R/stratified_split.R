@@ -1,7 +1,7 @@
-#' @title stratified_split
-#' @description 
-#' Perform train-test splitting or k-fold cross-validation on data using stratified sampling.
-#'
+#' Create split datasets and/or folds with optional stratification
+#' 
+#' `stratified_split` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+#' 
 #' @param data A data frame.
 #' @param y_col A numerical index or character name for the response variable.
 #' @param fold_n A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_vswift.R
 \name{plot.vswift}
 \alias{plot.vswift}
-\title{plot.vswift}
+\title{Plot model evaluation.}
 \usage{
 \method{plot}{vswift}(object, split = TRUE, cv = TRUE)
 }
@@ -18,7 +18,7 @@ and dashed red line represents the standard deviation. Default = TRUE.}
 Plots representing evaluation metrics.
 }
 \description{
-Plot model evaluation metrics from a vswift object.
+`plot.vswift` plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
 }
 \examples{
 # Load an example dataset

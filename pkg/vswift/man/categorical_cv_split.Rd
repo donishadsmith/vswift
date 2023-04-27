@@ -2,7 +2,7 @@
 % Please edit documentation in R/categorical_cv_split.R
 \name{categorical_cv_split}
 \alias{categorical_cv_split}
-\title{Perform Train-Test Split and/or K-Fold Cross-Validation for Classification Data}
+\title{Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data}
 \usage{
 categorical_cv_split(
   data = NULL,

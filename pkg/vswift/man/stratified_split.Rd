@@ -2,7 +2,7 @@
 % Please edit documentation in R/stratified_split.R
 \name{stratified_split}
 \alias{stratified_split}
-\title{stratified_split}
+\title{Create split datasets and/or folds with optional stratification}
 \usage{
 stratified_split(
   data = NULL,
@@ -34,7 +34,7 @@ A list containing the indices for train-test splitting and/or k-fold cross-valid
         as well as the generated split datasets and folds based on the indices.
 }
 \description{
-Perform train-test splitting or k-fold cross-validation on data using stratified sampling.
+`stratified_split` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
 }
 \examples{
 # Load example dataset 
