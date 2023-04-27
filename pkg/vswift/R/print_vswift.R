@@ -1,4 +1,4 @@
-#' Print parameter information and/or model evaluation metrics.
+#' Print parameter information and/or model evaluation metrics
 #'
 #' `print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object. 
 #' 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/print_vswift.R
 \name{print.vswift}
 \alias{print.vswift}
-\title{Print parameter information and/or model evaluation metrics.}
+\title{Print parameter information and/or model evaluation metrics}
 \usage{
 \method{print}{vswift}(object, parameters = TRUE, metrics = TRUE)
 }

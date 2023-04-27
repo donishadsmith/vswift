@@ -1,4 +1,4 @@
-#' Plot model evaluation.
+#' Plot model evaluation metrics
 #' 
 #' `plot.vswift` plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object. 
 #'

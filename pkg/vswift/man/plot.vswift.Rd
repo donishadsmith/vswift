@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot_vswift.R
 \name{plot.vswift}
 \alias{plot.vswift}
-\title{Plot model evaluation.}
+\title{Plot model evaluation metrics}
 \usage{
 \method{plot}{vswift}(object, split = TRUE, cv = TRUE)
 }
