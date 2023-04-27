@@ -15,7 +15,7 @@
 #'                   "lda", "qda", "logistic", "svm", "naivebayes", "ann", "knn", "decisiontree", "randomforest".
 #'                   For "knn", the optimal k will be used unless specified with `ks =`.
 #'                   For "ann", `size =` must be specified as an additional argument.
-#' @param stratified A logical value indicating if stratified sampling should be used.
+#' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
 #' @param random_seed A numerical value for the random seed. Default is NULL.
 #' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.
 #' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.
@@ -47,10 +47,11 @@
 #'   - "ann": nnet() from nnet package
 #'   - "knn": train.kknn() from kknn package
 #'   - "decisiontree": rpart() from rpart package
-#'   - "randomforest": randomForest() from randomForest package                  
-
+#'   - "randomforest": randomForest() from randomForest package 
+#'                    
 #' @return A list containing the results of train-test splitting and/or k-fold cross-validation,
-#'         including performance metrics, saved models (if specified), and saved datasets (if specified).
+#'         including performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
+#'         saved models (if specified), and saved datasets (if specified).
 #' 
 #' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
 #' 

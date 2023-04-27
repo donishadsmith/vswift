@@ -4,17 +4,23 @@
 #'
 #' @param object An object of class vswift.
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.
-#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Default = TRUE.
-#' @return A ggplot object representing the evaluation metrics plot.
+#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid blueline represents the mean
+#' and dashed red line represents the standard deviation. Default = TRUE.
+#' 
+#' @return Plots representing evaluation metrics.
 #' @examples
+#' # Load an example dataset
+#' 
 #' data(iris)
 #' 
-#' ## Apply qda to the iris dataset
-#'
-#' qda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
-#' model_type = "qda", stratified = TRUE, random_seed = 123)
+#' # Perform a train-test split with an 80% training set and stratified_sampling using QDA
 #' 
-#' plot(qda_mod, cv = FALSE)
+#' result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
+#' model_type = "qda", stratified = TRUE)
+#' 
+#' # Plot performance metrics for train-test split
+#' 
+#' plot(result)
 #' 
 #' @export
 "plot.vswift" <- function(object, split = TRUE, cv = TRUE){

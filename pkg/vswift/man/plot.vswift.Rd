@@ -11,22 +11,27 @@
 
 \item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
 
-\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Default = TRUE.}
+\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid blueline represents the mean
+and dashed red line represents the standard deviation. Default = TRUE.}
 }
 \value{
-A ggplot object representing the evaluation metrics plot.
+Plots representing evaluation metrics.
 }
 \description{
 Plot model evaluation metrics from a vswift object.
 }
 \examples{
+# Load an example dataset
+
 data(iris)
 
-## Apply qda to the iris dataset
+# Perform a train-test split with an 80\% training set and stratified_sampling using QDA
 
-qda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
-model_type = "qda", stratified = TRUE, random_seed = 123)
+result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
+model_type = "qda", stratified = TRUE)
 
-plot(qda_mod, cv = FALSE)
+# Plot performance metrics for train-test split
+
+plot(result)
 
 }

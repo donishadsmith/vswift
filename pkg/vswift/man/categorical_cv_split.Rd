@@ -38,7 +38,7 @@ k-fold cross validation will not be performed.}
 For "knn", the optimal k will be used unless specified with `ks =`.
 For "ann", `size =` must be specified as an additional argument.}
 
-\item{stratified}{A logical value indicating if stratified sampling should be used.}
+\item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
 
 \item{random_seed}{A numerical value for the random seed. Default is NULL.}
 
@@ -54,7 +54,8 @@ Please refer to the corresponding algorithm's documentation for additional argum
 }
 \value{
 A list containing the results of train-test splitting and/or k-fold cross-validation,
-        including performance metrics, saved models (if specified), and saved datasets (if specified).
+        including performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
+        saved models (if specified), and saved datasets (if specified).
 }
 \description{
 `categorical_cv_split` performs a train-test split and/or k-fold cross validation

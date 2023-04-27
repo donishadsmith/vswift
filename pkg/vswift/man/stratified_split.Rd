@@ -23,19 +23,25 @@ stratified_split(
 
 \item{fold_n}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
 
-\item{random_seed}{A numerical value for the random seed to be used. Default is NULL.}
+\item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
 
-\item{create_data}{A logical value indicating whether to create all training and test/validation data frames. Default set to FALSE.}
+\item{random_seed}{A numerical value for the random seed to be used. Default = NULL.}
+
+\item{create_data}{A logical value indicating whether to create all training and test/validation data frames. Default = FALSE.}
 }
 \value{
-a list
+A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on the class distribution in the training, test sets, and folds (if applicable)
+        as well as the generated split datasets and folds based on the indices.
 }
 \description{
 Perform train-test splitting or k-fold cross-validation on data using stratified sampling.
 }
 \examples{
+# Load example dataset 
 
 data(iris)
+
+# Obtain indices for 80\% training/test split and 5-fold CV
 
 stratified_list <- stratified_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5)
 }

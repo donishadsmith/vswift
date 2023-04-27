@@ -9,13 +9,17 @@
 #' will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default is set to TRUE.
 #'
 #' @examples
+#' # Load an example dataset
+#' 
 #' data(iris)
-#' ## Apply lda to the iris dataset
+#' 
+#' # Perform a train-test split with an 80% training set using LDA
 #'
-#' lda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
+#' result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
 #' model_type = "lda", stratified = TRUE, random_seed = 123)
-#'
-#' print(lda_mod)
+#' 
+#' # Print parameter information and performance metrics
+#' print(result)
 #'
 #' @export
 "print.vswift"<- function(object, parameters = TRUE, metrics = TRUE){

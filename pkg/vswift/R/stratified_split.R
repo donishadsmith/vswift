@@ -6,12 +6,17 @@
 #' @param y_col A numerical index or character name for the response variable.
 #' @param fold_n A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
 #' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.
-#' @param random_seed A numerical value for the random seed to be used. Default is NULL.
-#' @param create_data A logical value indicating whether to create all training and test/validation data frames. Default set to FALSE. 
-#' @return a list
+#' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
+#' @param random_seed A numerical value for the random seed to be used. Default = NULL.
+#' @param create_data A logical value indicating whether to create all training and test/validation data frames. Default = FALSE. 
+#' @return A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on the class distribution in the training, test sets, and folds (if applicable)
+#'         as well as the generated split datasets and folds based on the indices.
 #' @examples
+#' # Load example dataset 
 #' 
 #' data(iris)
+#' 
+#' # Obtain indices for 80% training/test split and 5-fold CV
 #' 
 #' stratified_list <- stratified_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5)
 #' @export

@@ -19,12 +19,16 @@ will be displayed. If the vswift object contains information for k-fold validati
 Print parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
 }
 \examples{
-data(iris)
-## Apply lda to the iris dataset
+# Load an example dataset
 
-lda_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5,
+data(iris)
+
+# Perform a train-test split with an 80\% training set using LDA
+
+result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
 model_type = "lda", stratified = TRUE, random_seed = 123)
 
-print(lda_mod)
+# Print parameter information and performance metrics
+print(result)
 
 }
