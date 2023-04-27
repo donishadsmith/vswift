@@ -153,11 +153,11 @@ categorical_cv_split is used to perform a train-test split and/or k-fold cross v
 data(iris)
 
 ## Use all predictors with k-nearest neighbors and specify the number of neighbors to use with additional argument `ks = 5`
-knn_mod <- categorical_cv_split(data = data, y_col = "Species", split = 0.8, fold_n = 5
+knn_mod <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5
 , model_type = "knn", stratified = TRUE, random_seed = 123, ks = 5)
 
 ## Use some predictors with artificial neural network and specificy additional argument `size = 3`
-ann_mod <- categorical_cv_split(data = data, y_col = "Species", x_col = 1:3, split = 0.8, fold_n = 5
+ann_mod <- categorical_cv_split(data = iris, y_col = "Species", x_col = 1:3, split = 0.8, fold_n = 5
 , model_type = "ann", stratified = TRUE, random_seed = 123, size = 3)
 
 print(knn_mod)
