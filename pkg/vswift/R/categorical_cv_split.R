@@ -19,12 +19,10 @@
 #'   - For "lda" (lda from MASS), default settings are used, but you can modify the following arguments:
 #'   
 #'     - grouping
-#'     
 #'     - prior
-#'     
 #'     - method 
-#'     
 #'     - nu
+#'     
 #'     
 #'   - For "qda" (qda from MASS), default settings are used, but you can modify the following arguments:
 #'     
