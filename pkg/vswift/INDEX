@@ -1,0 +1,4 @@
+categorical_cv_split       Classication model validation
+print.vswift               Print parameter information and metrics for vswift object
+plot.vswift                Plot metrics for vswift object
+stratified_check           Split or create folds for data
