@@ -17,7 +17,7 @@ stratified_split(
 \arguments{
 \item{data}{A data frame.}
 
-\item{target}{A numerical index or character name for the response variable.}
+\item{target}{A numerical index or character name for the target variable.}
 
 \item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.}
 

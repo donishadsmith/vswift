@@ -4,7 +4,7 @@
 #' 
 #' 
 #' @param data A data frame.
-#' @param target A numerical index or character name for the response variable.
+#' @param target A numerical index or character name for the target variable.
 #' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.
 #' @param n_folds A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
