@@ -6,11 +6,12 @@
 \usage{
 categorical_cv_split(
   data = NULL,
-  y_col = NULL,
-  x_col = NULL,
+  target = NULL,
+  predictors = NULL,
   split = NULL,
-  fold_n = NULL,
+  n_folds = NULL,
   model_type = NULL,
+  threshold = 0.5,
   stratified = FALSE,
   random_seed = NULL,
   remove_obs = FALSE,
@@ -22,15 +23,15 @@ categorical_cv_split(
 \arguments{
 \item{data}{A data frame containing the dataset.}
 
-\item{y_col}{The response variable's numerical index or name in the data frame.}
+\item{target}{The target variable's numerical index or name in the data frame.}
 
-\item{x_col}{A vector of numerical indices or names for the features in the data frame.
-If not specified, all variables except the response variable will be used as features.}
+\item{predictors}{A vector of numerical indices or names for the predictors in the data frame.
+If not specified, all variables except the response variable will be used as predictors.}
 
-\item{split}{A number between 0.5 and 0.9 for the proportion of data to use for the training set,
+\item{split}{A number from 0.5 and 0.9 for the proportion of data to use for the training set,
 leaving the rest for the test set. If not specified, train-test splitting will not be done.}
 
-\item{fold_n}{An integer between 3 and 30 for the number of folds to use. If not specified,
+\item{n_folds}{An integer from 3 and 30 for the number of folds to use. If not specified,
 k-fold cross validation will not be performed.}
 
 \item{model_type}{A character string indicating the classification algorithm to use. Available options:
@@ -38,11 +39,13 @@ k-fold cross validation will not be performed.}
 For "knn", the optimal k will be used unless specified with `ks =`.
 For "ann", `size =` must be specified as an additional argument.}
 
+\item{threshold}{A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.}
+
 \item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
 
 \item{random_seed}{A numerical value for the random seed. Default is NULL.}
 
-\item{remove_obs}{A logical value to remove observations with categorical features from the test/validation set
+\item{remove_obs}{A logical value to remove observations with categorical predictors from the test/validation set
 that have not been observed during model training. Some algorithms may produce an error if this occurs. Default is FALSE.}
 
 \item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.}
@@ -95,10 +98,10 @@ on classification data using various classification algorithms.
 data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
-result <- categorical_cv_split(iris, y_col = "Species", split = 0.8, model_type = "lda")
+result <- categorical_cv_split(iris, target = "Species", split = 0.8, model_type = "lda")
 
 # Perform 5-fold cross-validation using QDA
-result <- categorical_cv_split(iris, y_col = "Species", fold_n = 5, model_type = "qda")
+result <- categorical_cv_split(iris, target = "Species", n_folds = 5, model_type = "qda")
 }
 \seealso{
 \code{\link{print.vswift}}, \code{\link{plot.vswift}}

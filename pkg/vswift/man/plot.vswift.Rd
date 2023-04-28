@@ -27,7 +27,7 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set and stratified_sampling using QDA
 
-result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
+result <- categorical_cv_split(data = iris, target = "Species", split = 0.8,
 model_type = "qda", stratified = TRUE)
 
 # Plot performance metrics for train-test split

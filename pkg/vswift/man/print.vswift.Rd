@@ -25,10 +25,10 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
 
-result <- categorical_cv_split(data = iris, y_col = "Species", split = 0.8,
+result <- categorical_cv_split(data = iris, target = "Species", split = 0.8,
 model_type = "lda", stratified = TRUE, random_seed = 123)
 
-# Print parameter information and performance metrics
+#  Print parameter information and performance metrics
 print(result)
 
 }

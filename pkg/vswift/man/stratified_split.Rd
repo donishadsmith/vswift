@@ -6,9 +6,9 @@
 \usage{
 stratified_split(
   data = NULL,
-  y_col = NULL,
+  target = NULL,
   split = NULL,
-  fold_n = NULL,
+  n_folds = NULL,
   stratified = FALSE,
   random_seed = NULL,
   create_data = FALSE
@@ -17,11 +17,11 @@ stratified_split(
 \arguments{
 \item{data}{A data frame.}
 
-\item{y_col}{A numerical index or character name for the response variable.}
+\item{target}{A numerical index or character name for the response variable.}
 
 \item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.}
 
-\item{fold_n}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
+\item{n_folds}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
 
 \item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
 
@@ -43,5 +43,5 @@ data(iris)
 
 # Obtain indices for 80\% training/test split and 5-fold CV
 
-stratified_list <- stratified_split(data = iris, y_col = "Species", split = 0.8, fold_n = 5)
+stratified_list <- stratified_split(data = iris, target = "Species", split = 0.8, n_folds = 5)
 }
