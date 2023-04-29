@@ -117,16 +117,18 @@ categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, 
       cleaned_data[,target] <- as.character(cleaned_data[,target])
     }
     # Get character columns
-    character_columns <- sapply(cleaned_data,function(x) is.character(x))
-    factor_columns <- sapply(cleaned_data,function(x) is.factor(x))
-    columns <- c(character_columns,factor_columns) 
-    # Get character column names
-    columns <- colnames(cleaned_data)[columns]
-    for(col in columns){
-      if(is.character(cleaned_data[,col])){
-        cleaned_data[,col] <- factor(cleaned_data[,col])
+    character_columns <- as.vector(sapply(cleaned_data,function(x) is.character(x)))
+    factor_columns <- as.vector(sapply(cleaned_data,function(x) is.factor(x)))
+    # Get column names
+    columns <- colnames(cleaned_data)[character_columns]
+    columns <- c(columns, colnames(cleaned_data)[factor_columns])
+    if(!length(columns) == 0){
+      for(col in columns){
+        if(is.character(cleaned_data[,col])){
+          cleaned_data[,col] <- factor(cleaned_data[,col])
+        }
+        data_levels[[col]] <- levels(cleaned_data[,col])
       }
-      data_levels[[col]] <- levels(cleaned_data[,col])
     }
   }
   if(!model_type %in% c("svm","logistic")){
