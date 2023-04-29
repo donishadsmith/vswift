@@ -74,7 +74,7 @@
         # For loop to obtain vector of values for each class
         for(class in unlist(object["classes"])){
           # Empty class_col or initialize variable
-          class_col<- c()
+          class_col <- c()
           # Go through column names, split the colnames and class name to see if the column name is the metric for that class
           for(colname in colnames(object[["metrics"]][["split"]])){
             split_colname <- unlist(strsplit(colname,split = " "))
@@ -96,10 +96,10 @@
           cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics, collapse = " "),"\n")
           class_position <- class_position + 1
         }
-        
       }
     }
-    if(all(is.data.frame(object[["metrics"]][["cv"]]))){
+    if(is.data.frame(object[["metrics"]][["cv"]])){
+      # Variable for which class string length to print to ensure all values have equal spacing
       class_position <- 1 
       # Get number of folds to select the correct rows for mean and stdev
       n_folds <- object[["information"]][["parameters"]][["n_folds"]]
@@ -117,7 +117,7 @@
       for(class in as.character(unlist(object["classes"]))){
         # Empty class_col or initialize variable
         class_col <- c()
-        for(colname in colnames(object[["metrics"]][["split"]])){
+        for(colname in colnames(object[["metrics"]][["cv"]])){
           split_colname <- unlist(strsplit(colname,split = " "))
           split_classname <- unlist(strsplit(class,split = " ")) 
           if(all(split_classname %in% split_colname)){
