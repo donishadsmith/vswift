@@ -27,12 +27,7 @@
 "plot.vswift" <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vswift"){
     # Check if RStudio or GUI is running for proper plotting
-    if(Sys.getenv("RStudio") == "1"){
-      new_window  <- plot.new
-    }else{
-      system = as.character(Sys.info()["sysname"])
-      new_window <- ifelse(system == "Windows", windows, x11)
-    }
+    new_window <- vswift:::.check_env()
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       # Plot metrics for training and test
       as.character(Sys.info()["sysname"])

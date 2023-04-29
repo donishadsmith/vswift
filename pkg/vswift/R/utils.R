@@ -262,3 +262,15 @@
   # Return list
   return(calculate_metrics_list)
 }
+
+.check_env <- function(){
+  system = as.character(Sys.info()["sysname"])
+  if(Sys.getenv("RStudio") == "1"){
+    new_window  <- ifelse(rstudioapi::isAvailable(), function(){},ifelse(system == "Windows", windows, x11))
+  }else{
+    new_window <- ifelse(system == "Windows", windows, x11)
+  }
+  return(new_window)
+}
+
+
