@@ -28,7 +28,7 @@
   if(class(object) == "vswift"){
     # Check if RStudio or GUI is running for proper plotting
     if(Sys.getenv("RStudio") == "1"){
-      new_window  <- rstudioapi::viewer()
+      new_window  <- plot.new
     }else{
       system = as.character(Sys.info()["sysname"])
       new_window <- ifelse(system == "Windows", windows, x11)
