@@ -26,24 +26,32 @@
 #' @export
 "plot.vswift" <- function(object, split = TRUE, cv = TRUE){
   if(class(object) == "vswift"){
+    # Check if RStudio or GUI is running for proper plotting
+    if(Sys.getenv("RStudio") == "1"){
+      new_window  <- rstudioapi::viewer()
+    }else{
+      system = as.character(Sys.info()["sysname"])
+      new_window <- ifelse(system == "Windows", windows, x11)
+    }
     if(all(is.data.frame(object[["metrics"]][["split"]]), split == TRUE)){
       # Plot metrics for training and test
-      dev.new()
+      as.character(Sys.info()["sysname"])
+      new_window()
       plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
       axis(1, at = 1:2, labels = c("Training","Test"))
       # Iterate over classes
       for(class in as.character(object[["classes"]][[1]])){
-        dev.new()
+        new_window()
         plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Precision", class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
              main = paste("Class:",class))
         axis(1, at = 1:2, labels = c("Training","Test"))
         
-        dev.new()
+        new_window()
         plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s Recall", class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
              main = paste("Class:",class))
         axis(1, at = 1:2, labels = c("Training","Test"))
         
-        dev.new()
+        new_window()
         plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,sprintf("Class: %s F-Score", class)] , ylim = c(0,1), xlab = "Set", ylab = "F-Score" , xaxt = "n",
              main = paste("Class:",class))
         axis(1, at = 1:2, labels = c("Training","Test"))
@@ -63,13 +71,13 @@
         split_vector <- unlist(strsplit(colname, split = " "))
         # Depending on column name, plotting is handled slightly differently
         if("Classification" %in% split_vector){
-          dev.new()
+          new_window()
           plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
           axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
         }else{
           # Get correct metric name for plot y title
           y_name <- c("Precision","Recall","F-Score")[which(c("Precision","Recall","F-Score") %in% split_vector)]
-          dev.new()
+          new_window()
           plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
           axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
           # Add 1 to `class_idx` when `y_name == "Recall"` to get correct class plot title
