@@ -17,6 +17,7 @@ categorical_cv_split(
   remove_obs = FALSE,
   save_models = FALSE,
   save_data = FALSE,
+  final_model = FALSE,
   ...
 )
 }
@@ -52,13 +53,15 @@ that have not been observed during model training. Some algorithms may produce a
 
 \item{save_data}{A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.}
 
+\item{final_model}{A logical value to use all complete observations in the input data for model training. Default = FALSE.}
+
 \item{...}{Additional arguments specific to the chosen classification algorithm.
 Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.}
 }
 \value{
 A list containing the results of train-test splitting and/or k-fold cross-validation,
         including performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
-        saved models (if specified), and saved datasets (if specified).
+        saved models (if specified), and saved datasets (if specified), and a final model (if specified).
 }
 \description{
 `categorical_cv_split` performs a train-test split and/or k-fold cross validation

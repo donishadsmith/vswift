@@ -23,6 +23,7 @@
 #'                   that have not been observed during model training. Some algorithms may produce an error if this occurs. Default is FALSE.
 #' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.
 #' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.
+#' @param final_model A logical value to use all complete observations in the input data for model training. Default = FALSE.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
 #'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.
 #' 
@@ -53,7 +54,7 @@
 #'                    
 #' @return A list containing the results of train-test splitting and/or k-fold cross-validation,
 #'         including performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
-#'         saved models (if specified), and saved datasets (if specified).
+#'         saved models (if specified), and saved datasets (if specified), and a final model (if specified).
 #' 
 #' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
 #' 
@@ -80,7 +81,7 @@
 #' plot(result)
 #' 
 #' @export
-categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
+categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE,...){
   # Ensure model type is lowercase
   model_type <- tolower(model_type)
   # Checking if inputs are valid
@@ -149,6 +150,10 @@ categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, 
   categorical_cv_split_output[["information"]][["parameters"]][["split"]]  <- split
   categorical_cv_split_output[["information"]][["parameters"]][["random_seed"]]  <- random_seed
   categorical_cv_split_output[["information"]][["parameters"]][["missing_data"]]  <- nrow(data) - nrow(cleaned_data)
+  if(categorical_cv_split_output[["information"]][["parameters"]][["missing_data"]] > 0){
+    warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
+                    , categorical_cv_split_output[["information"]][["parameters"]][["missing_data"]] ))
+  }
   categorical_cv_split_output[["information"]][["parameters"]][["sample_size"]] <- nrow(cleaned_data)
   categorical_cv_split_output[["information"]][["parameters"]][["additional_arguments"]] <- list(...)
   # Store classes
@@ -294,7 +299,6 @@ categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, 
       iterator_vector <- 2:iterator
     }
   }
-  
   # Convert variables to characters so that models will predict the original variable
   if(all(model_type == "logistic", !all(cleaned_data[,target] %in% c(0,1)))){
     cleaned_data[,target] <- sapply(cleaned_data[,target], function(x) categorical_cv_split_output[["class_dictionary"]][[as.character(x)]])
@@ -303,172 +307,190 @@ categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, 
   }
   
   # First iteration will always be the evaluation for the traditional data split method
-  for(i in iterator_vector){
-    if(i == 1){
-      # Assigning data split matrices to new variable 
-      model_data <- training_data
-      # Ensure columns have same levels is svm model chosen. The svm may encounter an error is this is not done
-      if(model_type == "svm"){
-        for(col in names(data_levels)){
-          levels(model_data[,col]) <- data_levels[[col]]
+  if(any(!is.null(split), !is.null(n_folds))){
+    for(i in iterator_vector){
+      if(i == 1){
+        # Assigning data split matrices to new variable 
+        model_data <- training_data
+        # Ensure columns have same levels is svm model chosen. The svm may encounter an error is this is not done
+        if(model_type == "svm"){
+          for(col in names(data_levels)){
+            levels(model_data[,col]) <- data_levels[[col]]
+          }
+        }
+      }else{
+        # After the first iteration the cv begins, the training set is assigned to a new variable
+        model_data <- cleaned_data[-c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+        validation_data <- cleaned_data[c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
+        # Ensure columns have same levels
+        if(model_type == "svm"){
+          for(col in names(data_levels)){
+            levels(model_data[,col]) <- levels(validation_data[,col]) <- data_levels[[col]]
+          }
         }
       }
-    }else{
-      # After the first iteration the cv begins, the training set is assigned to a new variable
-      model_data <- cleaned_data[-c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
-      validation_data <- cleaned_data[c(categorical_cv_split_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
-      # Ensure columns have same levels
-      if(model_type == "svm"){
-        for(col in names(data_levels)){
-          levels(model_data[,col]) <- levels(validation_data[,col]) <- data_levels[[col]]
+      
+      # Generate model depending on chosen model_type
+      switch(model_type,
+             # Use double colon to avoid cluttering user space
+             "lda" = {model <- MASS::lda(formula, data = model_data, ...)},
+             "qda" = {model <- MASS::qda(formula, data = model_data, ...)},
+             "logistic" = {model <- glm(formula, data = model_data , family = "binomial", ...)},
+             "svm" = {model <- e1071::svm(formula, data = model_data, ...)},
+             "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)},
+             "ann" = {model <- nnet::nnet(formula = formula, data = model_data, ...)},
+             "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
+             "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data, ...)},
+             "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data, ...)}
+      )
+      
+      # Create variables used in for loops to calculate precision, recall, and f1
+      switch(model_type,
+             "logistic" = {
+               classes <- as.numeric(unlist(categorical_cv_split_output[["class_dictionary"]]))
+               class_names <- names(categorical_cv_split_output[["class_dictionary"]])
+             },
+             class_names <- classes <- categorical_cv_split_output[["classes"]][[target]])
+      # Perform classification accuracy for training and test data split
+      if(i == 1){
+        for(j in c("Training","Test")){
+          if(j == "Test"){
+            # Assign validation data to new variables
+            if(remove_obs == TRUE){
+              model_data <- vswift:::.remove_obs(training_data = model_data, test_data = test_data, target = target)
+            }else{
+              model_data <- test_data
+            }
+          }else{
+            if(save_models == TRUE){
+              categorical_cv_split_output[[paste0(model_type,"_models")]][["split"]][[tolower(j)]] <- model 
+            }
+          }
+          # Store dataframe is save_data is TRUE
+          if(save_data == TRUE){
+            # Store dataframe
+            categorical_cv_split_output[["data"]][[tolower(j)]] <- model_data
+          }
+          # Get prediction
+          switch(model_type,
+                 "svm" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "logistic" = {
+                   prediction_vector <- predict(model, newdata  = model_data, type = "response")
+                   prediction_vector <- ifelse(prediction_vector > threshold, 1, 0)},
+                 "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+                 "knn" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "decisiontree" = {
+                   prediction_df <- predict(model, newdata = model_data)
+                   prediction_vector <- c()
+                   #Iterate over dataframe and select colname with the highest probability
+                   for(row in 1:nrow(prediction_df)){
+                     prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
+                 "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
+                 prediction_vector <- predict(model, newdata = model_data)$class
+          )
+          # Calculate classification accuracy
+          classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
+          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- classification_accuracy
+          # Class positions to get the name of the class in class_names
+          class_position <- 1
+          for(class in classes){
+            metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, model_data = model_data)
+            # Add information to dataframes
+            categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
+            categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
+            categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
+            class_position <- class_position + 1
+            # Warning is a metric is NA
+            if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
+              metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
+              warning(sprintf("at least on metric could not be calculated for class %s - fold %s: %s",class,i-1,paste(metrics, collapse = ",")))
+            }
+          }
+        }
+      } else{
+        if(all(!is.null(n_folds),(i-1) <= n_folds)){
+          # Assign validation data to new variables
+          if(remove_obs == TRUE){
+            model_data <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, fold = i-1)
+          }else{
+            model_data <- validation_data
+          }
+          if(save_models == TRUE){
+            categorical_cv_split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
+          }
+          # Get prediction
+          switch(model_type,
+                 "svm" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "logistic" = {
+                   prediction_vector <- predict(model, newdata  = model_data, type = "response")
+                   prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
+                 "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+                 "knn" = {prediction_vector <- predict(model, newdata = model_data)},
+                 "decisiontree" = {
+                   prediction_df <- predict(model, newdata = model_data)
+                   prediction_vector <- c()
+                   for(row in 1:nrow(prediction_df)){
+                     prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
+                 "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
+                 prediction_vector <- predict(model, newdata = model_data)$class
+          )
+          if(save_data == TRUE){
+            # Store dataframe
+            categorical_cv_split_output[["data"]][[sprintf("fold %s",i-1)]] <- model_data
+          }
+          # Calculate classification accuracy for fold
+          classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- classification_accuracy
+          # Reset class positions to get the name of the class in class_names
+          class_position <- 1
+          for(class in classes){
+            # Calculate metrics
+            metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, model_data = model_data)
+            # Add metrics to dataframe
+            categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
+            categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
+            categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
+            # Warning is a metric is NA
+            if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
+              metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
+              warning(sprintf("at least on metric could not be calculated for class %s - fold %s: %s",class,i-1,paste(metrics, collapse = ",")))
+            }
+            class_position <- class_position + 1
+          }
+        }
+      }
+      # Calculate mean, standard deviation, and standard error for cross validation
+      if(all(!is.null(n_folds),(i-1) == n_folds)){
+        idx <- nrow(categorical_cv_split_output[["metrics"]][["cv"]] )
+        categorical_cv_split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
+        # Calculate mean, standard deviation, and sd for each column except for fold
+        for(colname in colnames(categorical_cv_split_output[["metrics"]][["cv"]] )[colnames(categorical_cv_split_output[["metrics"]][["cv"]] ) != "Fold"]){
+          # Create vector containing corresponding column name values for each fold
+          num_vector <- categorical_cv_split_output[["metrics"]][["cv"]][1:idx, colname]
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
+          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(n_folds)
         }
       }
     }
-    
+  }
+  
+  if(final_model == TRUE){
     # Generate model depending on chosen model_type
     switch(model_type,
            # Use double colon to avoid cluttering user space
-           "lda" = {model <- MASS::lda(formula, data = model_data, ...)},
-           "qda" = {model <- MASS::qda(formula, data = model_data, ...)},
-           "logistic" = {model <- glm(formula, data = model_data , family = "binomial", ...)},
-           "svm" = {model <- e1071::svm(formula, data = model_data, ...)},
-           "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)},
-           "ann" = {model <- nnet::nnet(formula = formula, data = model_data, ...)},
-           "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
-           "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data, ...)},
-           "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data, ...)}
+           "lda" = {categorical_cv_split_output[["final_model"]] <- MASS::lda(formula, data = cleaned_data, ...)},
+           "qda" = {categorical_cv_split_output[["final_model"]]  <- MASS::qda(formula, data = cleaned_data, ...)},
+           "logistic" = {categorical_cv_split_output[["final_model"]]  <- glm(formula, data = cleaned_data , family = "binomial", ...)},
+           "svm" = {categorical_cv_split_output[["final_model"]]  <- e1071::svm(formula, data = cleaned_data, ...)},
+           "naivebayes" = {categorical_cv_split_output[["final_model"]]  <- naivebayes::naive_bayes(formula = formula, data = cleaned_data, ...)},
+           "ann" = {categorical_cv_split_output[["final_model"]]  <- nnet::nnet(formula = formula, data = cleaned_data, ...)},
+           "knn" = {categorical_cv_split_output[["final_model"]]  <- kknn::train.kknn(formula = formula, data = cleaned_data, ...)},
+           "decisiontree" = {categorical_cv_split_output[["final_model"]]  <- rpart::rpart(formula = formula, data = cleaned_data, ...)},
+           "randomforest" = {categorical_cv_split_output[["final_model"]]  <- randomForest::randomForest(formula = formula, data = cleaned_data, ...)}
     )
-    
-    # Create variables used in for loops to calculate precision, recall, and f1
-    switch(model_type,
-           "logistic" = {
-             classes <- as.numeric(unlist(categorical_cv_split_output[["class_dictionary"]]))
-             class_names <- names(categorical_cv_split_output[["class_dictionary"]])
-           },
-           class_names <- classes <- categorical_cv_split_output[["classes"]][[target]])
-    # Perform classification accuracy for training and test data split
-    if(i == 1){
-      for(j in c("Training","Test")){
-        if(j == "Test"){
-          # Assign validation data to new variables
-          if(remove_obs == TRUE){
-            model_data <- vswift:::.remove_obs(training_data = model_data, test_data = test_data, target = target)
-          }else{
-            model_data <- test_data
-          }
-        }else{
-          if(save_models == TRUE){
-            categorical_cv_split_output[[paste0(model_type,"_models")]][["split"]][[tolower(j)]] <- model 
-          }
-        }
-        # Store dataframe is save_data is TRUE
-        if(save_data == TRUE){
-          # Store dataframe
-          categorical_cv_split_output[["data"]][[tolower(j)]] <- model_data
-        }
-        # Get prediction
-        switch(model_type,
-               "svm" = {prediction_vector <- predict(model, newdata = model_data)},
-               "logistic" = {
-                 prediction_vector <- predict(model, newdata  = model_data, type = "response")
-                 prediction_vector <- ifelse(prediction_vector > threshold, 1, 0)},
-               "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-               "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
-               "knn" = {prediction_vector <- predict(model, newdata = model_data)},
-               "decisiontree" = {
-                 prediction_df <- predict(model, newdata = model_data)
-                 prediction_vector <- c()
-                 #Iterate over dataframe and select colname with the highest probability
-                 for(row in 1:nrow(prediction_df)){
-                   prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
-               "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
-               prediction_vector <- predict(model, newdata = model_data)$class
-        )
-        # Calculate classification accuracy
-        classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
-        categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- classification_accuracy
-        # Class positions to get the name of the class in class_names
-        class_position <- 1
-        for(class in classes){
-          metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, model_data = model_data)
-          # Add information to dataframes
-          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
-          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
-          categorical_cv_split_output[["metrics"]][["split"]][which(categorical_cv_split_output[["metrics"]][["split"]]$Set == j),sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
-          class_position <- class_position + 1
-          # Warning is a metric is NA
-          if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
-            metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
-            warning(sprintf("at least on metric could not be calculated for class %s - fold %s: %s",class,i-1,paste(metrics, collapse = ",")))
-          }
-        }
-      }
-    } else{
-      if(all(!is.null(n_folds),(i-1) <= n_folds)){
-        # Assign validation data to new variables
-        if(remove_obs == TRUE){
-          model_data <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, fold = i-1)
-        }else{
-          model_data <- validation_data
-        }
-        if(save_models == TRUE){
-          categorical_cv_split_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
-        }
-        # Get prediction
-        switch(model_type,
-               "svm" = {prediction_vector <- predict(model, newdata = model_data)},
-               "logistic" = {
-                 prediction_vector <- predict(model, newdata  = model_data, type = "response")
-                 prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
-               "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-               "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
-               "knn" = {prediction_vector <- predict(model, newdata = model_data)},
-               "decisiontree" = {
-                 prediction_df <- predict(model, newdata = model_data)
-                 prediction_vector <- c()
-                 for(row in 1:nrow(prediction_df)){
-                   prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
-               "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
-               prediction_vector <- predict(model, newdata = model_data)$class
-        )
-        if(save_data == TRUE){
-          # Store dataframe
-          categorical_cv_split_output[["data"]][[sprintf("fold %s",i-1)]] <- model_data
-        }
-        # Calculate classification accuracy for fold
-        classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
-        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), "Classification Accuracy"] <- classification_accuracy
-        # Reset class positions to get the name of the class in class_names
-        class_position <- 1
-        for(class in classes){
-          # Calculate metrics
-          metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, model_data = model_data)
-          # Add metrics to dataframe
-          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
-          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
-          categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == sprintf("Fold %s",i-1)), sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
-          # Warning is a metric is NA
-          if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
-            metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
-            warning(sprintf("at least on metric could not be calculated for class %s - fold %s: %s",class,i-1,paste(metrics, collapse = ",")))
-          }
-          class_position <- class_position + 1
-        }
-      }
-    }
-    # Calculate mean, standard deviation, and standard error for cross validation
-    if(all(!is.null(n_folds),(i-1) == n_folds)){
-      idx <- nrow(categorical_cv_split_output[["metrics"]][["cv"]] )
-      categorical_cv_split_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
-      # Calculate mean, standard deviation, and sd for each column except for fold
-      for(colname in colnames(categorical_cv_split_output[["metrics"]][["cv"]] )[colnames(categorical_cv_split_output[["metrics"]][["cv"]] ) != "Fold"]){
-        # Create vector containing corresponding column name values for each fold
-        num_vector <- categorical_cv_split_output[["metrics"]][["cv"]][1:idx, colname]
-        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
-        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
-        categorical_cv_split_output[["metrics"]][["cv"]][which(categorical_cv_split_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(n_folds)
-      }
-    }
   }
   # Make list a vswift class
   class(categorical_cv_split_output) <- "vswift"
