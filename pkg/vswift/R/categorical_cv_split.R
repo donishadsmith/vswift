@@ -62,21 +62,22 @@
 #' data(iris)
 #'
 #' # Perform a train-test split with an 80% training set using LDA
-#' result <- categorical_cv_split(iris, target = "Species", split = 0.8, model_type = "lda")
+#' result <- categorical_cv_split(data = iris, target = "Species", split = 0.8, model_type = "lda")
 #' 
 #' # Print parameters and metrics
 #' print(result)
 #' 
 #' # Plot metrics
-#' plot(results)
+#' plot(result)
 #'
 #' # Perform 5-fold cross-validation using QDA
-#' result <- categorical_cv_split(iris, target = "Species", n_folds = 5, model_type = "qda")
+#' result <- categorical_cv_split(data = iris, target = "Species", n_folds = 5, model_type = "qda")
+#' 
 #' # Print parameters and metrics
 #' print(result)
 #' 
 #' # Plot metrics
-#' plot(results)
+#' plot(result)
 #' 
 #' @export
 categorical_cv_split <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE,...){
