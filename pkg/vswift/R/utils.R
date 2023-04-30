@@ -395,6 +395,7 @@
         y_name <- c("Precision","Recall","F-Score")[which(c("Precision","Recall","F-Score") %in% split_vector)]
         # Save metrics for cv
         png(filename = paste0(path,sprintf("cv_%s_%s.png",tolower(y_name),as.character(object[["classes"]][[1]])[[class_idx]])),...)
+        file <- paste0(path,sprintf("cv_%s_%s.png",tolower(y_name),as.character(object[["classes"]][[1]])[[class_idx]]))
         plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = y_name, main = paste("Class: ",as.character(object[["classes"]][[1]])[[class_idx]]), xaxt = "n") 
         axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
         # Add 1 to `class_idx` when `y_name == "Recall"` to get correct class plot title
@@ -407,7 +408,9 @@
       abline(h = mean(num_vector) + sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
       abline(h = mean(num_vector) - sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
       # Don't display plot and create new plot
-      vswift:::.dev_off_and_new()
+      #vswift:::.dev_off_and_new()
+      dev.copy(png,file)
+      graphics.off()
     }
   }
 }
