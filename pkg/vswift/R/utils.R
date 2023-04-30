@@ -408,9 +408,7 @@
       abline(h = mean(num_vector) + sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
       abline(h = mean(num_vector) - sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
       # Don't display plot and create new plot
-      #vswift:::.dev_off_and_new()
-      dev.copy(png,file)
-      graphics.off()
+      vswift:::.dev_off_and_new()
     }
   }
 }
