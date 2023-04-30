@@ -348,6 +348,7 @@
     png(filename = paste0(path,"train_test_classification_accuracy.png"),...)
     plot(x = 1:2, y = object[["metrics"]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n")
     axis(1, at = 1:2, labels = c("Training","Test"))
+    vswift:::.dev_off_and_new()
     # Iterate over classes
     for(class in as.character(object[["classes"]][[1]])){
       # Save metrics for training and test
