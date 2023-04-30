@@ -4,14 +4,19 @@
 \alias{plot.vswift}
 \title{Plot model evaluation metrics}
 \usage{
-\method{plot}{vswift}(object, split = TRUE, cv = TRUE)
+\method{plot}{vswift}(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, ...)
 }
 \arguments{
 \item{object}{An object of class vswift.}
 
 \item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
 
-\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid blueline represents the mean
+\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid blue line represents the mean}
+
+\item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.}
+
+\item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
+working directory.
 and dashed red line represents the standard deviation. Default = TRUE.}
 }
 \value{
