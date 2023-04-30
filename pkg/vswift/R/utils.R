@@ -337,7 +337,11 @@
  
 .dev_off_and_new <- function(){
   # Don't display plot if save_plot is TRUE
-  graphics.off()
+  if(all(Sys.getenv("RStudio") == "1",rstudioapi::isAvailable())){
+    graphics.off()
+  }else{
+    dev.off()
+  }
   # Call new plot 
   dev.new()
 }
