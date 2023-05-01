@@ -18,11 +18,11 @@
 #'                   For "ann", `size =` must be specified as an additional argument.
 #' @param threshold  A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.                 
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
-#' @param random_seed A numerical value for the random seed. Default is NULL.
+#' @param random_seed A numerical value for the random seed. Default = NULL.
 #' @param remove_obs A logical value to remove observations with categorical predictors from the test/validation set
-#'                   that have not been observed during model training. Some algorithms may produce an error if this occurs. Default is FALSE.
-#' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.
-#' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.
+#'                   that have not been observed during model training. Some algorithms may produce an error if this occurs. Default = FALSE.
+#' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default = FALSE.
+#' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.
 #' @param final_model A logical value to use all complete observations in the input data for model training. Default = FALSE.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
 #'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.

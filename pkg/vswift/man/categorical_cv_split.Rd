@@ -44,14 +44,14 @@ For "ann", `size =` must be specified as an additional argument.}
 
 \item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
 
-\item{random_seed}{A numerical value for the random seed. Default is NULL.}
+\item{random_seed}{A numerical value for the random seed. Default = NULL.}
 
 \item{remove_obs}{A logical value to remove observations with categorical predictors from the test/validation set
-that have not been observed during model training. Some algorithms may produce an error if this occurs. Default is FALSE.}
+that have not been observed during model training. Some algorithms may produce an error if this occurs. Default = FALSE.}
 
-\item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation. Default is FALSE.}
+\item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation. Default = FALSE.}
 
-\item{save_data}{A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default is FALSE.}
+\item{save_data}{A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.}
 
 \item{final_model}{A logical value to use all complete observations in the input data for model training. Default = FALSE.}
 

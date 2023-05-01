@@ -5,11 +5,12 @@
 #'
 #' @param object An object of class vswift.
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.
-#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid blue line represents the mean
+#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
+#' and dashed blue line represents the standard deviation. Default = TRUE.
 #' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.
 #' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
 #' working directory.
-#' and dashed red line represents the standard deviation. Default = TRUE.
+#' 
 #' 
 #' @return Plots representing evaluation metrics.
 #' @examples
