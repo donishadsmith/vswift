@@ -25,34 +25,34 @@
     stop("split must be a numeric value from between 0.5 and 0.9")
   }
   
-  # Ensure target is not null
-  if(is.null(target)){
-    stop("target has no input")
-  }
-  
-  # Ensure target is also not in predictors 
-  if(target %in% predictors){
-    stop("target cannot also be a predictor")
-  }
-  
-  # Ensure there is only one target variable
-  if(length(target) != 1){
-    stop("length of target must be 1")
-  }
-  
-  # Check if target is in dataframe
-  if(is.numeric(target)){
-    if(!(target %in% c(1:ncol(data)))){
-      stop("target not in dataframe")
+  if(call == "categorical_cv_split" || call == "stratified_split" & stratified == TRUE){
+    # Ensure target is not null
+    if(is.null(target)){
+      stop("target has no input")
     }
-  }else if(is.character(target)){
-    if(!(target %in% colnames(data))){
-      stop("target not in dataframe")
+    # Ensure target is also not in predictors 
+    if(target %in% predictors){
+      stop("target cannot also be a predictor")
     }
-  }else{
-    stop("target must be an integer or character")
+    
+    # Ensure there is only one target variable
+    if(length(target) != 1){
+      stop("length of target must be 1")
+    }
+    
+    # Check if target is in dataframe
+    if(is.numeric(target)){
+      if(!(target %in% c(1:ncol(data)))){
+        stop("target not in dataframe")
+      }
+    }else if(is.character(target)){
+      if(!(target %in% colnames(data))){
+        stop("target not in dataframe")
+      }
+    }else{
+      stop("target must be an integer or character")
+    }
   }
-  
   # Check if predictors are in data frame
   if(!is.null(predictors)){
     if(all(is.numeric(predictors))){

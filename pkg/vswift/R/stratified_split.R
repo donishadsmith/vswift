@@ -4,7 +4,7 @@
 #' 
 #' 
 #' @param data A data frame.
-#' @param target A numerical index or character name for the target variable.
+#' @param target A numerical index or character name for the target variable. Only needs to be specified if stratified = TRUE. Default = NULL.
 #' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.
 #' @param n_folds A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
@@ -22,7 +22,7 @@
 #' stratified_list <- stratified_split(data = iris, target = "Species", split = 0.8, n_folds = 5)
 #' @export
 
-stratified_split <- function(data = NULL, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
+stratified_split <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
   # Check input
   vswift:::.error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   # Set seed
