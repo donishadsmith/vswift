@@ -342,8 +342,6 @@
   }else{
     dev.off()
   }
-  # Call new plot 
-  dev.new()
 }
 
 .save_plots <- function(object, path, split, cv, ...){
