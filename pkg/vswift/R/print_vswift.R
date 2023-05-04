@@ -25,7 +25,6 @@
 #' @export
 "print.vswift"<- function(object, parameters = TRUE, metrics = TRUE){
   if(class(object) == "vswift"){
-    par(cex = 0.5)
     if(parameters == TRUE){
       # Print parameter information
       cat(sprintf("Model Type: %s\n\n", object[["information"]][["parameters"]][["model_type"]]))
