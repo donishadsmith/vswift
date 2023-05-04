@@ -31,12 +31,13 @@ help(package = "vswift")
 library(vswift)
 
 # Perform train-test split and k-fold cross-validation with stratified sampling
-results <- categorical_cv_split(data = my_data,
-                                target = "class",
+results <- categorical_cv_split(data = iris,
+                                target = "Species",
                                 split = 0.8,
                                 n_folds = 5,
                                 model_type = "lda",
-                                stratified = TRUE)
+                                stratified = TRUE,
+                                random_seed = 123)
                                 
 ```
 ```R
@@ -47,7 +48,7 @@ print(results, parameters = TRUE, metrics = TRUE)
 ```
 Model Type: lda
 
-Predictors: Sepal.Length,Sepal.Width,Petal.Length,Petal.Width
+Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
 
 Classes: setosa, versicolor, virginica
 
@@ -56,6 +57,8 @@ Fold size: 5
 Split: 0.8
 
 Stratified Sampling: TRUE
+
+Random Seed: 123
 
 Missing Data: 0
 
@@ -73,20 +76,20 @@ Classication Accuracy:  0.98
 Class:           Precision:  Recall:  F-Score:
 
 setosa                1.00     1.00      1.00 
-versicolor            1.00     0.95      0.97 
-virginica             0.95     1.00      0.98 
+versicolor            0.97     0.95      0.96 
+virginica             0.95     0.98      0.96 
 
 
  Test 
 _ _ _ _ 
 
-Classication Accuracy:  0.97 
+Classication Accuracy:  1.00 
 
 Class:           Precision:  Recall:  F-Score:
 
 setosa                1.00     1.00      1.00 
-versicolor            0.91     1.00      0.95 
-virginica             1.00     0.90      0.95 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
 
 
  K-fold CV 
@@ -97,8 +100,8 @@ Average Classication Accuracy:  0.98 (0.01)
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.05) 
-virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.04) 
+versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
+virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
 ```
 ```R
 # Plot model evaluation metrics
