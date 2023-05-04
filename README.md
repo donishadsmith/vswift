@@ -22,7 +22,25 @@ install.packages("devtools")
 
 devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
 
+help(package = "vswift")
+```
+## Usage
+
+```R
+# Load the package
 library(vswift)
 
-help(package = "vswift")
+# Perform train-test split and k-fold cross-validation with stratified sampling
+results <- categorical_cv_split(data = my_data,
+                                target = "class",
+                                split = 0.7,
+                                n_folds = 5,
+                                model_type = "logistic",
+                                stratified = TRUE)
+
+# Print parameter information and model evaluation metrics
+print(results, parameters = TRUE, metrics = TRUE)
+
+# Plot model evaluation metrics
+plot(results, split = TRUE, cv = TRUE)
 ```
