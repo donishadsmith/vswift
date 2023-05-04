@@ -43,6 +43,7 @@ results <- categorical_cv_split(data = my_data,
 # Print parameter information and model evaluation metrics
 print(results, parameters = TRUE, metrics = TRUE)
 ```
+**Output**
 ```
 Model Type: lda
 
