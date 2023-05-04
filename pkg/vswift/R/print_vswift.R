@@ -32,7 +32,7 @@
         cat(sprintf("Threshold: %s\n\n", object[["information"]][["parameters"]][["threshold"]]))
       }
       # Creating response variable
-      cat(sprintf("Predictors: %s\n\n", paste(object[["information"]][["parameters"]][["predictors"]], collapse = ",")))
+      cat(sprintf("Predictors: %s\n\n", paste(object[["information"]][["parameters"]][["predictors"]], collapse = ", ")))
       cat(sprintf("Target: %s\n\n", object[["information"]][["parameters"]][["responsd_variable"]]))
       cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
       cat(sprintf("Fold size: %s\n\n", object[["information"]][["parameters"]][["n_folds"]]))
