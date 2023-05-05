@@ -18,10 +18,11 @@ This package is currently in its beta testing phase but is functional.
 To install and use vswift:
 
 ```R
+# Install 'devtools' to install packages from Github
 install.packages("devtools")
-
+# Install 'vswift' package
 devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
-
+# Display documentation for the 'vswift' package
 help(package = "vswift")
 ```
 ## Usage
@@ -44,7 +45,7 @@ results <- categorical_cv_split(data = iris,
 # Print parameter information and model evaluation metrics
 print(results, parameters = TRUE, metrics = TRUE)
 ```
-**Output**
+**Output:**
 ```
 Model Type: lda
 
@@ -100,10 +101,26 @@ Average Classication Accuracy:  0.98 (0.01)
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
-virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
+versicolor           0.98 (0.02)       0.96 (0.02)       0.97 (0.01) 
+virginica            0.96 (0.02)       0.98 (0.02)       0.97 (0.01) 
 ```
 ```R
 # Plot model evaluation metrics
 plot(results, split = TRUE, cv = TRUE)
+```
+```
+![image](https://user-images.githubusercontent.com/112973674/236352770-f4264988-099e-459d-ad8c-278624d67ecf.png)
+![image](https://user-images.githubusercontent.com/112973674/236352801-d1754848-12e8-4be2-901e-a808363ff530.png)
+![image](https://user-images.githubusercontent.com/112973674/236352819-7999d88b-a061-468e-b81d-6be426eebc99.png)
+![image](https://user-images.githubusercontent.com/112973674/236352858-ebabd2bb-87c7-4c17-8eee-328ff76c85d3.png)
+![image](https://user-images.githubusercontent.com/112973674/236352879-181cf86f-fbb6-47df-a1d2-b7464ab33d04.png)
+![image](https://user-images.githubusercontent.com/112973674/236352895-ef4b31f8-90f0-4490-bee9-d502a4693be9.png)
+![image](https://user-images.githubusercontent.com/112973674/236352907-d38a93aa-a650-4a9c-ac2a-7c4d6c31551b.png)
+![image](https://user-images.githubusercontent.com/112973674/236352928-6a42bb74-d827-4089-8817-4e00ce0b5097.png)
+![image](https://user-images.githubusercontent.com/112973674/236352948-4c03edff-72b9-4c3c-904b-8f7c55076ea4.png)
+![image](https://user-images.githubusercontent.com/112973674/236352967-a1f96419-6687-497f-9213-af31358413c0.png)
+![image](https://user-images.githubusercontent.com/112973674/236352975-4b8f67f8-e56c-4752-8cb9-e1704143b5e6.png)
+![image](https://user-images.githubusercontent.com/112973674/236352990-886aadd4-a43c-4604-a846-f35ad05400c4.png)
+![image](https://user-images.githubusercontent.com/112973674/236353008-74f28447-87d4-4f07-903f-d43ebfb009d2.png)
+
 ```
