@@ -1,5 +1,5 @@
 # vswift
-This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms. It also provides detailed information about class distribution in train/test splits and k-folds when stratified sampling is requiested.
+This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms. It also provides detailed information about class distribution in train/test splits and k-folds when stratified sampling is requested.
 
 This package is currently in its beta testing phase but is functional.
 
