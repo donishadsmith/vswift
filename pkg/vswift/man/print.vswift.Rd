@@ -13,7 +13,7 @@
 
 \item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will display the precision, recall, and f-score for each class.
 If the vswift object contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
-will be displayed. If the vswift object contains information for k-fold validation, the mean and standard error for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.}
+will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.}
 }
 \description{
 `print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.

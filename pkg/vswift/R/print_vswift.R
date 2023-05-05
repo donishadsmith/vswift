@@ -7,7 +7,7 @@
 #' @param parameters A logical value indicating whether to print parameter information from the vswift object. Default = TRUE.
 #' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. This will display the precision, recall, and f-score for each class.
 #' If the vswift object contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
-#' will be displayed. If the vswift object contains information for k-fold validation, the mean and standard error for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.
+#' will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.
 #'
 #' @examples
 #' # Load an example dataset
@@ -33,7 +33,7 @@
       }
       # Creating response variable
       cat(sprintf("Predictors: %s\n\n", paste(object[["information"]][["parameters"]][["predictors"]], collapse = ", ")))
-      cat(sprintf("Target: %s\n\n", object[["information"]][["parameters"]][["response_variable"]]))
+      cat(sprintf("Target: %s\n\n", object[["information"]][["parameters"]][["responsd_variable"]]))
       cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
       cat(sprintf("Fold size: %s\n\n", object[["information"]][["parameters"]][["n_folds"]]))
       cat(sprintf("Split: %s\n\n", object[["information"]][["parameters"]][["split"]]))
@@ -107,7 +107,7 @@
       cat("\n\n","K-fold CV","\n")
       cat(rep("_",nchar("K-fold CV")),"\n\n")
       classification_accuracy_metrics <- c(format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),
-                                         format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),"Classification Accuracy"],2), nsmall = 2))
+                                         format(round(object[["metrics"]][["cv"]][which(object[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2), nsmall = 2))
       
       classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],classification_accuracy_metrics[2])
       cat("Average Classication Accuracy: ", classification_accuracy_metrics ,"\n\n")
@@ -126,12 +126,12 @@
         }
         # Print metric corresponding to class
         mean_class_metrics <- sapply(object[["metrics"]][["cv"]][((n_folds+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        se_class_metrics <- sapply(object[["metrics"]][["cv"]][((n_folds+3)),class_col], function(x) format(round(x,2), nsmall = 2))  
-        se_metric_position <- 1
+        sd_class_metrics <- sapply(object[["metrics"]][["cv"]][((n_folds+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
+        sd_metric_position <- 1
         class_metrics <- c()
         for(metric in mean_class_metrics){
-          class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, se_class_metrics[se_metric_position]))
-          se_metric_position <- se_metric_position + 1
+          class_metrics <- c(class_metrics, sprintf("%s (%s)", metric, sd_class_metrics[sd_metric_position]))
+          sd_metric_position <- sd_metric_position + 1
         }
         if(class_metrics[1] == "NaN (NA)"){
           class_metrics <- c(rep("", 3),class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
@@ -143,7 +143,7 @@
         cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics),"\n")
         # Reset variables
         class_position <- class_position + 1
-        se_metric_position <- 1
+        sd_metric_position <- 1
         class_metrics <- c()
       }
     }

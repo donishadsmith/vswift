@@ -329,8 +329,8 @@
       }
       # Add mean and standard deviation to the plot
       abline(h = mean(num_vector), col = "red", lwd = 1)
-      abline(h = mean(num_vector) + sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
-      abline(h = mean(num_vector) - sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
+      abline(h = mean(num_vector) + sd(num_vector), col = "blue", lty = 2, lwd = 1)
+      abline(h = mean(num_vector) - sd(num_vector), col = "blue", lty = 2, lwd = 1)
     }
   }
 }
@@ -407,8 +407,8 @@
       }
       # Add mean and standard deviation to the plot
       abline(h = mean(num_vector), col = "red", lwd = 1)
-      abline(h = mean(num_vector) + sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
-      abline(h = mean(num_vector) - sd(num_vector)/sqrt(fold_n), col = "blue", lty = 2, lwd = 1)
+      abline(h = mean(num_vector) + sd(num_vector), col = "blue", lty = 2, lwd = 1)
+      abline(h = mean(num_vector) - sd(num_vector), col = "blue", lty = 2, lwd = 1)
       # Don't display plot and create new plot
       vswift:::.dev_off_and_new()
     }
