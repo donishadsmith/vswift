@@ -12,7 +12,7 @@
 \item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
 
 \item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
-and dashed blue line represents the standard deviation. Default = TRUE.}
+and dashed blue line represents the standard error. Default = TRUE.}
 
 \item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.}
 
