@@ -1,5 +1,5 @@
 # vswift
-This R package is a user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms. It also provides detailed information about class distribution in train/test splits and k-folds.
+This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms. It also provides detailed information about class distribution in train/test splits and k-folds when stratified sampling is requiested.
 
 This package is currently in its beta testing phase but is functional.
 
@@ -20,8 +20,10 @@ To install and use vswift:
 ```R
 # Install 'devtools' to install packages from Github
 install.packages("devtools")
+
 # Install 'vswift' package
 devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
+
 # Display documentation for the 'vswift' package
 help(package = "vswift")
 ```
@@ -96,28 +98,50 @@ virginica             1.00     1.00      1.00
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.98 (0.01) 
+Average Classication Accuracy:  0.98 (0.02) 
 
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.98 (0.02)       0.96 (0.02)       0.97 (0.01) 
-virginica            0.96 (0.02)       0.98 (0.02)       0.97 (0.01) 
+versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
+virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
 ```
 ```R
 # Plot model evaluation metrics
 plot(results, split = TRUE, cv = TRUE)
 ```
-![image](https://user-images.githubusercontent.com/112973674/236352770-f4264988-099e-459d-ad8c-278624d67ecf.png)
-![image](https://user-images.githubusercontent.com/112973674/236352801-d1754848-12e8-4be2-901e-a808363ff530.png)
-![image](https://user-images.githubusercontent.com/112973674/236352819-7999d88b-a061-468e-b81d-6be426eebc99.png)
-![image](https://user-images.githubusercontent.com/112973674/236352858-ebabd2bb-87c7-4c17-8eee-328ff76c85d3.png)
-![image](https://user-images.githubusercontent.com/112973674/236352879-181cf86f-fbb6-47df-a1d2-b7464ab33d04.png)
-![image](https://user-images.githubusercontent.com/112973674/236352895-ef4b31f8-90f0-4490-bee9-d502a4693be9.png)
-![image](https://user-images.githubusercontent.com/112973674/236352907-d38a93aa-a650-4a9c-ac2a-7c4d6c31551b.png)
-![image](https://user-images.githubusercontent.com/112973674/236352928-6a42bb74-d827-4089-8817-4e00ce0b5097.png)
-![image](https://user-images.githubusercontent.com/112973674/236352948-4c03edff-72b9-4c3c-904b-8f7c55076ea4.png)
-![image](https://user-images.githubusercontent.com/112973674/236352967-a1f96419-6687-497f-9213-af31358413c0.png)
-![image](https://user-images.githubusercontent.com/112973674/236352975-4b8f67f8-e56c-4752-8cb9-e1704143b5e6.png)
-![image](https://user-images.githubusercontent.com/112973674/236352990-886aadd4-a43c-4604-a846-f35ad05400c4.png)
-![image](https://user-images.githubusercontent.com/112973674/236353008-74f28447-87d4-4f07-903f-d43ebfb009d2.png)
+![image](https://user-images.githubusercontent.com/112973674/236356074-7f420bc3-63fd-4407-9dc7-4ed09506886c.png)
+![image](https://user-images.githubusercontent.com/112973674/236356083-f59ebafc-e5a4-4dab-a696-de5a6ae723be.png)
+![image](https://user-images.githubusercontent.com/112973674/236356088-fe71f5a3-ecfa-4934-9049-13305ce5d56e.png)
+![image](https://user-images.githubusercontent.com/112973674/236356101-8eccba78-b0be-4473-a822-61eb00edc8d9.png)
+![image](https://user-images.githubusercontent.com/112973674/236356111-1cf184ba-6ef3-41a4-8c95-5f98902c72ee.png)
+![image](https://user-images.githubusercontent.com/112973674/236356127-fb8c7da4-762c-4164-a8f0-0496e66c8c04.png)
+![image](https://user-images.githubusercontent.com/112973674/236356144-33e15f57-ed6a-4be0-a798-e5fbef815e2d.png)
+![image](https://user-images.githubusercontent.com/112973674/236356158-0afc4f51-7a62-4a28-bd60-07c2a632d311.png)
+![image](https://user-images.githubusercontent.com/112973674/236356175-d45d32af-115c-48cc-8503-275197a48b61.png)
+![image](https://user-images.githubusercontent.com/112973674/236356220-998d8e21-0640-444f-8f0b-f3e8133bfe82.png)
+![image](https://user-images.githubusercontent.com/112973674/236356233-3f5fd69d-d3a3-4d1e-ab51-340e5351db86.png)
+![image](https://user-images.githubusercontent.com/112973674/236356246-da9dc81e-ae80-4353-8261-a31d9854c9b5.png)
+![image](https://user-images.githubusercontent.com/112973674/236356256-db6dab3c-7c51-46ad-a6f8-a23cc845ea63.png)
+![image](https://user-images.githubusercontent.com/112973674/236356275-bafd982f-f6d8-4368-a240-202277ecdc09.png)
+![image](https://user-images.githubusercontent.com/112973674/236356283-bf0e47dc-f8ac-41fe-bae7-49dbd5785d9e.png)
+![image](https://user-images.githubusercontent.com/112973674/236356294-933e0eda-e7c6-47d8-8017-a817b4394a01.png)
+![image](https://user-images.githubusercontent.com/112973674/236356306-b101c0a4-049e-45f1-bf70-371968d90b06.png)
+![image](https://user-images.githubusercontent.com/112973674/236356316-6bbad7cd-ddf3-460a-8c41-e4198cdb58f6.png)
+![image](https://user-images.githubusercontent.com/112973674/236356328-45cdbd5d-a88b-4191-92b7-8503d44fb036.png)
+![image](https://user-images.githubusercontent.com/112973674/236356341-2af76050-18bf-4d21-8504-c598176f8269.png)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
