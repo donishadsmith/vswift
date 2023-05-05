@@ -40,8 +40,7 @@ results <- categorical_cv_split(data = iris,
                                 n_folds = 5,
                                 model_type = "lda",
                                 stratified = TRUE,
-                                random_seed = 123)
-                                
+                                random_seed = 123)                              
 ```
 ```R
 # Print parameter information and model evaluation metrics
