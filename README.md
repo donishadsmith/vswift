@@ -108,7 +108,6 @@ virginica            0.96 (0.02)       0.98 (0.02)       0.97 (0.01)
 # Plot model evaluation metrics
 plot(results, split = TRUE, cv = TRUE)
 ```
-```
 ![image](https://user-images.githubusercontent.com/112973674/236352770-f4264988-099e-459d-ad8c-278624d67ecf.png)
 ![image](https://user-images.githubusercontent.com/112973674/236352801-d1754848-12e8-4be2-901e-a808363ff530.png)
 ![image](https://user-images.githubusercontent.com/112973674/236352819-7999d88b-a061-468e-b81d-6be426eebc99.png)
@@ -122,5 +121,3 @@ plot(results, split = TRUE, cv = TRUE)
 ![image](https://user-images.githubusercontent.com/112973674/236352975-4b8f67f8-e56c-4752-8cb9-e1704143b5e6.png)
 ![image](https://user-images.githubusercontent.com/112973674/236352990-886aadd4-a43c-4604-a846-f35ad05400c4.png)
 ![image](https://user-images.githubusercontent.com/112973674/236353008-74f28447-87d4-4f07-903f-d43ebfb009d2.png)
-
-```
