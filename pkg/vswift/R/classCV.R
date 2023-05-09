@@ -172,7 +172,11 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   classCV_output[["information"]][["parameters"]][["random_seed"]]  <- random_seed
   classCV_output[["information"]][["parameters"]][["missing_data"]]  <- nrow(data) - nrow(preprocessed_data)
   classCV_output[["information"]][["parameters"]][["impute_method"]] <- impute_method
-  if(impute_method == "missforest") classCV_output[["information"]][["parameters"]][["impute_args"]] <- impute_args
+  if(!is.null(impute_method)){
+    if(impute_method == "missforest"){
+      classCV_output[["information"]][["parameters"]][["impute_args"]] <- impute_args
+    }
+    }
   if(!is.null(impute_method)) classCV_output[["information"]][["imputation_info"]] <- impute_output[["impute_info"]]
   if(classCV_output[["information"]][["parameters"]][["missing_data"]] > 0){
     warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
