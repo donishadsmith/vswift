@@ -10,6 +10,7 @@
 #' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.
 #' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
 #' working directory.
+#' @param ... Additional arguments that can be passed to the `png()` function.
 #' 
 #' 
 #' @return Plots representing evaluation metrics.

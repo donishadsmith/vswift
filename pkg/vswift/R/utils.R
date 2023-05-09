@@ -12,13 +12,15 @@
   }
   
   # Check if impute method is valid
-  if(!is.null(impute_method) & !impute_method %in% valid_impute){
-    stop("invalid impute method")
+  if(!is.null(impute_method)){
+    if(!impute_method %in% valid_impute){
+      stop("invalid impute method")
+    }
+    # Check if impute method is valid
+    if(all(impute_method == "missforest", !is.null(impute_args), class(impute_args) != "list")){
+      stop("impute_args must be a list")
+    } 
   }
-  # Check if impute method is valid
-  if(all(impute_method == "missforest", !is.null(impute_args), class(impute_args) != "list")){
-    stop("impute_args must be a list")
-  } 
   # Check if additional arguments are valid
   if(impute_method == "missforest" & !is.null(impute_args)){
     vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args)

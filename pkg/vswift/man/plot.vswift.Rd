@@ -18,6 +18,8 @@ and dashed blue line represents the standard deviation. Default = TRUE.}
 
 \item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
 working directory.}
+
+\item{...}{Additional arguments that can be passed to the `png()` function.}
 }
 \value{
 Plots representing evaluation metrics.
