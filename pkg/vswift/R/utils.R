@@ -4,7 +4,6 @@
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
                     "randomforest")
-  
   valid_impute <- c("simple", "missforest")
   # Ensure data is not NULL
   if(is.null(data)){
@@ -86,7 +85,6 @@
       stop("at least one predictor is not in dataframe")
     }
   }
-  
   #Ensure model_type has been assigned
   if(call == "classCV"){
     if(any(is.null(model_type), !(model_type %in% valid_models))){
