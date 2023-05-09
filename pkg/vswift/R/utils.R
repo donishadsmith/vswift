@@ -24,7 +24,6 @@
     }
   }
   # Check if additional arguments are valid
-  print(all(impute_method == "missforest",!is.null(impute_args)))
   if(all(impute_method == "missforest",!is.null(impute_args))){
     vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args)
   }
