@@ -17,9 +17,11 @@
       stop("invalid impute method")
     }
     # Check if impute method is valid
-    if(all(impute_method == "missforest", !is.null(impute_args), class(impute_args) != "list")){
-      stop("impute_args must be a list")
-    } 
+    if(!is.null(impute_args)){
+      if(all(impute_method == "missforest", class(impute_args) != "list")){
+        stop("impute_args must be a list")
+      }
+    }
   }
   # Check if additional arguments are valid
   if(impute_method == "missforest" & !is.null(impute_args)){
