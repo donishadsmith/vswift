@@ -16,7 +16,7 @@
 #' 
 #' # Perform a train-test split with an 80% training set using LDA
 #'
-#' result <- categorical_cv_split(data = iris, target = "Species", split = 0.8,
+#' result <- classCV(data = iris, target = "Species", split = 0.8,
 #' model_type = "lda", stratified = TRUE, random_seed = 123)
 #' 
 #' #  Print parameter information and performance metrics
@@ -40,6 +40,16 @@
       cat(sprintf("Stratified Sampling: %s\n\n", object[["information"]][["parameters"]][["stratified"]]))
       cat(sprintf("Random Seed: %s\n\n", object[["information"]][["parameters"]][["random_seed"]]))
       # Print sample size and missing data for user transparency
+      cat(sprintf("Imputation Method: %s\n\n", object[["information"]][["parameters"]][["impute_method"]]))
+      # Print arguments for missForest
+      if(!is.null(object[["information"]][["parameters"]][["impute_method"]] == "missforest")){
+        arguments_list <- list()
+        for(name in names(object[["information"]][["parameters"]][["impute_args"]])){
+          # Add equal sign between name and value
+          arguments_list <- c(arguments_list,paste(name, "=",object[["information"]][["parameters"]][["impute_args"]][[name]], collapse = " "))
+        }
+        cat(sprintf("missForest Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
+      }
       cat(sprintf("Missing Data: %s\n\n", object[["information"]][["parameters"]][["missing_data"]]))
       cat(sprintf("Sample Size: %s\n\n", object[["information"]][["parameters"]][["sample_size"]]))
       # Check for additional arguments

@@ -1,15 +1,31 @@
-#Helper function for categorical_cv_split and stratified_split to check if inputs are valid
+#Helper function for classCV and genFolds to check if inputs are valid
 .error_handling <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            call = NULL,...){
+                            impute_method = NULL, impute_args = NULL, call = NULL,...){
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
                     "randomforest")
   
+  valid_impute <- c("simple", "missforest")
   # Ensure data is not NULL
   if(is.null(data)){
     stop("no input data")
   }
   
+  # Check if impute method is valid
+  if(!is.null(impute_method) & !impute_method %in% valid_impute){
+    stop("invalid impute method")
+  }
+  # Check if impute method is valid
+  if(all(impute_method == "missforest", !is.null(impute_args), class(impute_args) != "list")){
+    stop("impute_args must be a list")
+  } 
+  # Check if additional arguments are valid
+  if(impute_method == "missforest" & !is.null(impute_args)){
+    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args)
+  }
+  if(length(list(...)) > 0){
+    vswift:::.check_additional_arguments(model_type = model_type, ...)
+  }
   # Ensure n_folds is not an invalid number
   if(!is.data.frame(data)){
     stop("invalid input for data")
@@ -25,7 +41,7 @@
     stop("split must be a numeric value from between 0.5 and 0.9")
   }
   
-  if(call == "categorical_cv_split" || call == "stratified_split" & stratified == TRUE){
+  if(call == "classCV" || call == "genFolds" & stratified == TRUE){
     # Ensure target is not null
     if(is.null(target)){
       stop("target has no input")
@@ -68,7 +84,7 @@
   }
   
   #Ensure model_type has been assigned
-  if(call == "categorical_cv_split"){
+  if(call == "classCV"){
     if(any(is.null(model_type), !(model_type %in% valid_models))){
       stop(sprintf("%s is an invalid model_type", model_type))
     }
@@ -81,13 +97,65 @@
     }
   }
 }
-# Helper function for categorical_cv_split to check if additional arguments are valid
-.check_additional_arguments <- function(model_type = NULL, ...){
-  additional_args <- names(list(...))
+
+# Helper function for imputation
+
+.impute <- function(data = NULL, missing_columns = NULL, impute_method = NULL, impute_args = NULL){
+  # Create empty list to store information
+  missing_information <- list()
+  # Get missing column information
+  for(col in missing_columns){
+    missing_information[[names(data)[col]]][["missing"]] <- length(which(is.na(data[,col])))
+  }
+  # switch statement
+  switch(impute_method,
+         "simple" = {
+           for(col in missing_columns){
+             if(is.character(data[,col]) || is.factor(data[,col])){
+             frequent_class <- names(which.max(table(data[,col])))
+             missing_information[[names(data)[col]]][["mode"]] <- frequent_class
+             data[which(is.na(data[,col])),col]  <- frequent_class
+           }
+             else{
+             # Check distribution
+             missing_information[[names(data)[col]]][["shapiro_p.value"]] <- shapiro_p.value <- shapiro.test(data[,col])[["p.value"]]
+             # If less than 0.5, distribution is not normal median will be used
+             if(shapiro_p.value < 0.05){
+               missing_information[[names(data)[col]]][["median"]] <- data[which(is.na(data[,col])),col] <- median(data[,col], na.rm = TRUE)
+             }else{
+               missing_information[[names(data)[col]]][["mean"]] <- data[which(is.na(data[,col])),col] <- mean(data[,col], na.rm = TRUE)
+             }
+           }
+         }},
+         "missforest" = {
+           if(!is.null(impute_args)){
+             impute_args[["xmis"]] <- data
+             missforest_output <- do.call(missForest::missForest, impute_args)
+           }else{
+             missforest_output <- missForest::missForest(data)
+           }
+           missing_information[["missForest"]] <- missforest_output
+           data <- missforest_output[["ximp"]]
+         })
+
+  impute_output <- list("preprocessed_data" = data, "impute_info" = missing_information)
+  return(impute_output)
+}
+
+# Helper function for classCV to check if additional arguments are valid
+.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, ...){
+  
+  if(length(names(list(...))) > 0){
+    method <- model_type
+    additional_args <- names(list(...))
+  }else{
+    method <- impute_method
+    additional_args <- names(impute_args)
+  }
   # Helper function to generate error message
-  error_message <- function(model_name, invalid_args) {
-    sprintf("The following arguments are invalid for %s or are incompatible with categorical_cv_split: %s",
-            model_name, paste(invalid_args, collapse = ","))
+  error_message <- function(method_name, invalid_args) {
+    sprintf("The following arguments are invalid for %s or are incompatible with classCV: %s",
+            method_name, paste(invalid_args, collapse = ","))
   }
   
   # List of valid arguments for each model type
@@ -100,18 +168,19 @@
     "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
     "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
     "decisiontree" = c("weights", "method", "parms", "control", "cost"),
-    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag")
+    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
+    "missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes")
   )
   
-  valid_args <- valid_args_list[[model_type]]
+  valid_args <- valid_args_list[[method]]
   invalid_args <- additional_args[which(!additional_args %in% valid_args)]
   
-  if (length(invalid_args) > 0) {
-    stop(error_message(model_type, invalid_args))
+  if(length(invalid_args) > 0) {
+    stop(error_message(method, invalid_args))
   }
 }
 
-#Helper function for categorical_cv_split for stratified sampling
+#Helper function for classCV for stratified sampling
 .stratified_sampling <- function(data, type, output, target, split = NULL, k = NULL,
                                  random_seed = NULL){
   switch(type,
@@ -215,7 +284,7 @@
   }
 }
 
-#Helper function for categorical_cv_split to remove unobserved data
+#Helper function for classCV to remove unobserved data
 .remove_obs <- function(training_data, test_data, target, fold = NULL){
   # Create empty list
   check_predictor_levels <- list()

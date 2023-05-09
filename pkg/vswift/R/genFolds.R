@@ -1,6 +1,6 @@
 #' Create split datasets and/or folds with optional stratification
 #' 
-#' `stratified_split` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+#' `genFolds` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
 #' 
 #' 
 #' @param data A data frame.
@@ -19,10 +19,10 @@
 #' 
 #' # Obtain indices for 80% training/test split and 5-fold CV
 #' 
-#' stratified_list <- stratified_split(data = iris, target = "Species", split = 0.8, n_folds = 5)
+#' output <- genFolds(data = iris, target = "Species", split = 0.8, n_folds = 5)
 #' @export
 
-stratified_split <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
+genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
   # Check input
   vswift:::.error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   # Set seed
