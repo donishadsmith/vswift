@@ -114,7 +114,7 @@ virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03)
 plot(results, split = TRUE, cv = TRUE, save_plots = FALSE)
 ```
 <details>
-  <summary>**Output:**</summary>
+  <summary>Plots</summary>
   ![image](https://user-images.githubusercontent.com/112973674/236356074-7f420bc3-63fd-4407-9dc7-4ed09506886c.png)
   ![image](https://user-images.githubusercontent.com/112973674/236356083-f59ebafc-e5a4-4dab-a696-de5a6ae723be.png)
   ![image](https://user-images.githubusercontent.com/112973674/236356088-fe71f5a3-ecfa-4934-9049-13305ce5d56e.png)
