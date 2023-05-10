@@ -138,3 +138,18 @@ test_that("test imputation and missing data", {
   # complete cases only
   expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE))
 })
+
+test_that("test final models", {
+  
+  data <- iris
+  # Introduce NA
+  data <- missForest::prodNA(data)
+  # randomforest
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "missforest", impute_args = list(verbose = TRUE), model_type = "lda", stratified = TRUE, final_model = TRUE))
+  
+  # simple
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "simple", model_type = "lda", stratified = TRUE, final_model = TRUE))
+  
+  # complete cases only
+  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE, final_model = TRUE))
+})
