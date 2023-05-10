@@ -16,7 +16,7 @@
 #'                   "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 #'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 #'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-#'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradiant Boosting Machines).
+#'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).
 #'                   For "knn", the optimal k will be used unless specified with `ks =`.
 #'                   For "ann", `size =` must be specified as an additional argument.
 #' @param threshold  A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.                 
