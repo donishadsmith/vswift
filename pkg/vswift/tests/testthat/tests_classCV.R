@@ -13,6 +13,8 @@ test_that("test train-test split for all models and no stratified sampling", {
   if(requireNamespace("mlbench", quietly = TRUE)){
     # Create binary
     data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
     PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
@@ -37,6 +39,8 @@ test_that("test train-test split for all models with stratified sampling", {
   if(requireNamespace("mlbench", quietly = TRUE)){
     # Create binary
     data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
     PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
@@ -59,6 +63,8 @@ test_that("k-fold CV for all models no stratified sampling", {
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
     PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
@@ -81,6 +87,8 @@ test_that("k-fold CV for all models", {
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
     PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
@@ -104,6 +112,8 @@ test_that("train-test split and k-fold CV for all models", {
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
     PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
     PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
@@ -114,7 +124,7 @@ test_that("train-test split and k-fold CV for all models", {
   }
 })
 
-test_that("test imputation", {
+test_that("test imputation and missing data", {
   
   data <- iris
   # Introduce NA
@@ -125,4 +135,6 @@ test_that("test imputation", {
   # simple
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "simple", model_type = "lda", stratified = TRUE))
   
+  # complete cases only
+  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE))
 })
