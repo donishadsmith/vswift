@@ -56,8 +56,16 @@
       if(!is.null(object[["information"]][["parameters"]][["additional_arguments"]])){
         arguments_list <- list()
         for(name in names(object[["information"]][["parameters"]][["additional_arguments"]])){
-          # Add equal sign between name and value
-          arguments_list <- c(arguments_list,paste(name, "=",object[["information"]][["parameters"]][["additional_arguments"]][[name]], collapse = " "))
+          if(all(name == "params", object[["information"]][["parameters"]][["model_type"]] == "gbm")){
+            param_list <- list()
+            for(param in names(object[["information"]][["parameters"]][["additional_arguments"]][[name]])){
+              param_list <- c(param_list, paste(param, "=",object[["information"]][["parameters"]][["additional_arguments"]][[name]][[param]], collapse = ", "))
+            }
+            arguments_list <- c(arguments_list,sprintf("%s = %s", name, list(param_list)))
+          } else {
+            # Add equal sign between name and value
+            arguments_list <- c(arguments_list,paste(name, "=",object[["information"]][["parameters"]][["additional_arguments"]][[name]], collapse = " "))
+          }
         }
         cat(sprintf("Additional Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
       }
