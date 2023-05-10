@@ -128,7 +128,7 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
         }
       }
     }
-  }else{
+  } else {
     if(!is.null(split)){
       # Initialize list
       output[["sample_indices"]][["split"]] <- list()

@@ -86,7 +86,7 @@ on classification data using various classification algorithms.
 
   - "lda": grouping, prior, method, nu
   - "qda": grouping, prior, method, nu
-  - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type
+  - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type, maxit
   - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
   - "naivebayes": prior, laplace, usekernel, usepoisson
   - "ann": weights, size, Wts, mask, linout, entropy, softmax, censored, skip, rang, decay, maxit, Hess, trace, MaxNWts, abstol, reltol

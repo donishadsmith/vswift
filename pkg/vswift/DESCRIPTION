@@ -21,6 +21,9 @@ Imports:
     rpart,
     randomForest,
     missForest,
+Suggests:
+    mlbench,
+    testhat,
 VignetteBuilder: 
     knitr
 Encoding: UTF-8

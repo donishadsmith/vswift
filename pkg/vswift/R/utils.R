@@ -68,7 +68,7 @@
       if(!(target %in% colnames(data))){
         stop("target not in dataframe")
       }
-    }else{
+    } else {
       stop("target must be an integer or character")
     }
   }
@@ -78,7 +78,7 @@
       check_x <- 1:dim(data)[1]
     }else if(all(is.character(predictors))){
       check_x <- colnames(data)[colnames(data) != target]
-    }else{
+    } else {
       stop("predictors must be a character vector or integer vector")
     }
     if(!(all(predictors %in% check_x))){
@@ -93,7 +93,7 @@
     if(model_type == "logistic" & any(length(levels(factor(data[,target], exclude = NA))) != 2, !is.numeric(threshold), threshold < 0.30 || threshold > 0.70)){
       if(length(levels(factor(data[,target], exclude = NA))) != 2){
         stop("logistic regression requires a binary variable")
-      }else{
+      } else {
         stop("threshold must a numeric value from 0.30 to 0.70")
       }
     }
@@ -124,7 +124,7 @@
              # If less than 0.5, distribution is not normal median will be used
              if(shapiro_p.value < 0.05){
                missing_information[[names(data)[col]]][["median"]] <- data[which(is.na(data[,col])),col] <- median(data[,col], na.rm = TRUE)
-             }else{
+             } else {
                missing_information[[names(data)[col]]][["mean"]] <- data[which(is.na(data[,col])),col] <- mean(data[,col], na.rm = TRUE)
              }
            }
@@ -133,7 +133,7 @@
            if(!is.null(impute_args)){
              impute_args[["xmis"]] <- data
              missforest_output <- do.call(missForest::missForest, impute_args)
-           }else{
+           } else {
              missforest_output <- missForest::missForest(data)
            }
            missing_information[["missForest"]] <- missforest_output
@@ -150,7 +150,7 @@
   if(length(names(list(...))) > 0){
     method <- model_type
     additional_args <- names(list(...))
-  }else{
+  } else {
     method <- impute_method
     additional_args <- names(impute_args)
   }
@@ -164,7 +164,7 @@
   valid_args_list <- list(
     "lda" = c("grouping", "prior", "method", "nu"),
     "qda" = c("grouping", "prior", "method", "nu"),
-    "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type"),
+    "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type", "maxit"),
     "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
     "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
     "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
@@ -338,7 +338,7 @@
   system = as.character(Sys.info()["sysname"])
   if(Sys.getenv("RStudio") == "1"){
     new_window  <- ifelse(rstudioapi::isAvailable(), function(){placeholder = "placeholder"},ifelse(system == "Windows", windows, x11))
-  }else{
+  } else {
     new_window <- ifelse(system == "Windows", windows, x11)
   }
   return(new_window)
@@ -387,7 +387,7 @@
         new_window()
         plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
         axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
-      }else{
+      } else {
         # Get correct metric name for plot y title
         y_name <- c("Precision","Recall","F-Score")[which(c("Precision","Recall","F-Score") %in% split_vector)]
         new_window()
@@ -410,7 +410,7 @@
   # Don't display plot if save_plot is TRUE
   if(all(Sys.getenv("RStudio") == "1",rstudioapi::isAvailable())){
     graphics.off()
-  }else{
+  } else {
     dev.off()
   }
 }
@@ -463,7 +463,7 @@
         png(filename = paste0(path,"cv_classification_accuracy.png"),...)
         plot(x = 1:fold_n, y = num_vector, ylim = c(0,1), xlab = "K-folds", ylab = "Classification Accuracy" , xaxt = "n")
         axis(side = 1, at = as.integer(1:fold_n), labels = as.integer(1:fold_n))
-      }else{
+      } else {
         # Get correct metric name for plot y title
         y_name <- c("Precision","Recall","F-Score")[which(c("Precision","Recall","F-Score") %in% split_vector)]
         # Save metrics for cv

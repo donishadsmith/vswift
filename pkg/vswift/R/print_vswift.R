@@ -100,7 +100,7 @@
           padding <- nchar(paste("Class:",rep("", max_string_length),"Pre"))[1]
           if(class_metrics[1] == "NaN"){
             class_metrics <- c(class_metrics[1],rep("", 5),class_metrics[2],rep("", 5),class_metrics[3])
-          }else{
+          } else {
             class_metrics <- c(class_metrics[1],rep("", 4),class_metrics[2],rep("", 5),class_metrics[3])
           }
           cat(class,rep("",(padding + string_diff[class_position])),paste(class_metrics, collapse = " "),"\n")
@@ -145,7 +145,7 @@
         }
         if(class_metrics[1] == "NaN (NA)"){
           class_metrics <- c(rep("", 3),class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
-        }else{
+        } else {
           class_metrics <- c(class_metrics[1],rep("", 6),class_metrics[2],rep("", 6), class_metrics[3])
         }
         # Add spacing

@@ -33,10 +33,10 @@
   if(class(object) == "vswift"){
     if(save_plots == FALSE){
       vswift:::.visible_plots(object = object, split = split, cv = cv)
-    }else{
+    } else {
       vswift:::.save_plots(object = object, split = split, cv = cv, path = path, ...)
     }
-  }else{
+  } else {
     stop("object must be of class 'vswift'")
   }
 }

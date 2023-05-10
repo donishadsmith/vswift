@@ -41,7 +41,7 @@
 #'
 #'   - "lda": grouping, prior, method, nu
 #'   - "qda": grouping, prior, method, nu
-#'   - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type
+#'   - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type, maxit
 #'   - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
 #'   - "naivebayes": prior, laplace, usekernel, usepoisson
 #'   - "ann": weights, size, Wts, mask, linout, entropy, softmax, censored, skip, rang, decay, maxit, Hess, trace, MaxNWts, abstol, reltol
@@ -104,10 +104,10 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   # Creating feature vector
   if(is.null(predictors)){
     predictor_vec <- colnames(data)[colnames(data) != target]
-  }else{
+  } else {
     if(all(is.character(predictors))){
       predictor_vec <- predictors
-    }else{
+    } else {
       predictor_vec <- colnames(data)[predictors]
     }
   }
@@ -118,7 +118,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     if(length(missing_columns) == 0){
       preprocessed_data <- data
       warning("no missing data detected")
-    }else{
+    } else {
       impute_output <- vswift:::.impute(data = data, missing_columns = missing_columns,
                                         impute_method = impute_method, impute_args = impute_args)
       preprocessed_data <- impute_output[["preprocessed_data"]]
@@ -126,7 +126,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       # If error occurs remove missing data that has not been replaced
       preprocessed_data <- preprocessed_data[complete.cases(preprocessed_data ),]
     }
-  }else{
+  } else {
     preprocessed_data <- data[complete.cases(data),]
   }
   if(model_type == "svm"){
@@ -134,7 +134,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     data_levels <- list()
     if(class(preprocessed_data[,target]) == "factor"){
       data_levels[[target]] <- levels(preprocessed_data[,target])
-    }else{
+    } else {
       # Turn response column to character
       preprocessed_data[,target] <- as.character(preprocessed_data[,target])
     }
@@ -203,7 +203,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
         if("0" %in% preprocessed_data[,target]){
           classCV_output[["class_dictionary"]][["0"]] <- 0
           classCV_output[["class_dictionary"]][[factor_class]] <- 1
-        }else{
+        } else {
           classCV_output[["class_dictionary"]][[factor_class]] <- 0
           classCV_output[["class_dictionary"]][["1"]] <- 1
         }
@@ -211,7 +211,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
                                                                                                                                                   "=",
                                                                                                                                                   classCV_output[["class_dictionary"]][[factor_class]],
                                                                                                                                                   collapse = " ")))
-      }else{
+      } else {
         # Handle case to convert both classes
         preprocessed_data[,target] <- factor(preprocessed_data[,target])
         # Start at 0
@@ -224,7 +224,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
           }
         warning(sprintf("for logistic regression target variable must be vector of consisting of 0's and 1's; classes are now encoded: %s", paste(new_classes, collapse = ", ")))
       }
-    }else{
+    } else {
       classCV_output[["class_dictionary"]][["0"]] <- 0
       classCV_output[["class_dictionary"]][["1"]] <- 1
       }
@@ -249,7 +249,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       test_data <- preprocessed_data[stratified.sampling_output$output$sample_indices$split$test,]
       # Extract updated classCV_output output list
       classCV_output <- stratified.sampling_output$output
-    }else{
+    } else {
       # Create test and training set
       training_indices <- sample(1:nrow(preprocessed_data),size = round(nrow(preprocessed_data)*split,0),replace = F)
       training_data <- preprocessed_data[training_indices,]
@@ -277,7 +277,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
                                                         target = target,random_seed = random_seed)
       # Collect output
       classCV_output <- stratified.sampling_output$output
-    }else{
+    } else {
       # Get floor
       fold_size_vector <- rep(floor(nrow(preprocessed_data)/n_folds),n_folds)
       excess <- nrow(preprocessed_data) - sum(fold_size_vector)
@@ -319,7 +319,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     if(!is.null(split)){
       #Create iterator vector
       iterator_vector <- 1:iterator
-    } else{
+    } else {
       # Create iterator vector
       iterator_vector <- 2:iterator
     }
@@ -343,7 +343,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
             levels(model_data[,col]) <- data_levels[[col]]
           }
         }
-      }else{
+      } else {
         # After the first iteration the cv begins, the training set is assigned to a new variable
         model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
         validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[sprintf("fold %s",(i-1))]]), ]
@@ -383,10 +383,10 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
             # Assign validation data to new variables
             if(remove_obs == TRUE){
               model_data <- vswift:::.remove_obs(training_data = model_data, test_data = test_data, target = target)
-            }else{
+            } else {
               model_data <- test_data
             }
-          }else{
+          } else {
             if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][["split"]][[tolower(j)]] <- model 
           }
           # Store dataframe is save_data is TRUE
@@ -428,12 +428,12 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
             }
           }
         }
-      } else{
+      } else {
         if(all(!is.null(n_folds),(i-1) <= n_folds)){
           # Assign validation data to new variables
           if(remove_obs == TRUE){
             model_data <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, fold = i-1)
-          }else{
+          } else {
             model_data <- validation_data
           }
           if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
