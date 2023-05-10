@@ -16,7 +16,7 @@
 #'                   "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 #'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 #'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-#'                   "randomforest" (Random Forest).
+#'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradiant Boosted Modeling).
 #'                   For "knn", the optimal k will be used unless specified with `ks =`.
 #'                   For "ann", `size =` must be specified as an additional argument.
 #' @param threshold  A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.                 
@@ -48,6 +48,8 @@
 #'   - "knn": kmax, ks, distance, kernel, scale, contrasts, ykernel
 #'   - "decisiontree": weights, method, parms, control, cost
 #'   - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
+#'   - "multinom": weights, Hess
+#'   - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth,n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
 #' 
 #' @section Functions used from packages for each model type:
 #'
@@ -60,6 +62,8 @@
 #'   - "knn": train.kknn() from kknn package
 #'   - "decisiontree": rpart() from rpart package
 #'   - "randomforest": randomForest() from randomForest package 
+#'   - "multinom": multinom() from nnet package
+#'   - "gbm": xgb.train() from xgboost package
 #'                    
 #' @return A list containing the results of train-test splitting and/or k-fold cross-validation,
 #'         including imputation information (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
@@ -80,8 +84,8 @@
 #' # Plot metrics
 #' plot(result)
 #'
-#' # Perform 5-fold cross-validation using QDA
-#' result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "qda")
+#' # Perform 5-fold cross-validation using Gradient Boosted Model
+#' result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)
 #' 
 #' # Print parameters and metrics
 #' print(result)
@@ -111,6 +115,8 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       predictor_vec <- colnames(data)[predictors]
     }
   }
+  # Ensure data is factor
+  data[,target] <- factor(data[,target])
   # Perform simple imputation
   if(!is.null(impute_method)){
     # Get data with missing columns
@@ -153,9 +159,6 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       }
     }
   }
-  if(!model_type %in% c("svm","logistic")){
-    preprocessed_data[,target] <- factor(preprocessed_data[,target])
-  }
   # Initialize output list
   classCV_output <- list()
   classCV_output[["information"]][["analysis_type"]] <- "classification"
@@ -176,8 +179,8 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     if(impute_method == "missforest"){
       classCV_output[["information"]][["parameters"]][["impute_args"]] <- impute_args
     }
-    }
-  if(!is.null(impute_method)) classCV_output[["information"]][["imputation_info"]] <- impute_output[["impute_info"]]
+  }
+  if(exists("impute_output")) classCV_output[["information"]][["imputation_info"]] <- impute_output[["impute_info"]]
   if(classCV_output[["information"]][["parameters"]][["missing_data"]] > 0){
     warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
                     , classCV_output[["information"]][["parameters"]][["missing_data"]] ))
@@ -188,46 +191,19 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   classCV_output[["classes"]][[target]] <- names(table(factor(preprocessed_data[,target])))
   # Create formula string
   classCV_output[["information"]][["formula"]] <- formula <- as.formula(paste(target, "~", paste(predictor_vec, collapse = " + ")))
+  # conversion for later
+  conversion_needed <- FALSE
   # Get names and create a dictionary to convert to numeric if logistic model is chosen
-  if(model_type == "logistic"){
-    # Check if target is in appropriate format for logistic
-    if(any(!all(preprocessed_data[,target] %in% c(0,1)), !is.numeric(preprocessed_data[,target]))){
-      # Convert to numeric is a character vector of 0's and 1's
-      if(all(preprocessed_data[,target] %in% c("0","1"))){
-        preprocessed_data[,target] <- as.numeric(preprocessed_data[,target])
-        classCV_output[["class_dictionary"]][["0"]] <- 0
-        classCV_output[["class_dictionary"]][["1"]] <- 1
-      }else if(any(preprocessed_data[,target] %in% c("0","1"))){
-        # Handle case if one class is "0" or "1"
-        factor_class <- unique(preprocessed_data[which(!preprocessed_data[,target]%in% c("0","1")), target])
-        if("0" %in% preprocessed_data[,target]){
-          classCV_output[["class_dictionary"]][["0"]] <- 0
-          classCV_output[["class_dictionary"]][[factor_class]] <- 1
-        } else {
-          classCV_output[["class_dictionary"]][[factor_class]] <- 0
-          classCV_output[["class_dictionary"]][["1"]] <- 1
-        }
-        warning(sprintf("for logistic regression target variable must be vector of consisting of 0's and 1's; classes are now encoded: %s", paste(factor_class,
-                                                                                                                                                  "=",
-                                                                                                                                                  classCV_output[["class_dictionary"]][[factor_class]],
-                                                                                                                                                  collapse = " ")))
-      } else {
-        # Handle case to convert both classes
-        preprocessed_data[,target] <- factor(preprocessed_data[,target])
-        # Start at 0
-        class_position <- 0
-        new_classes <- c()
-        for(class in names(table(preprocessed_data[,target]))){
-          classCV_output[["class_dictionary"]][[as.character(class)]] <- class_position 
-          new_classes <- c(new_classes, paste(class, "=", class_position, collapse = " "))
-          class_position <- class_position  + 1
-          }
-        warning(sprintf("for logistic regression target variable must be vector of consisting of 0's and 1's; classes are now encoded: %s", paste(new_classes, collapse = ", ")))
-      }
-    } else {
-      classCV_output[["class_dictionary"]][["0"]] <- 0
-      classCV_output[["class_dictionary"]][["1"]] <- 1
-      }
+  if(model_type %in% c("logistic", "gbm")){
+    counter <- 0
+    new_classes <- c()
+    for(class in names(table(preprocessed_data[,target]))){
+      new_classes <- c(new_classes, paste(class, "=", counter, collapse = " "))
+      classCV_output[["class_dictionary"]][[class]] <- counter
+      counter <- counter + 1
+    }
+    conversion_needed <- TRUE
+    warning(sprintf("form logistic regression and gradient boosted modeling classes must be numerics; classes are now encoded: %s", paste(new_classes, collapse = ", ")))
   }
   if(stratified == TRUE){
     # Initialize list; initializing for ordering output purposes
@@ -325,7 +301,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     }
   }
   # Convert variables to characters so that models will predict the original variable
-  if(all(model_type == "logistic", !all(preprocessed_data[,target] %in% c(0,1)))){
+  if(conversion_needed == TRUE){
     preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
     training_data[,target] <- sapply(training_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
     test_data[,target] <- sapply(test_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
@@ -354,24 +330,16 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
           }
         }
       }
-      
+      # Suitable for gbm
       # Generate model depending on chosen model_type
-      switch(model_type,
-             # Use double colon to avoid cluttering user space
-             "lda" = {model <- MASS::lda(formula, data = model_data, ...)},
-             "qda" = {model <- MASS::qda(formula, data = model_data, ...)},
-             "logistic" = {model <- glm(formula, data = model_data , family = "binomial", ...)},
-             "svm" = {model <- e1071::svm(formula, data = model_data, ...)},
-             "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)},
-             "ann" = {model <- nnet::nnet(formula = formula, data = model_data, ...)},
-             "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
-             "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data, ...)},
-             "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data, ...)}
-      )
-      
+      model <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = model_data, ...)
       # Create variables used in for loops to calculate precision, recall, and f1
       switch(model_type,
              "logistic" = {
+               classes <- as.numeric(unlist(classCV_output[["class_dictionary"]]))
+               class_names <- names(classCV_output[["class_dictionary"]])
+             },
+             "gbm" = {
                classes <- as.numeric(unlist(classCV_output[["class_dictionary"]]))
                class_names <- names(classCV_output[["class_dictionary"]])
              },
@@ -392,23 +360,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
           # Store dataframe is save_data is TRUE
           if(save_data == TRUE) classCV_output[["data"]][[tolower(j)]] <- model_data
           # Get prediction
-          switch(model_type,
-                 "svm" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "logistic" = {
-                   prediction_vector <- predict(model, newdata  = model_data, type = "response")
-                   prediction_vector <- ifelse(prediction_vector > threshold, 1, 0)},
-                 "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
-                 "knn" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "decisiontree" = {
-                   prediction_df <- predict(model, newdata = model_data)
-                   prediction_vector <- c()
-                   #Iterate over dataframe and select colname with the highest probability
-                   for(row in 1:nrow(prediction_df)){
-                     prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
-                 "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
-                 prediction_vector <- predict(model, newdata = model_data)$class
-          )
+          prediction_vector <- vswift:::.prediction(model_type = model_type, model = model, model_data = model_data, predictors = predictors, target = target, class_dict = classCV_output[["class_dictionary"]])
           # Calculate classification accuracy
           classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
           classCV_output[["metrics"]][["split"]][which(classCV_output[["metrics"]][["split"]]$Set == j),"Classification Accuracy"] <- classification_accuracy
@@ -438,22 +390,8 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
           }
           if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][["cv"]][[sprintf("fold %s", i-1)]] <- model
           # Get prediction
-          switch(model_type,
-                 "svm" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "logistic" = {
-                   prediction_vector <- predict(model, newdata  = model_data, type = "response")
-                   prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
-                 "naivebayes" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
-                 "knn" = {prediction_vector <- predict(model, newdata = model_data)},
-                 "decisiontree" = {
-                   prediction_df <- predict(model, newdata = model_data)
-                   prediction_vector <- c()
-                   for(row in 1:nrow(prediction_df)){
-                     prediction_vector <- c(prediction_vector,colnames(prediction_df)[which.max(prediction_df[row,])])}},
-                 "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
-                 prediction_vector <- predict(model, newdata = model_data)$class
-          )
+          prediction_vector <- vswift:::.prediction(model_type = model_type, model = model, model_data = model_data, predictors = predictors, target = target, class_dict = classCV_output[["class_dictionary"]])
+          # Save data
           if(save_data == TRUE) classCV_output[["data"]][[sprintf("fold %s",i-1)]] <- model_data
           # Calculate classification accuracy for fold
           classification_accuracy <- sum(model_data[,target] == prediction_vector)/length(model_data[,target])
@@ -491,21 +429,10 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       }
     }
   }
-  
+  # Generate final model
   if(final_model == TRUE){
     # Generate model depending on chosen model_type
-    switch(model_type,
-           # Use double colon to avoid cluttering user space
-           "lda" = {classCV_output[["final_model"]] <- MASS::lda(formula, data = preprocessed_data, ...)},
-           "qda" = {classCV_output[["final_model"]]  <- MASS::qda(formula, data = preprocessed_data, ...)},
-           "logistic" = {classCV_output[["final_model"]]  <- glm(formula, data = preprocessed_data , family = "binomial", ...)},
-           "svm" = {classCV_output[["final_model"]]  <- e1071::svm(formula, data = preprocessed_data, ...)},
-           "naivebayes" = {classCV_output[["final_model"]]  <- naivebayes::naive_bayes(formula = formula, data = preprocessed_data, ...)},
-           "ann" = {classCV_output[["final_model"]]  <- nnet::nnet(formula = formula, data = preprocessed_data, ...)},
-           "knn" = {classCV_output[["final_model"]]  <- kknn::train.kknn(formula = formula, data = preprocessed_data, ...)},
-           "decisiontree" = {classCV_output[["final_model"]]  <- rpart::rpart(formula = formula, data = preprocessed_data, ...)},
-           "randomforest" = {classCV_output[["final_model"]]  <- randomForest::randomForest(formula = formula, data = preprocessed_data, ...)}
-    )
+    classCV_output[["final_model"]]  <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = model_data, ...)
   }
   # Make list a vswift class
   class(classCV_output) <- "vswift"

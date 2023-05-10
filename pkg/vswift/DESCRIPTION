@@ -20,6 +20,7 @@ Imports:
     kknn,
     rpart,
     randomForest,
+    xgboost,
     missForest,
 Suggests:
     mlbench,

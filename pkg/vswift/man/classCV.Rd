@@ -41,7 +41,7 @@ k-fold cross validation will not be performed.}
 "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-"randomforest" (Random Forest).
+"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradiant Boosted Modeling).
 For "knn", the optimal k will be used unless specified with `ks =`.
 For "ann", `size =` must be specified as an additional argument.}
 
@@ -93,6 +93,8 @@ on classification data using various classification algorithms.
   - "knn": kmax, ks, distance, kernel, scale, contrasts, ykernel
   - "decisiontree": weights, method, parms, control, cost
   - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
+  - "multinom": weights, Hess
+  - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth,n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
 }
 
 \section{Functions used from packages for each model type}{
@@ -106,7 +108,9 @@ on classification data using various classification algorithms.
   - "ann": nnet() from nnet package
   - "knn": train.kknn() from kknn package
   - "decisiontree": rpart() from rpart package
-  - "randomforest": randomForest() from randomForest package
+  - "randomforest": randomForest() from randomForest package 
+  - "multinom": multinom() from nnet package
+  - "gbm": xgb.train() from xgboost package
 }
 
 \examples{
@@ -122,8 +126,8 @@ print(result)
 # Plot metrics
 plot(result)
 
-# Perform 5-fold cross-validation using QDA
-result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "qda")
+# Perform 5-fold cross-validation using Gradient Boosted Model
+result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)
 
 # Print parameters and metrics
 print(result)

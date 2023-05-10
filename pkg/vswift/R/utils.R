@@ -3,7 +3,7 @@
                             impute_method = NULL, impute_args = NULL, call = NULL,...){
   #Valid models
   valid_models <- c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
-                    "randomforest")
+                    "randomforest", "multinom", "gbm")
   valid_impute <- c("simple", "missforest")
   # Ensure data is not NULL
   if(is.null(data)){
@@ -171,6 +171,8 @@
     "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
     "decisiontree" = c("weights", "method", "parms", "control", "cost"),
     "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
+    "multinom" = c("weights", "Hess"),
+    "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds"),
     "missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes")
   )
   
@@ -486,4 +488,71 @@
   }
 }
 
+# Helper function for classCV to create model
+.generate_model <- function(model_type = NULL, formula = NULL, predictors = NULL, target = NULL, model_data = NULL, ...){
+  switch(model_type,
+         # Use double colon to avoid cluttering user space
+         "lda" = {model <- MASS::lda(formula, data = model_data, ...)},
+         "qda" = {model <- MASS::qda(formula, data = model_data, ...)},
+         "logistic" = {model <- glm(formula, data = model_data , family = "binomial", ...)},
+         "svm" = {model <- e1071::svm(formula, data = model_data, ...)},
+         "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)},
+         "ann" = {model <- nnet::nnet(formula = formula, data = model_data, ...)},
+         "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
+         "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data, ...)},
+         "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data, ...)},
+         "multinom" = {model <- nnet::multinom(formula = formula, data = model_data, ...)},
+         "gbm" = {
+           model_data <- as.matrix(model_data)
+           if(!is.null(predictors)){
+             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,predictors], label = model_data[,target])
+           } else {
+             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,colnames(model_data)[colnames(model_data) != target]], label = model_data[,target])
+           }
+           model <- xgboost::xgb.train(data = xgb_data, ...)}
+  )
+  return(model)
+}
+
+
+# Helper function for classCV to predict 
+
+.prediction <- function(model_type = NULL, model = NULL, model_data = NULL, predictors = NULL, class_dict = NULL, target = NULL){
+  switch(model_type,
+         "svm" = {prediction_vector <- predict(model, newdata = model_data)},
+         "logistic" = {
+           prediction_vector <- predict(model, newdata  = model_data, type = "response")
+           prediction_vector <- ifelse(prediction_vector > 0.5, 1, 0)},
+         "naivebayes" = {
+           if(!is.null(predictors)){
+             model_data <- model_data[,c(predictors,target)]
+           } else {
+             model_data <- model_data[,colnames(model_data)[colnames(model_data) != target]]
+           }
+           prediction_vector <- predict(model, newdata = model_data)},
+         "ann" = {prediction_vector <- predict(model, newdata = model_data, type = "class")},
+         "knn" = {prediction_vector <- predict(model, newdata = model_data)},
+         "decisiontree" = {
+           prediction_matrix <- predict(model, newdata = model_data)
+           prediction_vector <- colnames(prediction_matrix)[apply(prediction_matrix, 1, which.max)]
+           },
+         "randomforest" = {prediction_vector <- predict(model, newdata = model_data)},
+         "multinom" = {prediction_vector <- predict(model, newdata = model_data)},
+         "gbm" = {
+           model_data <- as.matrix(model_data)
+           if(!is.null(predictors)){
+             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,predictors], label = model_data[,target])
+           } else {
+             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,colnames(model_data)[colnames(model_data) != target]], label = model_data[,target])
+           }
+           predictions <- predict(model, xgb_data)
+           prediction_matrix <- matrix(predictions, ncol = length(names(class_dict)), byrow = TRUE)
+           
+           prediction_vector <- apply(prediction_matrix, 1, which.max) - 1
+         },
+         prediction_vector <- predict(model, newdata = model_data)$class
+  )
+  
+  return(prediction_vector)
+}
 

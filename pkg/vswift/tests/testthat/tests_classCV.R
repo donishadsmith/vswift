@@ -139,17 +139,54 @@ test_that("test imputation and missing data", {
   expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE))
 })
 
-test_that("test final models", {
+test_that("test imputations", {
+  if(requireNamespace("missForest", quietly = TRUE)){
+    data <- iris
+    # Introduce NA
+    data <- missForest::prodNA(data)
+    # randomforest no impute arguments
+    expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "missforest", model_type = "lda", stratified = TRUE))
+    # randomforest with impute arguments
+    expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "missforest", impute_args = list(verbose = TRUE, maxiter = 1000, maxnodes = 5), model_type = "lda", stratified = TRUE, final_model = TRUE))
+    # random forest with incorrect impute arguments
+    expect_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "missforest", impute_args = list(verbose = TRUE, maxiter = 1000, try = 5), model_type = "lda", stratified = TRUE, final_model = TRUE))
+    # simple
+    expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "simple", model_type = "lda", stratified = TRUE, final_model = TRUE))
+    # complete cases only
+    expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE, final_model = TRUE))
+
+  } else {
+    skip("missForest package not available")
+  }})
+
+test_that("test saving features", {
+  data <- iris
+  
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE,
+                                    save_models = TRUE, save_data = TRUE))
+  
+})
+
+test_that("test input errors", {
   
   data <- iris
-  # Introduce NA
-  data <- missForest::prodNA(data)
-  # randomforest
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "missforest", impute_args = list(verbose = TRUE), model_type = "lda", stratified = TRUE, final_model = TRUE))
   
-  # simple
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "simple", model_type = "lda", stratified = TRUE, final_model = TRUE))
-  
-  # complete cases only
-  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE, final_model = TRUE))
+  expect_error(result <- classCV(target = "Species", split = 0.1, model_type = "lda"))
+  # split out of range
+  expect_error(result <- classCV(data = data, target = "Species", split = 0.1, model_type = "lda"))
+  # n_folds out of range
+  expect_error(result <- classCV(data = data, target = "Species", n_folds = 31, model_type = "lda"))
+  # model not specified
+  expect_error(result <- classCV(data = data, target = "Species", n_folds = 31, model_type = "lda"))
+  # no target
+  expect_error(result <- classCV(data = data, n_folds = 31, model_type = "lda"))
+  # target out of range
+  expect_error(result <- classCV(data = data, target = 5, n_folds = 31, model_type = "lda"))
+  # target also predictor
+  expect_error(result <- classCV(data = data, target = 5, predictors = 1:5, n_folds = 31, model_type = "lda"))
+  # incorrect imputation
+  expect_error(result <- classCV(data = data, target = 5, predictors = 1:5, n_folds = 31, impute_method = "knn", model_type = "lda"))
+  expect_error(result <- classCV(data = data, target = 5, predictors = 1:5, n_folds = 31, model_type = "cnn"))
 })
+
+
