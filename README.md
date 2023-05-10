@@ -26,10 +26,10 @@ To install and use vswift:
 install.packages("devtools")
 
 # Install 'vswift' package
-devtools::install_github(repo = "donishadsmith/VSwift", subdir = "pkg/VSwift")
+devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
 
 # Display documentation for the 'vswift' package
-help(package = "VSwift")
+help(package = "vswift")
 ```
 ## Usage
 
