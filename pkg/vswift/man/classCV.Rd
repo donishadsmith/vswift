@@ -41,7 +41,7 @@ k-fold cross validation will not be performed.}
 "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradiant Boosted Modeling).
+"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradiant Boosting Machines).
 For "knn", the optimal k will be used unless specified with `ks =`.
 For "ann", `size =` must be specified as an additional argument.}
 
