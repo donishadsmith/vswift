@@ -134,8 +134,10 @@ print(result)
 
 # Plot metrics
 plot(result)
-
 }
 \seealso{
 \code{\link{print.vswift}}, \code{\link{plot.vswift}}
+}
+\author{
+Donisha Smith
 }

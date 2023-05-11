@@ -44,4 +44,8 @@ data(iris)
 # Obtain indices for 80\% training/test split and 5-fold CV
 
 output <- genFolds(data = iris, target = "Species", split = 0.8, n_folds = 5)
+
+}
+\author{
+Donisha Smith
 }

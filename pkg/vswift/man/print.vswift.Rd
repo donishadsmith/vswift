@@ -32,3 +32,6 @@ model_type = "lda", stratified = TRUE, random_seed = 123)
 print(result)
 
 }
+\author{
+Donisha Smith
+}

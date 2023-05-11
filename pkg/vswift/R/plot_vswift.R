@@ -28,6 +28,7 @@
 #' 
 #' plot(result)
 #' 
+#' @author Donisha Smith
 #' @export
 "plot.vswift" <- function(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, ...){
   if(class(object) == "vswift"){

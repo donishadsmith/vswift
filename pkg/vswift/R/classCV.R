@@ -92,7 +92,7 @@
 #' 
 #' # Plot metrics
 #' plot(result)
-#' 
+#' @author Donisha Smith
 #' @export
 classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE,...){
   # Ensure model type is lowercase
@@ -195,6 +195,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   conversion_needed <- FALSE
   # Get names and create a dictionary to convert to numeric if logistic model is chosen
   if(model_type %in% c("logistic", "gbm")){
+    # Build dictionary for later
     counter <- 0
     new_classes <- c()
     for(class in names(table(preprocessed_data[,target]))){
@@ -203,7 +204,9 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       counter <- counter + 1
     }
     conversion_needed <- TRUE
-    warning(sprintf("form logistic regression and gradient boosted modeling classes must be numerics; classes are now encoded: %s", paste(new_classes, collapse = ", ")))
+    if(!all(as.numeric(names(classCV_output[["class_dictionary"]])) == as.numeric(classCV_output[["class_dictionary"]]))){
+      warning(sprintf("classes are now encoded: %s", paste(new_classes, collapse = ", ")))
+    }
   }
   if(stratified == TRUE){
     # Initialize list; initializing for ordering output purposes
@@ -303,8 +306,10 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   # Convert variables to characters so that models will predict the original variable
   if(conversion_needed == TRUE){
     preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-    training_data[,target] <- sapply(training_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-    test_data[,target] <- sapply(test_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+    if(exists("training_data")){
+      training_data[,target] <- sapply(training_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+      test_data[,target] <- sapply(test_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+    }
   }
   
   # First iteration will always be the evaluation for the traditional data split method

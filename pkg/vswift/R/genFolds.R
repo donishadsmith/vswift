@@ -20,6 +20,8 @@
 #' # Obtain indices for 80% training/test split and 5-fold CV
 #' 
 #' output <- genFolds(data = iris, target = "Species", split = 0.8, n_folds = 5)
+#'
+#' @author Donisha Smith
 #' @export
 
 genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){

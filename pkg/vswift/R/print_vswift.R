@@ -22,6 +22,7 @@
 #' #  Print parameter information and performance metrics
 #' print(result)
 #'
+#' @author Donisha Smith
 #' @export
 "print.vswift"<- function(object, parameters = TRUE, metrics = TRUE){
   if(class(object) == "vswift"){

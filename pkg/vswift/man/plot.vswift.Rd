@@ -42,3 +42,6 @@ model_type = "qda", stratified = TRUE)
 plot(result)
 
 }
+\author{
+Donisha Smith
+}
