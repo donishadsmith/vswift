@@ -10,6 +10,15 @@ test_that("test train-test split for all models and no stratified sampling", {
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "randomforest"))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "knn", ks = 5))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "ann", size = 10))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "naivebayes"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "multinom"))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
   if(requireNamespace("mlbench", quietly = TRUE)){
     # Create binary
     data(PimaIndiansDiabetes, package = "mlbench")
@@ -35,6 +44,15 @@ test_that("test train-test split for all models with stratified sampling", {
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "randomforest", stratified = TRUE))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "knn", ks = 5, stratified = TRUE))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "ann", size = 10, stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "naivebayes", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "multinom", stratified = TRUE))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10, stratified = TRUE))
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     # Create binary
@@ -60,6 +78,15 @@ test_that("k-fold CV for all models no stratified sampling", {
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "randomforest"))
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "knn", ks = 5))
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "ann", size = 10))
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "naivebayes"))
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "multinom"))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
@@ -84,6 +111,15 @@ test_that("k-fold CV for all models", {
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "randomforest", stratified = TRUE))
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "knn", ks = 5, stratified = TRUE))
   expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "ann", size = 10, stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "naivebayes", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "multinom", stratified = TRUE))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", n_folds = 3, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10, stratified = TRUE))
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
@@ -102,13 +138,22 @@ test_that("k-fold CV for all models", {
 test_that("train-test split and k-fold CV for all models", {
   
   data <- iris
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda"))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "qda"))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "svm"))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "decisiontree"))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "randomforest"))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "knn", ks = 5))
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "ann", size = 10))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "qda", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "svm", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "decisiontree", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "randomforest", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "knn", ks = 5, stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "ann", size = 10, stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "naivebayes", stratified = TRUE))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "multinom", stratified = TRUE))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10, stratified = TRUE))
   # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     data(PimaIndiansDiabetes, package = "mlbench")
@@ -123,6 +168,41 @@ test_that("train-test split and k-fold CV for all models", {
     skip("mlbench package not available")
   }
 })
+
+test_that("train-test split and k-fold CV for all models without stratified sampling", {
+  
+  data <- iris
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "qda"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "svm"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "decisiontree"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "randomforest"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "knn", ks = 5))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "ann", size = 10))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "naivebayes"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "multinom"))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
+  # Create binary
+  if(requireNamespace("mlbench", quietly = TRUE)){
+    data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
+    PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
+    PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
+    PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
+    PimaIndiansDiabetes$diabetes <- as.numeric(PimaIndiansDiabetes$diabetes)
+    expect_no_error(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", split = 0.8, n_folds = 5, model_type = "logistic"))
+  } else {
+    skip("mlbench package not available")
+  }
+})
+
 
 test_that("test imputation and missing data", {
   
