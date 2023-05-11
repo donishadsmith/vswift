@@ -291,3 +291,12 @@ test_that("test final models only", {
 
 })
 
+test_that("test random seed", {
+  
+  data <- iris
+  result_1 <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", random_seed = 123, stratified = TRUE)
+  result_2 <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", random_seed = 123, stratified = TRUE)
+  
+  expect_equal(result_1$sample_indices$split$training,result_2$sample_indices$split$training)
+  expect_equal(result_1$metrics$cv,result_2$metrics$cv)
+})
