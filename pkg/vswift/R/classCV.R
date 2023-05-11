@@ -204,7 +204,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       counter <- counter + 1
     }
     conversion_needed <- TRUE
-    if(!all(as.numeric(names(classCV_output[["class_dictionary"]])) == as.numeric(classCV_output[["class_dictionary"]]))){
+    if(!all(names(classCV_output[["class_dictionary"]]) == as.character(classCV_output[["class_dictionary"]]))){
       warning(sprintf("classes are now encoded: %s", paste(new_classes, collapse = ", ")))
     }
   }
