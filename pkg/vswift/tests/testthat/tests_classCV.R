@@ -269,7 +269,7 @@ test_that("test input errors", {
   expect_error(result <- classCV(data = data, target = 5, predictors = 1:5, n_folds = 31, model_type = "cnn"))
 })
 
-test_that("train-test split and k-fold CV for all models without stratified sampling", {
+test_that("test final models only", {
   
   data <- iris
   expect_no_error(result <- classCV(data = data, target = "Species", model_type = "lda", final_model = T))
