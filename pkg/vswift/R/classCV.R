@@ -437,7 +437,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   # Generate final model
   if(final_model == TRUE){
     # Generate model depending on chosen model_type
-    classCV_output[["final_model"]]  <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = model_data, ...)
+    classCV_output[["final_model"]]  <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = preprocessed_data, ...)
   }
   # Make list a vswift class
   class(classCV_output) <- "vswift"

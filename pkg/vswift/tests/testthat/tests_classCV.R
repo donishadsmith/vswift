@@ -269,4 +269,25 @@ test_that("test input errors", {
   expect_error(result <- classCV(data = data, target = 5, predictors = 1:5, n_folds = 31, model_type = "cnn"))
 })
 
+test_that("train-test split and k-fold CV for all models without stratified sampling", {
+  
+  data <- iris
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "lda", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "qda", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "svm", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "decisiontree", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "randomforest", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "knn", ks = 5, final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "ann", size = 10, final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "naivebayes", final_model = T))
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "multinom", final_model = T))
+  count = 0
+  data$Species = as.character(data$Species)
+  for(x in names(table(data$Species))){
+    data$Species[which(data$Species == x)] = as.character(count)
+    count = count + 1
+  }
+  expect_no_error(result <- classCV(data = data, target = "Species", model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10, final_model = T))
+
+})
 
