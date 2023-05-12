@@ -56,9 +56,7 @@
          "svm" = {model <- e1071::svm(formula, data = model_data, ...)},
          "naivebayes" = {model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)},
          "ann" = {model <- nnet::nnet(formula = formula, data = model_data, ...)},
-         "knn" = {
-           library(kknn)
-           model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
+         "knn" = {model <- kknn::train.kknn(formula = formula, data = model_data, ...)},
          "decisiontree" = {model <- rpart::rpart(formula = formula, data = model_data, ...)},
          "randomforest" = {model <- randomForest::randomForest(formula = formula, data = model_data, ...)},
          "multinom" = {model <- nnet::multinom(formula = formula, data = model_data, ...)},
@@ -89,9 +87,7 @@
            }
            prediction_vector <- predict(model, newdata = prediction_data)},
          "ann" = {prediction_vector <- predict(model, newdata = prediction_data, type = "class")},
-         "knn" = {
-           library(kknn)
-           prediction_vector <- predict(model, newdata = prediction_data)},
+         "knn" = {prediction_vector <- predict(model, newdata = prediction_data)},
          "decisiontree" = {
            prediction_matrix <- predict(model, newdata = prediction_data)
            prediction_vector <- colnames(prediction_matrix)[apply(prediction_matrix, 1, which.max)]
