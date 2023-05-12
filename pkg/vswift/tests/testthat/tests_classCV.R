@@ -288,7 +288,19 @@ test_that("test final models only", {
     count = count + 1
   }
   expect_no_error(result <- classCV(data = data, target = "Species", model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10, final_model = T))
-
+  # Create binary
+  if(requireNamespace("mlbench", quietly = TRUE)){
+    data(PimaIndiansDiabetes, package = "mlbench")
+    # Convert characters to zero and one; expect warning that this conversion is happening
+    expect_warning(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes", final_model = TRUE, model_type = "logistic"))
+    PimaIndiansDiabetes$diabetes <- as.character(PimaIndiansDiabetes$diabetes)
+    PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "neg"), "diabetes"] <- 0
+    PimaIndiansDiabetes[which(PimaIndiansDiabetes$diabetes == "pos"), "diabetes"] <- 1
+    PimaIndiansDiabetes$diabetes <- as.numeric(PimaIndiansDiabetes$diabetes)
+    expect_no_error(result <- classCV(data = PimaIndiansDiabetes, target = "diabetes",  final_model = TRUE,  model_type = "logistic"))
+  } else {
+    skip("mlbench package not available")
+  }
 })
 
 test_that("test random seed", {

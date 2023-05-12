@@ -28,48 +28,48 @@
   if(class(object) == "vswift"){
     if(parameters == TRUE){
       # Print parameter information
-      cat(sprintf("Model Type: %s\n\n", object[["information"]][["parameters"]][["model_type"]]))
-      if(object[["information"]][["parameters"]][["model_type"]] == "logistic"){
-        cat(sprintf("Threshold: %s\n\n", object[["information"]][["parameters"]][["threshold"]]))
+      cat(sprintf("Model Type: %s\n\n", object[["parameters"]][["model_type"]]))
+      if(object[["parameters"]][["model_type"]] == "logistic"){
+        cat(sprintf("Threshold: %s\n\n", object[["parameters"]][["threshold"]]))
       }
       # Creating response variable
-      if(length(object[["information"]][["parameters"]][["predictors"]]) > 20){
-        cat(sprintf("Number of Predictors: %s\n\n", length(object[["information"]][["parameters"]][["predictors"]])))
+      if(length(object[["parameters"]][["predictors"]]) > 20){
+        cat(sprintf("Number of Predictors: %s\n\n", length(object[["parameters"]][["predictors"]])))
       } else {
-        cat(sprintf("Predictors: %s\n\n", paste(object[["information"]][["parameters"]][["predictors"]], collapse = ", ")))
+        cat(sprintf("Predictors: %s\n\n", paste(object[["parameters"]][["predictors"]], collapse = ", ")))
       }
-      cat(sprintf("Target: %s\n\n", object[["information"]][["parameters"]][["responsd_variable"]]))
+      cat(sprintf("Target: %s\n\n", object[["parameters"]][["responsd_variable"]]))
       cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
-      cat(sprintf("Fold size: %s\n\n", object[["information"]][["parameters"]][["n_folds"]]))
-      cat(sprintf("Split: %s\n\n", object[["information"]][["parameters"]][["split"]]))
-      cat(sprintf("Stratified Sampling: %s\n\n", object[["information"]][["parameters"]][["stratified"]]))
-      cat(sprintf("Random Seed: %s\n\n", object[["information"]][["parameters"]][["random_seed"]]))
+      cat(sprintf("Fold size: %s\n\n", object[["parameters"]][["n_folds"]]))
+      cat(sprintf("Split: %s\n\n", object[["parameters"]][["split"]]))
+      cat(sprintf("Stratified Sampling: %s\n\n", object[["parameters"]][["stratified"]]))
+      cat(sprintf("Random Seed: %s\n\n", object[["parameters"]][["random_seed"]]))
       # Print sample size and missing data for user transparency
-      cat(sprintf("Imputation Method: %s\n\n", object[["information"]][["parameters"]][["impute_method"]]))
+      cat(sprintf("Imputation Method: %s\n\n", object[["parameters"]][["impute_method"]]))
       # Print arguments for missForest
-      if(!is.null(object[["information"]][["parameters"]][["impute_method"]] == "missforest")){
+      if(!is.null(object[["parameters"]][["impute_method"]] == "missforest")){
         arguments_list <- list()
-        for(name in names(object[["information"]][["parameters"]][["impute_args"]])){
+        for(name in names(object[["parameters"]][["impute_args"]])){
           # Add equal sign between name and value
-          arguments_list <- c(arguments_list,paste(name, "=",object[["information"]][["parameters"]][["impute_args"]][[name]], collapse = " "))
+          arguments_list <- c(arguments_list,paste(name, "=",object[["parameters"]][["impute_args"]][[name]], collapse = " "))
         }
         cat(sprintf("missForest Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
       }
-      cat(sprintf("Missing Data: %s\n\n", object[["information"]][["parameters"]][["missing_data"]]))
-      cat(sprintf("Sample Size: %s\n\n", object[["information"]][["parameters"]][["sample_size"]]))
+      cat(sprintf("Missing Data: %s\n\n", object[["parameters"]][["missing_data"]]))
+      cat(sprintf("Sample Size: %s\n\n", object[["parameters"]][["sample_size"]]))
       # Check for additional arguments
-      if(!is.null(object[["information"]][["parameters"]][["additional_arguments"]])){
+      if(!is.null(object[["parameters"]][["additional_arguments"]])){
         arguments_list <- list()
-        for(name in names(object[["information"]][["parameters"]][["additional_arguments"]])){
-          if(all(name == "params", object[["information"]][["parameters"]][["model_type"]] == "gbm")){
+        for(name in names(object[["parameters"]][["additional_arguments"]])){
+          if(all(name == "params", object[["parameters"]][["model_type"]] == "gbm")){
             param_list <- list()
-            for(param in names(object[["information"]][["parameters"]][["additional_arguments"]][[name]])){
-              param_list <- c(param_list, paste(param, "=",object[["information"]][["parameters"]][["additional_arguments"]][[name]][[param]], collapse = ", "))
+            for(param in names(object[["parameters"]][["additional_arguments"]][[name]])){
+              param_list <- c(param_list, paste(param, "=",object[["parameters"]][["additional_arguments"]][[name]][[param]], collapse = ", "))
             }
             arguments_list <- c(arguments_list,sprintf("%s = %s", name, list(param_list)))
           } else {
             # Add equal sign between name and value
-            arguments_list <- c(arguments_list,paste(name, "=",object[["information"]][["parameters"]][["additional_arguments"]][[name]], collapse = " "))
+            arguments_list <- c(arguments_list,paste(name, "=",object[["parameters"]][["additional_arguments"]][[name]], collapse = " "))
           }
         }
         cat(sprintf("Additional Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
@@ -125,7 +125,7 @@
       # Variable for which class string length to print to ensure all values have equal spacing
       class_position <- 1 
       # Get number of folds to select the correct rows for mean and stdev
-      n_folds <- object[["information"]][["parameters"]][["n_folds"]]
+      n_folds <- object[["parameters"]][["n_folds"]]
       # Print parameters name
       cat("\n\n","K-fold CV","\n")
       cat(rep("_",nchar("K-fold CV")),"\n\n")
