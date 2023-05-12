@@ -93,8 +93,10 @@
 #' # Plot metrics
 #' plot(result)
 #' @author Donisha Smith
-#' @export
 #' 
+#' @importFrom kknn contr.dummy()
+#' 
+#' @export
 classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE,...){
   
   # Ensure model type is lowercase
@@ -346,3 +348,5 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   class(classCV_output) <- "vswift"
   return(classCV_output)
 }
+
+
