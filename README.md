@@ -35,7 +35,7 @@ help(package = "vswift")
 
 ```R
 # Load the package
-library(VSwift)
+library(vswift)
 
 # Perform train-test split and k-fold cross-validation with stratified sampling
 results <- classCV(data = iris,
