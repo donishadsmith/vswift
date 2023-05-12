@@ -1,0 +1,1 @@
+#' @importFrom kknn contr.dummy
