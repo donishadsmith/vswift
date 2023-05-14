@@ -4,7 +4,15 @@
 \alias{plot.vswift}
 \title{Plot model evaluation metrics}
 \usage{
-\method{plot}{vswift}(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, ...)
+\method{plot}{vswift}(
+  object,
+  split = TRUE,
+  cv = TRUE,
+  save_plots = FALSE,
+  path = NULL,
+  model_type = NULL,
+  ...
+)
 }
 \arguments{
 \item{object}{An object of class vswift.}
@@ -18,6 +26,12 @@ and dashed blue line represents the standard deviation. Default = TRUE.}
 
 \item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
 working directory.}
+
+\item{model_type}{A character or vector of the model metrics to be printed. If not specified, all model metrics will be printed. Available options:
+"lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
+"logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
+"ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
+"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).}
 
 \item{...}{Additional arguments that can be passed to the `png()` function.}
 }

@@ -1,20 +1,16 @@
 #Helper function for classCV and genFolds to check if inputs are valid
 .error_handling <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            impute_method = NULL, impute_args = NULL, call = NULL,...){
+                            impute_method = NULL, impute_args = NULL, mod_args = NULL, call = NULL, ...){
   
   # List of valid inputs
-  valid_inputs <- list(model_type = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
+  valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
                                       "randomforest", "multinom", "gbm"),
-                       impute_method = c("simple", "missforest"))
+                       valid_imputes = c("simple", "missforest"))
 
-  # Ensure data is not NULL
-  if(!is.data.frame(data)){
-    stop("invalid input for data")
-  }
-  
+
   # Check if impute method is valid
   if(!is.null(impute_method)){
-    if(!impute_method %in% valid_inputs[["impute_method"]]){
+    if(!impute_method %in% valid_inputs[["valid_imputes"]]){
       stop("invalid impute method")
       }
     # Check if impute method is valid
@@ -27,11 +23,27 @@
   
   # Check if additional arguments are valid
   if(all(impute_method == "missforest",!is.null(impute_args))){
-    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args)
+    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
+  }
+  
+  if(!is.null(mod_args)){
+    if(class(mod_args) != "list"){
+      stop("mod_args must be a list")
+    }
+    if(length(model_type) == 1){
+      stop("mod_args used only when multiple models are specified")
+    }
+    if(!all(names(mod_args) %in% valid_inputs[["valid_models"]])){
+      stop("invalid model in mod_args")
+    }
+  }
+  
+  if(!is.null(mod_args)){
+    vswift:::.check_additional_arguments(model_type = model_type, mod_args = mod_args, call = "multiple")
   }
   
   if(length(list(...)) > 0){
-    vswift:::.check_additional_arguments(model_type = model_type, ...)
+    vswift:::.check_additional_arguments(model_type = model_type, call = "single", ...)
   }
   
   # Ensure fold size is valid
@@ -46,10 +58,6 @@
   
   # Ensure valid target variable
   if(call == "classCV" || call == "genFolds" & stratified == TRUE){
-    # Ensure target is not null
-    if(is.null(target)){
-      stop("target has no input")
-    }
     # Ensure target is also not in predictors 
     if(target %in% predictors){
       stop("target cannot also be a predictor")
@@ -90,10 +98,13 @@
   
   #Ensure model_type has been assigned
   if(call == "classCV"){
-    if(any(is.null(model_type), !(model_type %in% valid_inputs[["model_type"]]))){
-      stop(sprintf("%s is an invalid model_type", model_type))
+    if(class(model_type) != "character"){
+      stop("model_type must be a character or a vector containing characters")
     }
-    if(model_type == "logistic" & any(length(levels(factor(data[,target], exclude = NA))) != 2, !is.numeric(threshold), threshold < 0.30 || threshold > 0.70)){
+    if(!all(model_type %in% valid_inputs[["valid_models"]])){
+      stop("invalid model in model_type")
+    }
+    if("logistic" %in% model_type & any(length(levels(factor(data[,target], exclude = NA))) != 2, !is.numeric(threshold), threshold < 0.30 || threshold > 0.70)){
       if(length(levels(factor(data[,target], exclude = NA))) != 2){
         stop("logistic regression requires a binary variable")
       } else {
@@ -116,7 +127,7 @@
   # Turn character columns into factor
   for(col in columns){
     data[,col] <- factor(data[,col])
-    if(model_type == "svm"){
+    if("svm" %in% model_type){
       data_levels[[col]] <- levels(data[,col])
     }
   }
@@ -127,15 +138,8 @@
 
 
 # Helper function for classCV to check if additional arguments are valid
-.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, ...){
+.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, mod_args = NULL, call = NULL, ...){
   
-  if(length(names(list(...))) > 0){
-    method <- model_type
-    additional_args <- names(list(...))
-  } else {
-    method <- impute_method
-    additional_args <- names(impute_args)
-  }
   # Helper function to generate error message
   error_message <- function(method_name, invalid_args) {
     sprintf("The following arguments are invalid for %s or are incompatible with classCV: %s",
@@ -158,12 +162,33 @@
     "missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes")
   )
   
-  valid_args <- valid_args_list[[method]]
-  invalid_args <- additional_args[which(!additional_args %in% valid_args)]
-  
-  if(length(invalid_args) > 0) {
-    stop(error_message(method, invalid_args))
+  if(call == "single"){
+    methods <- model_type
+    additional_args <- names(list(...))
+  } else if(call == "multiple"){
+    methods <- names(list(...))
+  } else {
+    methods <- impute_method
+    additional_args <- names(impute_args)
   }
+  
+  for(method in methods){
+    if(call == "single"){
+      additional_args <- names(list(...))
+    } else if(call == "multiple"){
+      additional_args <- names(mod_args[[method]])
+    } else {
+      additional_args <- names(impute_args)
+    }
+    
+    valid_args <- valid_args_list[[method]]
+    invalid_args <- additional_args[which(!additional_args %in% valid_args)]
+    
+    if(length(invalid_args) > 0) {
+      stop(error_message(method, invalid_args))
+    }
+  }
+  
 }
 
 # Helper function for imputation
@@ -215,8 +240,9 @@
            })
   }
   
-  # Warning for missing data if no imputation method selected or imputation fails to fill in some missimg data
-  if(miss <- nrow(data) - nrow(data[complete.cases(data),]) > 0){
+  # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
+  miss <- nrow(data) - nrow(data[complete.cases(data),])
+  if(miss  > 0){
     data <- data[complete.cases(data),]
     warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
                     ,miss))

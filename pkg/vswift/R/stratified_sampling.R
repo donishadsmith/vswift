@@ -49,7 +49,6 @@
            for(i in 1:k){
              # Keep initializing variable
              fold_idx <- c()
-             output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
              # Fold size; try to undershoot for excess
              fold_size <- floor(nrow(data)/k)
              # Assign class indices to each fold

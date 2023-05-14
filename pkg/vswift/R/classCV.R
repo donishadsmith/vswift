@@ -12,7 +12,7 @@
 #'              leaving the rest for the test set. If not specified, train-test splitting will not be done.
 #' @param n_folds An integer from 3 and 30 for the number of folds to use. If not specified,
 #'               k-fold cross validation will not be performed.             
-#' @param model_type A character string indicating the classification algorithm to use. Available options:
+#' @param model_type A character string or list indicating the classification algorithm to use. Available options:
 #'                   "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 #'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 #'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
@@ -28,6 +28,8 @@
 #' Default == False. If data is missing and `impute_method == NULL`, observations with missing data will be removed. Default == NULL.
 #' @param impute_args A list containing additional arguments to pass to missForest for Random Forest Imputation. Available options: "maxiter","ntree","variablewise","decreasing","verbose",
 #' "mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes". Note: For specific information about each parameter, please refer to the missForest documentation. Default = NULL.
+#' @param mod_args  list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
+#' to the respective model. Default = NULL.
 #' @param remove_obs A logical value to remove observations with categorical predictors from the test/validation set
 #'                   that have not been observed during model training. Some algorithms may produce an error if this occurs. Default = FALSE.
 #' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default = FALSE.
@@ -92,17 +94,30 @@
 #' 
 #' # Plot metrics
 #' plot(result)
+#' 
+#' # Perform 5-fold cross-validation a train-test split with an 80% training set using multiple models
+#' 
+#' result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
+#' n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10)), 
+#' save_data = T, save_models = T, remove_obs = T, stratified = T)
+#' 
+#' # Print parameters and metrics
+#' print(result)
+#' 
+#' # Plot metrics
+#' plot(result)
 #' @author Donisha Smith
 #' 
 #' 
 #' @export
-classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE,...){
+classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL,
+                    mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE,...){
   
   # Ensure model type is lowercase
-  model_type <- tolower(model_type)
+  if(!is.null(model_type)) model_type <- tolower(model_type)
   
   # Checking if inputs are valid
-  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, impute_method = impute_method, impute_args = impute_args, call = "classCV", ...)
+  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, call = "classCV", ...)
   
   # Set seed
   if(!is.null(random_seed)){
@@ -126,27 +141,24 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
   # Ensure data is factor
   create_factor_output <- vswift:::.create_factor(data = data, target = target, model_type = model_type)
   data <- create_factor_output[["data"]] 
-  if(model_type == "svm"){
+  if("svm" %in% model_type){
     data_levels <- create_factor_output[["data_levels"]]
   }
   
   # Perform imputation
   imputation_output <- vswift:::.imputation(data = data, impute_method = impute_method, impute_args = impute_args)
   preprocessed_data <- imputation_output[["preprocessed_data"]]
-  
-  # Save preprocessed data
-  if(save_data == TRUE) classCV_output[["data"]][["preprocessed_data"]] <- preprocessed_data
  
   # Store information
   classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
                                threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, impute_method = impute_method,
-                               impute_args = impute_args, imputation_output = imputation_output, ...)
+                               impute_args = impute_args, imputation_output = imputation_output, mod_args = mod_args, ...)
   
   # Get formula
   formula <- classCV_output[["formula"]]
   
   # Create class dictionary
-  if(model_type %in% c("logistic", "gbm")){
+  if(any(model_type %in% c("logistic", "gbm"))){
     classCV_output <- vswift:::.create_dictionary(preprocessed_data = preprocessed_data, target = target, classCV_output = classCV_output)
   }
   
@@ -168,31 +180,21 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
     if(stratified == TRUE){
       # Get out of .stratified_sampling
       stratified.sampling_output <- vswift:::.stratified_sampling(data = preprocessed_data,type = "split", split = split, output = classCV_output, target = target, random_seed = random_seed)
-      # Create training and test set
-      training_data <- preprocessed_data[stratified.sampling_output$output$sample_indices$split$training,]
-      test_data <- preprocessed_data[stratified.sampling_output$output$sample_indices$split$test,]
       # Extract updated classCV_output output list
       classCV_output <- stratified.sampling_output$output
     } else {
       # Create test and training set
       training_indices <- sample(1:nrow(preprocessed_data),size = round(nrow(preprocessed_data)*split,0),replace = F)
-      training_data <- preprocessed_data[training_indices,]
-      test_data <- preprocessed_data[-training_indices,]
       # Store indices in list
       classCV_output[["sample_indices"]][["split"]] <- list()
       classCV_output[["sample_indices"]][["split"]][["training"]] <- c(1:nrow(preprocessed_data))[training_indices]
       classCV_output[["sample_indices"]][["split"]][["test"]] <- c(1:nrow(preprocessed_data))[-training_indices]
     }
-    # Create data table
-    classCV_output[["metrics"]][["split"]] <- data.frame("Set" = c("Training","Test"))
     # Assignments to iterator vector
     iterator_vector <- c("Training","Test")
-    # Initialize list to store models
-    if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][["split"]] <- list()
   }
   # Adding information to data frame
   if(!is.null(n_folds)){
-    classCV_output[["metrics"]][["cv"]] <- data.frame("Fold" = NA)
     # Create folds; start with randomly shuffling indices
     indices <- sample(1:nrow(data))
     # Initialize list to store fold indices; third subindex needs to be initialized
@@ -202,7 +204,7 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       # Initialize list to store fold proportions; third level
       classCV_output[["sample_proportions"]][["cv"]] <- list()
       stratified_sampling_output <- vswift:::.stratified_sampling(data = preprocessed_data, type = "k-fold", output = classCV_output, k = n_folds,
-                                                        target = target,random_seed = random_seed)
+                                                        target = target, random_seed = random_seed)
       # Collect output
       classCV_output <- stratified_sampling_output$output
     } else {
@@ -218,8 +220,6 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
       # Random shuffle
       fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
       for(i in 1:n_folds){
-        # Add name to dataframe
-        classCV_output[["metrics"]][["cv"]][i,"Fold"] <- sprintf("Fold %s",i)
         # Create fold with stratified or non stratified sampling
         fold_idx <- indices[1:fold_size_vector[i]]
         # Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds
@@ -228,121 +228,139 @@ classCV <- function(data = NULL, target = NULL, predictors = NULL, split = NULL,
         classCV_output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
       }
     }
-    # Reorder list
-    metrics_position <- which(names(classCV_output) == "metrics")
-    classCV_output <- c(classCV_output[-metrics_position],classCV_output[metrics_position])
-    # Initialize list to store models
-    if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][["cv"]] <- list()
-    # Update iterator vector
     iterator_vector <- c(iterator_vector, paste("Fold", 1:n_folds))
   }
   
-  # Convert target variable
-  if(model_type %in% c("logistic","gbm")){
-    preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-    if(!is.null(split)){
-      training_data[,target] <- sapply(training_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-      test_data[,target] <- sapply(test_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-    }
+  # Save data
+  if(save_data == TRUE) classCV_output[["saved_data"]][["preprocessed_data"]] <- preprocessed_data
+ 
+  
+  # Move logistic and gbm to back of list
+  if(all(length(model_type) > 1, any(c("logistic","gbm") %in% model_type))){
+    x <- which(model_type %in% c("logistic","gbm"))
+    model_type <- c(model_type[-x],model_type[x])
   }
   
+  # Variable to keep track of logistic and gbm
+  model_eval_tracker <- 1
   # Perform model evaluation
-  if(any(!is.null(split), !is.null(n_folds))){
-    for(i in iterator_vector){
-      #Create split word
-      split_word <- unlist(strsplit(i, split = " "))
-      if("Training" %in% split_word){
-        # Assigning data split matrices to new variable 
-        model_data <- training_data
-        validation_data <- test_data
-      } else if("Fold" %in% split_word){
-        model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
-        validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
+  for(model_name in model_type){
+    # Convert target variable
+    if(model_name %in% c("logistic","gbm")){
+      if(model_eval_tracker == 1){
+      preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
       }
-      
-      # Ensure columns have same levels
-      if(model_type == "svm"){
-        for(col in names(data_levels)){
-          levels(model_data[,col]) <- levels(validation_data[,col]) <- data_levels[[col]]
-        }
-      }
-      
-      # Generate model depending on chosen model_type
-      model <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = model_data, ...)
-      
-      # Variable to select correct dataframe
-      method <- ifelse("Fold" %in% split_word, "cv", "split")
-      col <- ifelse(method == "cv", "Fold", "Set")
-      
-      # Save models
-      if(save_models == TRUE) classCV_output[[paste0(model_type,"_models")]][[method]][[tolower(i)]] <- model 
-      
-      # Create dataframe for validation testing
-      if(any("Test" %in% split_word, "Fold" %in% split_word) & remove_obs == TRUE){
-        prediction_data <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target)
-      } else {
+      model_eval_tracker <- model_eval_tracker + 1
+    }
+    
+    # Check if split or cv specified then perform evaluation
+    if(any(!is.null(split), !is.null(n_folds))){
+      for(i in iterator_vector){
+        #Create split word
+        split_word <- unlist(strsplit(i, split = " "))
         if("Training" %in% split_word){
-          prediction_data <- model_data
-        } else {
-          prediction_data <- validation_data
+          # Assigning data split matrices to new variable 
+          model_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]], ]
+          validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]], ]
+        } else if("Fold" %in% split_word){
+          model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
+          validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
         }
-      }
-      
-      # Store dataframe is save_data is TRUE
-      if(save_data == TRUE) classCV_output[["data"]][[tolower(i)]] <- prediction_data
-      
-      # Create variables used in for loops to calculate precision, recall, and f1
-      if(model_type %in% c("logistic","gbm")){
-        classes <- as.numeric(unlist(classCV_output[["class_dictionary"]]))
-        class_names <- names(classCV_output[["class_dictionary"]])
-      } else {
-        class_names <- classes <- classCV_output[["classes"]][[target]]
-      }
-      
-      # Get prediction
-      prediction_vector <- vswift:::.prediction(model_type = model_type, model = model, prediction_data = prediction_data, predictors = predictors, target = target, class_dict = classCV_output[["class_dictionary"]])
-      
-      # Calculate classification accuracy
-      classification_accuracy <- sum(prediction_data[,target] == prediction_vector)/length(prediction_data[,target])
-      classCV_output[["metrics"]][[method]][which(classCV_output[["metrics"]][[method]][,col] == i),"Classification Accuracy"] <- classification_accuracy
-      # Class positions to get the name of the class in class_names
-      class_position <- 1
-      for(class in classes){
-        metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, prediction_data = prediction_data)
-        # Add information to dataframes
-        classCV_output[["metrics"]][[method]][which(classCV_output[["metrics"]][[method]][,col] == i),sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
-        classCV_output[["metrics"]][[method]][which(classCV_output[["metrics"]][[method]][,col] == i),sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
-        classCV_output[["metrics"]][[method]][which(classCV_output[["metrics"]][[method]][,col] == i),sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
-        class_position <- class_position + 1
-        # Warning is a metric is NA
-        if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
-          metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
-          warning(sprintf("at least on metric could not be calculated for class %s - %s: %s",class,i,paste(metrics, collapse = ",")))
+        
+        # Ensure columns have same levels
+        if(model_name == "svm"){
+          for(col in names(data_levels)){
+            levels(model_data[,col]) <- levels(validation_data[,col]) <- data_levels[[col]]
+          }
         }
-      }
-      # Reset class position
-      class_position <- 1
+        
+        # Generate model depending on chosen model_type
+        model <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = model_data, mod_args = mod_args, ...)
+        
+        # Variable to select correct dataframe
+        method <- ifelse("Fold" %in% split_word, "cv", "split")
+        col <- ifelse(method == "cv", "Fold", "Set")
 
-      # Calculate mean, standard deviation, and standard error for cross validation
-      if(i == paste("Fold", n_folds)){
-        idx <- nrow(classCV_output[["metrics"]][["cv"]] )
-        classCV_output[["metrics"]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
-        # Calculate mean, standard deviation, and sd for each column except for fold
-        for(colname in colnames(classCV_output[["metrics"]][["cv"]] )[colnames(classCV_output[["metrics"]][["cv"]] ) != "Fold"]){
-          # Create vector containing corresponding column name values for each fold
-          num_vector <- classCV_output[["metrics"]][["cv"]][1:idx, colname]
-          classCV_output[["metrics"]][["cv"]][which(classCV_output[["metrics"]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
-          classCV_output[["metrics"]][["cv"]][which(classCV_output[["metrics"]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
-          classCV_output[["metrics"]][["cv"]][which(classCV_output[["metrics"]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(n_folds)
+        # Create dataframe for validation testing
+        if(any("Test" %in% split_word, "Fold" %in% split_word) & remove_obs == TRUE){
+          remove_obs_output <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, iter = i, method = method, preprocessed_data = preprocessed_data,
+                                                    output = classCV_output, stratified = stratified)
+          prediction_data <- remove_obs_output[["test_data"]]
+          classCV_output <- remove_obs_output[["output"]]
+        } else {
+          if("Training" %in% split_word){
+            prediction_data <- model_data
+          } else {
+            prediction_data <- validation_data
+          }
+        }
+        
+        # Create variables used in for loops to calculate precision, recall, and f1
+        if(model_name %in% c("logistic","gbm")){
+          classes <- as.numeric(unlist(classCV_output[["class_dictionary"]]))
+          class_names <- names(classCV_output[["class_dictionary"]])
+        } else {
+          class_names <- classes <- classCV_output[["classes"]][[target]]
+        }
+        
+        # Save data
+        if(save_models == TRUE) classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],]
+        # Save model
+        if(save_models == TRUE) classCV_output[["saved_models"]][[model_name]][[method]] <- model
+        
+        # Create dataframe
+        if(i == "Training"){
+          classCV_output[["metrics"]][[model_name]][[method]] <- data.frame("Set" = c("Training", "Test"))
+        } else if(i == "Fold 1"){
+          classCV_output[["metrics"]][[model_name]][[method]] <- data.frame("Fold" = paste("Fold",1:n_folds))
+        }
+        
+        # Get prediction
+        prediction_vector <- vswift:::.prediction(model_type = model_name, model = model, prediction_data = prediction_data, predictors = predictors, target = target, threshold = threshold, class_dict = classCV_output[["class_dictionary"]])
+        
+        # Calculate classification accuracy
+        classification_accuracy <- sum(prediction_data[,target] == prediction_vector)/length(prediction_data[,target])
+        classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == i),"Classification Accuracy"] <- classification_accuracy
+        # Class positions to get the name of the class in class_names
+        class_position <- 1
+        for(class in classes){
+          metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector, prediction_data = prediction_data)
+          # Add information to dataframes
+          classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == i),sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
+          classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == i),sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
+          classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == i),sprintf("Class: %s F-Score", class_names[class_position])] <- metrics_list[["f1"]]
+          class_position <- class_position + 1
+          # Warning is a metric is NA
+          if(any(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))){
+            metrics <- c("classification accuracy","precision","recall","f-score")[which(is.na(c(classification_accuracy, metrics_list[["precision"]], metrics_list[["recall"]], metrics_list[["f1"]])))]
+            warning(sprintf("at least on metric could not be calculated for class %s - %s: %s",class,i,paste(metrics, collapse = ",")))
+          }
+        }
+        
+        # Reset class position
+        class_position <- 1
+        
+        # Calculate mean, standard deviation, and standard error for cross validation
+        if(i == paste("Fold", n_folds)){
+          idx <- nrow(classCV_output[["metrics"]][[model_name]][["cv"]])
+          classCV_output[["metrics"]][[model_name]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
+          # Calculate mean, standard deviation, and sd for each column except for fold
+          for(colname in colnames(classCV_output[["metrics"]][[model_name]][["cv"]] )[colnames(classCV_output[["metrics"]][[model_name]][["cv"]] ) != "Fold"]){
+            # Create vector containing corresponding column name values for each fold
+            num_vector <- classCV_output[["metrics"]][[model_name]][["cv"]][1:idx, colname]
+            classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector)
+            classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector)
+            classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector)/sqrt(n_folds)
+          }
         }
       }
     }
-  }
-  
-  # Generate final model
-  if(final_model == TRUE){
-    # Generate model depending on chosen model_type
-    classCV_output[["final_model"]]  <- vswift:::.generate_model(model_type = model_type, formula = formula, predictors = predictors, target = target, model_data = preprocessed_data, ...)
+    
+    # Generate final model
+    if(final_model == TRUE){
+      # Generate model depending on chosen model_type
+      classCV_output[["final_model"]][[model_name]]  <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = preprocessed_data, mod_args = mod_args, ...)
+    } 
   }
 
   # Make list a vswift class

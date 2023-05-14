@@ -5,17 +5,18 @@
 \title{Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data}
 \usage{
 classCV(
-  data = NULL,
-  target = NULL,
+  data,
+  target,
   predictors = NULL,
   split = NULL,
   n_folds = NULL,
-  model_type = NULL,
+  model_type,
   threshold = 0.5,
   stratified = FALSE,
   random_seed = NULL,
   impute_method = NULL,
   impute_args = NULL,
+  mod_args = NULL,
   remove_obs = FALSE,
   save_models = FALSE,
   save_data = FALSE,
@@ -37,7 +38,7 @@ leaving the rest for the test set. If not specified, train-test splitting will n
 \item{n_folds}{An integer from 3 and 30 for the number of folds to use. If not specified,
 k-fold cross validation will not be performed.}
 
-\item{model_type}{A character string indicating the classification algorithm to use. Available options:
+\item{model_type}{A character string or list indicating the classification algorithm to use. Available options:
 "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
 "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
@@ -58,6 +59,9 @@ Default == False. If data is missing and `impute_method == NULL`, observations w
 
 \item{impute_args}{A list containing additional arguments to pass to missForest for Random Forest Imputation. Available options: "maxiter","ntree","variablewise","decreasing","verbose",
 "mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes". Note: For specific information about each parameter, please refer to the missForest documentation. Default = NULL.}
+
+\item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
+to the respective model. Default = NULL.}
 
 \item{remove_obs}{A logical value to remove observations with categorical predictors from the test/validation set
 that have not been observed during model training. Some algorithms may produce an error if this occurs. Default = FALSE.}
@@ -128,6 +132,18 @@ plot(result)
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
 result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)
+
+# Print parameters and metrics
+print(result)
+
+# Plot metrics
+plot(result)
+
+# Perform 5-fold cross-validation a train-test split with an 80\% training set using multiple models
+
+result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
+n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10)), 
+save_data = T, save_models = T, remove_obs = T, stratified = T)
 
 # Print parameters and metrics
 print(result)
