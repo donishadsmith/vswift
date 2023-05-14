@@ -33,6 +33,8 @@ help(package = "vswift")
 ```
 ## Usage
 
+Example using a single model:
+
 ```R
 # Load the package
 library(vswift)
@@ -141,3 +143,260 @@ plot(results, split = TRUE, cv = TRUE, save_plots = FALSE)
 
 </details>
   
+Example using multiple models:
+
+```R
+result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
+n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective =         "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)), 
+save_data = T, save_models = T, remove_obs = T, stratified = T)
+```
+**Output:**
+```
+ # weights:  83
+initial  value 179.463681 
+iter  10 value 20.460222
+iter  20 value 5.942445
+iter  30 value 3.681145
+iter  40 value 1.682037
+iter  50 value 0.005365
+final  value 0.000066 
+converged
+# weights:  83
+initial  value 154.009655 
+iter  10 value 27.876365
+iter  20 value 6.000785
+iter  30 value 4.720259
+iter  40 value 4.701999
+iter  50 value 4.701278
+final  value 4.701277 
+converged
+# weights:  83
+initial  value 117.207968 
+iter  10 value 29.546902
+iter  20 value 0.207537
+iter  30 value 0.001366
+final  value 0.000079 
+converged
+# weights:  83
+initial  value 126.120778 
+iter  10 value 22.654274
+iter  20 value 4.855594
+iter  30 value 2.928667
+iter  40 value 1.925315
+iter  50 value 1.446492
+iter  60 value 1.394366
+iter  70 value 1.388966
+iter  80 value 1.386683
+iter  90 value 1.386305
+iter 100 value 1.386295
+final  value 1.386295 
+stopped after 100 iterations
+# weights:  83
+initial  value 134.405440 
+iter  10 value 6.801684
+iter  20 value 4.612546
+iter  30 value 3.713089
+iter  40 value 3.357661
+iter  50 value 3.248110
+iter  60 value 2.771384
+iter  70 value 0.298555
+iter  80 value 0.010594
+iter  90 value 0.002036
+iter 100 value 0.001188
+final  value 0.001188 
+stopped after 100 iterations
+Warning message:
+In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
+  classes are now encoded: setosa = 0, versicolor = 1, virginica = 2
+```
+```R
+# Print parameter information and model evaluation metrics
+print(result, model_type = c("decisiontree", "ann", "knn"))
+```
+**Output:**
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: Decision Tree
+
+Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 3
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+missForest Arguments: 
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: 
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classication Accuracy:  0.97 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     0.90      0.95 
+virginica             0.91     1.00      0.95 
+
+
+ Test 
+_ _ _ _ 
+
+Classication Accuracy:  0.90 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            0.89     0.80      0.84 
+virginica             0.82     0.90      0.86 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classication Accuracy:  0.94 (0.02) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
+versicolor           0.89 (0.05)       0.94 (0.00)       0.91 (0.02) 
+virginica            0.94 (0.00)       0.88 (0.06)       0.91 (0.03) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: Neural Network
+
+Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 3
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+missForest Arguments: 
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: size = 10
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classication Accuracy:  1.00 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
+
+
+ Test 
+_ _ _ _ 
+
+Classication Accuracy:  0.93 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     0.80      0.89 
+virginica             0.83     1.00      0.91 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classication Accuracy:  0.94 (0.04) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       0.98 (0.04)       0.99 (0.02) 
+versicolor           0.92 (0.02)       0.90 (0.13)       0.90 (0.07) 
+virginica            0.91 (0.10)       0.94 (0.06)       0.92 (0.03) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: K-Nearest Neighbors
+
+Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 3
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+missForest Arguments: 
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: ks = 3
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classication Accuracy:  1.00 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
+
+
+ Test 
+_ _ _ _ 
+
+Classication Accuracy:  0.90 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            0.89     0.80      0.84 
+virginica             0.82     0.90      0.86 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classication Accuracy:  0.94 (0.02) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
+versicolor           0.92 (0.07)       0.90 (0.04)       0.91 (0.03) 
+virginica            0.90 (0.03)       0.92 (0.07)       0.91 (0.03) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+```
