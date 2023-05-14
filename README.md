@@ -3,6 +3,7 @@ This R package is a simple, user-friendly tool for train-test splitting and k-fo
 
 This package is currently in beta, but it's functional and ready for use.
 
+I am also working on a Python implementation of this package.
 
 ## Features
 
@@ -10,6 +11,7 @@ This package is currently in beta, but it's functional and ready for use.
 - **Support for Popular Algorithms**: Choose from a wide range of classification algorithms such as Linear Discriminant Analysis, Quadratic Discriminant Analysis, Logistic Regression, Support Vector Machines, Naive Bayes, Artificial Neural Networks, K-Nearest Neighbors, Decision Trees, Random Forest, Multinomial Logistic Regression, and Gradient Boosting Machines.
 - **Stratified Sampling Option**: Ensure representative class distribution by using stratified sampling based on class proportions.
 - **Missing Data Imputation**: Impute missing values with Simple Imputation (mean, median, mode) or Random Forest Imputation techniques.
+- **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set that have categories not seen during model training. This is particularly helpful for certain algorithms that might throw errors in such cases.
 - **Model Saving Capabilities**: Save all models utilized for training and testing.
 - **Dataset Saving Options**: Preserve split datasets and folds.
 - **Model Creation**: Easily create and save final models.
