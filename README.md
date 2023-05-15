@@ -3,7 +3,6 @@ This R package is a simple, user-friendly tool for train-test splitting and k-fo
 
 This package is currently in beta, but it's functional and ready for use.
 
-I am also working on a Python implementation of this package.
 
 ## Features
 
