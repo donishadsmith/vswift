@@ -16,6 +16,7 @@ This package is currently in beta, but it's functional and ready for use.
 - **Model Creation**: Easily create and save final models.
 - **Class Distribution Information**: Obtain information on target class distribution for each training and testing split, as well as within each k-fold, using the classCV() function. The output is a vswift list object, provided stratified sampling is specified.
 - **Performance Metrics**: View performance metrics in the console and generate/save plots for key metrics including overall classification accuracy, as well as f-score, precision, and recall for each class in the target variable across train-test split and k-fold cross-validation.
+-  **Automatic Numerical Encoding**: Classes within the target variable are automaically numerically encoded for algorithms such as Logistic Rgression adn Gradient Boosted Models that require numerical inputs for the target variable.
 - **Minimal Code Requirement**: Access desired information quickly and efficiently with just a few lines of code.
 
 ## Installation
