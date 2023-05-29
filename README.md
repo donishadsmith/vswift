@@ -1,6 +1,19 @@
 # vswift
-This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms. 
+This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms from popular R packages. The 
+Functions used from packages for each classification algorithms:
 
+  - lda() from MASS package for Linear Discriminant Analysis
+  - qda() from MASS package for Quadratic Discriminant Analysis
+  - glm() from base package with family = "binomial" for Logistic Regression
+  - svm() from e1071 package for Support Vector Machines
+  - naive_bayes() from naivebayes package for Naive Bayes
+  - nnet() from nnet package for Artificial Neural Network 
+  - train.kknn() from kknn package for K-Nearest Neighbors
+  - rpart() from rpart package for Decision Tree
+  - randomForest() from randomForest package for Random Forest
+  - multinom() from nnet package for Multinomial Regression
+  - xgb.train() from xgboost package for Gradient Boosting Machines
+  - 
 This package is currently in beta, but it's functional and ready for use.
 
 
@@ -34,6 +47,22 @@ devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift")
 help(package = "vswift")
 ```
 ## Usage
+
+The type of classification algorithm is specified using the `model_type` parameter in the `classCV()` function.
+
+Acceptable inputs for the `model_type` parameter includes:
+
+  - "lda" for Linear Discriminant Analysis
+  - "qda" for Quadratic Discriminant Analysis
+  - "logistic" for Logistic Regression
+  - "svm" for Support Vector Machines
+  - "naivebayes" for Naive Bayes
+  - "ann" for Artificial Neural Network 
+  - "knn" for K-Nearest Neighbors
+  - "decisiontree" for Decision Tree
+  - "randomforest" for Random Forest
+  - "multinom" for Multinomial Regression
+  - "gbm" for Gradient Boosting Machines
 
 Example using a single model:
 
