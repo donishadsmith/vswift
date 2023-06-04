@@ -14,7 +14,7 @@ Functions used from packages for each classification algorithms:
   - multinom() from nnet package for Multinomial Regression
   - xgb.train() from xgboost package for Gradient Boosting Machines
   
-This package is currently in beta, but it's functional and ready for use.
+This package is currently in beta, but it's functional and ready for use. Additionally, I will expand this package to deal with regression outputs in the future.
 
 
 ## Features
