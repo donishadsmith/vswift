@@ -43,14 +43,14 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
     stratify_var <- factor(data[,target])
     # Get classes
     output[["classes"]][[target]] <- names(table(data[,target]))
-    # Get Proportions
+    # Get proportions
     output[["class_proportions"]] <- table(data[,target])/sum(table(data[,target]))
     # Get indices of classes
     for(class in as.character(output[["classes"]][[target]])){
       output[["class_indices"]][[class]] <- which(stratify_var == class)
     }
     if(!is.null(split)){
-      # Create class indices variable
+      # Create separate class indices variable to delete selected indices
       class_indices <- output[["class_indices"]]
       # Split sizes
       training_n <- nrow(data)*split

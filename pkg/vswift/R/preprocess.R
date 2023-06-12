@@ -148,8 +148,8 @@
   
   # List of valid arguments for each model type
   valid_args_list <- list(
-    "lda" = c("grouping", "prior", "method", "nu"),
-    "qda" = c("grouping", "prior", "method", "nu"),
+    "lda" = c("prior", "method", "nu"),
+    "qda" = c("prior", "method", "nu"),
     "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type", "maxit"),
     "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
     "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
@@ -162,6 +162,7 @@
     "missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes")
   )
   
+  # Obtain user-specified models based on the number of models called
   if(call == "single"){
     methods <- model_type
     additional_args <- names(list(...))
@@ -172,6 +173,7 @@
     additional_args <- names(impute_args)
   }
   
+  # Obtain user-specified model arguments based on the number of models called
   for(method in methods){
     if(call == "single"){
       additional_args <- names(list(...))

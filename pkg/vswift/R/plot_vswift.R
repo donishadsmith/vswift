@@ -36,28 +36,30 @@
 #' @author Donisha Smith
 #' @export
 
-"plot.vswift" <- function(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, model_type = NULL,...){
+"plot.vswift" <- function(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, model_type = NULL ,...){
   # Create list
   
   model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis", "svm" = "Support Vector Machines",
                     "ann" = "Neural Network", "decisiontree" = "Decision Tree", "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
                     "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression", "knn" = "K-Nearest Neighbors",
                     "naivebayes" = "Naive Bayes")
-  
   # Get models
   if(is.null(model_type)){
     models <- object[["parameters"]][["model_type"]]
   } else {
+    # Make lowercase
+    model_type <- sapply(model_type, function(x) tolower(x))
     models <- intersect(model_type, object[["parameters"]][["model_type"]])
+    if(length(models) == 0){
+      stop("no models specified in model_type")
+    } 
+    # Warning when invalid models specified
+    invalid_models <- model_type[which(!model_type %in% models)]
+    if(length(invalid_models) > 0){
+      warning(sprintf("invalid model in model_type or information for specified model not present in vswift object: %s", paste(unlist(invalid_models), collapse = ", ")))
+    }
   }
   
-  # Check model_type
-  if(length(models) == 0){
-    stop("no models specified in model_type")
-  }
-  if(!all(models %in% names(model_list))){
-    stop("invalid model in model_type")
-  }
   
   # Iterate over models
   for(model in models){

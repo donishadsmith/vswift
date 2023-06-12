@@ -41,8 +41,8 @@
 #' @section Model-specific additional arguments:
 #'   Each model type accepts additional arguments specific to the classification algorithm. The available arguments for each model type are:
 #'
-#'   - "lda": grouping, prior, method, nu
-#'   - "qda": grouping, prior, method, nu
+#'   - "lda": prior, method, nu
+#'   - "qda": prior, method, nu
 #'   - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type, maxit
 #'   - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
 #'   - "naivebayes": prior, laplace, usekernel, usepoisson

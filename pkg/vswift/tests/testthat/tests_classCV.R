@@ -1,5 +1,6 @@
 # Testing classCV function
 library(vswift)
+library(testthat)
 # Test that each model works with train-test splitting alone
 test_that("test train-test split for all models and no stratified sampling", {
   data <- iris
@@ -12,13 +13,14 @@ test_that("test train-test split for all models and no stratified sampling", {
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "ann", size = 10))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "naivebayes"))
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "multinom"))
-  count = 0
-  data$Species = as.character(data$Species)
+  count <- 0
+  data$Species <- as.character(data$Species)
   for(x in names(table(data$Species))){
-    data$Species[which(data$Species == x)] = as.character(count)
-    count = count + 1
+    data$Species[which(data$Species == x)] <- as.character(count)
+    count <- count + 1
   }
   expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
+  # Create binary
   if(requireNamespace("mlbench", quietly = TRUE)){
     # Create binary
     data(PimaIndiansDiabetes, package = "mlbench")
@@ -311,4 +313,13 @@ test_that("test random seed", {
   
   expect_equal(result_1$sample_indices$split$training,result_2$sample_indices$split$training)
   expect_equal(result_1$metrics$cv,result_2$metrics$cv)
+})
+
+test_that("running multiple models", {
+  data <- iris 
+  
+  args <- list("knn" = list(ks = 3), "ann" = list(size = 10))
+  
+  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "randomforest","ann","svm"), 
+                    n_folds = 5, mod_args = args, save_data = T, save_models = T, remove_obs = T, stratified = T))
 })

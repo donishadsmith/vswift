@@ -88,8 +88,8 @@ on classification data using various classification algorithms.
 
   Each model type accepts additional arguments specific to the classification algorithm. The available arguments for each model type are:
 
-  - "lda": grouping, prior, method, nu
-  - "qda": grouping, prior, method, nu
+  - "lda": prior, method, nu
+  - "qda": prior, method, nu
   - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type, maxit
   - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
   - "naivebayes": prior, laplace, usekernel, usepoisson
@@ -142,7 +142,7 @@ plot(result)
 # Perform 5-fold cross-validation a train-test split with an 80\% training set using multiple models
 
 result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
-n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10)), 
+n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)), 
 save_data = T, save_models = T, remove_obs = T, stratified = T)
 
 # Print parameters and metrics
