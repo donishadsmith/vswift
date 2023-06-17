@@ -35,6 +35,7 @@
 #' @param save_models A logical value to save models during train-test splitting and/or k-fold cross validation. Default = FALSE.
 #' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.
 #' @param final_model A logical value to use all complete observations in the input data for model training. Default = FALSE.
+#' @param n_cores A numerical value specifying the number of cores to use for parallel processing. Default = NULL.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
 #'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.
 #' 
@@ -117,7 +118,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   if(!is.null(model_type)) model_type <- tolower(model_type)
   
   # Checking if inputs are valid
-  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, call = "classCV", ...)
+  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, call = "classCV", ...)
   
   # Set seed
   if(!is.null(random_seed)){
@@ -241,7 +242,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   # Save data
   if(save_data == TRUE) classCV_output[["saved_data"]][["preprocessed_data"]] <- preprocessed_data
   
-  
+
   # Move logistic and gbm to back of list
   if(all(length(model_type) > 1, any(c("logistic","gbm") %in% model_type))){
     x <- which(model_type %in% c("logistic","gbm"))
@@ -262,14 +263,49 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     
     # Check if split or cv specified then perform evaluation
     if(any(!is.null(split), !is.null(n_folds))){
-      for(i in iterator_vector){
-        validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = preprocessed_data, 
-                                               data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
-                                               n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                                               save_models = save_models, classCV_output = classCV_output, ...)
-        
-        classCV_output <- validation_output
+      if(is.null(n_cores)){
+        for(i in iterator_vector){
+          validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = preprocessed_data, 
+                                                    data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
+                                                    n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
+                                                    save_models = save_models, classCV_output = classCV_output, parallel = FALSE, ...)
+          
+          classCV_output <- validation_output
+        }
+      } else {
+        registerDoParallel(n_cores)
+        parallel_output <- foreach(i = iterator_vector, .combine = "c") %dopar% {
+          vswift:::.validation(i = i, model_name = model_name, preprocessed_data = preprocessed_data, 
+                               data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
+                               n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
+                               save_models = save_models, classCV_output = classCV_output, parallel = TRUE,  ...)
+          
+        }
+        if(!is.null(n_cores)){
+          # Stop cluster
+          stopImplicitCluster()
+          # Separate lists
+          list_length <- length(parallel_output)/length(iterator_vector)
+          parallel_output  <- split(parallel_output, rep(1:length(iterator_vector), each = list_length))
+          # Change names of sublist to names in iterator vector
+          names(parallel_output) <- iterator_vector
+          classCV_output <- vswift:::.merge_list(save_data = save_data, save_models = save_models, model_name = model_name, parallel_list = parallel_output, preprocessed_data = preprocessed_data)
+        }
       }
+      # Calculate mean, standard deviation, and standard error for cross validation
+      if(!is.null(n_folds)){
+        idx <- nrow(classCV_output[["metrics"]][[model_name]][["cv"]])
+        classCV_output[["metrics"]][[model_name]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
+        # Calculate mean, standard deviation, and sd for each column except for fold
+        for(colname in colnames(classCV_output[["metrics"]][[model_name]][["cv"]] )[colnames(classCV_output[["metrics"]][[model_name]][["cv"]] ) != "Fold"]){
+          # Create vector containing corresponding column name values for each fold
+          num_vector <- classCV_output[["metrics"]][[model_name]][["cv"]][1:idx, colname]
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector, na.rm = T)
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector, na.rm = T)
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector, na.rm = T)/sqrt(n_folds)
+        }
+      }
+      
     }
     
     # Generate final model

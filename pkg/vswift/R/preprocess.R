@@ -1,6 +1,6 @@
 #Helper function for classCV and genFolds to check if inputs are valid
 .error_handling <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            impute_method = NULL, impute_args = NULL, mod_args = NULL, call = NULL, ...){
+                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores, call = NULL, ...){
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
@@ -110,6 +110,18 @@
       } else {
         stop("threshold must a numeric value from 0.30 to 0.70")
       }
+    }
+  }
+  # Check cores
+  if(!is.null(n_cores)){
+    if(all(!is.null(n_cores), is.null(n_folds))){
+      stop("parallel processing only available if cross validation is specified")
+    }
+    if(!is.numeric(n_cores)){
+      stop("number of cores must be a numeric value")
+    }
+    if(n_cores > detectCores()){
+      stop(sprintf("more cores specified than available; only %s cores available but %s cores specified", detectCores(), n_cores))
     }
   }
 }

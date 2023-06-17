@@ -1,6 +1,6 @@
 # Helper function for classCV that performs validation
 
-.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , ...){
+.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , parallel, ...){
     #Create split word
     split_word <- unlist(strsplit(i, split = " "))
     if("Training" %in% split_word){
@@ -56,7 +56,17 @@
     }
     
     # Save data
-    if(save_data == TRUE) classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],]
+    if(save_data == TRUE){
+      if(!is.data.frame(classCV_output[["saved_data"]][[method]][[tolower(i)]])){
+        if(i == "Training"){
+          classCV_output[["saved_data"]][[method]][["training"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["training"]],]
+          classCV_output[["saved_data"]][[method]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["test"]],]
+        } else {
+          classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],]
+        }
+      }
+      }
+    
     # Save model
     if(save_models == TRUE) classCV_output[["saved_models"]][[model_name]][[method]][[tolower(i)]] <- model
     
@@ -90,19 +100,7 @@
     
     # Reset class position
     class_position <- 1
-    # Calculate mean, standard deviation, and standard error for cross validation
-    if(i == paste("Fold", n_folds)){
-      idx <- nrow(classCV_output[["metrics"]][[model_name]][["cv"]])
-      classCV_output[["metrics"]][[model_name]][["cv"]][(idx + 1):(idx + 3),"Fold"] <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
-      # Calculate mean, standard deviation, and sd for each column except for fold
-      for(colname in colnames(classCV_output[["metrics"]][[model_name]][["cv"]] )[colnames(classCV_output[["metrics"]][[model_name]][["cv"]] ) != "Fold"]){
-        # Create vector containing corresponding column name values for each fold
-        num_vector <- classCV_output[["metrics"]][[model_name]][["cv"]][1:idx, colname]
-        classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector, na.rm = T)
-        classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector, na.rm = T)
-        classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector, na.rm = T)/sqrt(n_folds)
-      }
-    }
+    
     return(classCV_output)
 }
 
@@ -274,4 +272,38 @@
   calculate_metrics_list[["f1"]] <- 2*(calculate_metrics_list[["precision"]]*calculate_metrics_list[["recall"]])/(calculate_metrics_list[["precision"]]+calculate_metrics_list[["recall"]])
   # Return list
   return(calculate_metrics_list)
+}
+
+.merge_list <- function(save_data, save_models, model_name, parallel_list, preprocessed_data){
+  classCV_output <- parallel_list[[1]]
+  for(name in names(parallel_list)[-1]){
+    # Merge metrics data
+    if(save_data == TRUE){
+      # Fix for parallel not storing test data
+      if(!is.data.frame(classCV_output[["saved_data"]][["split"]][["test"]])){
+        classCV_output[["saved_data"]][["split"]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
+      }
+      if(all("Fold 1" %in% names(parallel_list), !is.data.frame(classCV_output[["saved_data"]][["cv"]][["fold 1"]]))){
+        classCV_output[["saved_data"]][["cv"]][["fold 1"]] <- parallel_list[[name]][["saved_data"]][["cv"]][["fold 1"]]
+      } else if(!is.data.frame(classCV_output[["saved_data"]][["cv"]][[name]])){
+        classCV_output[["saved_data"]][["cv"]][[tolower(name)]] <- parallel_list[[name]][["saved_data"]][["cv"]][[tolower(name)]]
+      }
+    }
+    if(all(save_models == TRUE)){
+      if(name == "Fold 1"){
+        classCV_output[["saved_models"]][[model_name]][["cv"]] <- parallel_list[[name]][["saved_models"]][[model_name]][["cv"]]
+      } else {
+        classCV_output[["saved_models"]][[model_name]][["cv"]][[tolower(name)]] <- parallel_list[[name]][["saved_models"]][[model_name]][["cv"]][[tolower(name)]]
+      }
+    }
+    if(is.na(classCV_output[["metrics"]][[model_name]][["cv"]][1,2])){
+      classCV_output[["metrics"]][[model_name]][["cv"]] <- parallel_list[["Fold 1"]][["metrics"]][[model_name]][["cv"]]
+    }
+    else{
+      dataframe_length <- ncol(classCV_output[["metrics"]][[model_name]][["cv"]])
+      row <- as.numeric(unlist(strsplit(name, split = " "))[2])
+      classCV_output[["metrics"]][[model_name]][["cv"]][row,2:dataframe_length] <- parallel_list[[name]][["metrics"]][[model_name]][["cv"]][row,2:dataframe_length]
+    }
+  }
+  return(classCV_output)
 }
