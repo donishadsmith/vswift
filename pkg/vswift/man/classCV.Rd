@@ -21,6 +21,7 @@ classCV(
   save_models = FALSE,
   save_data = FALSE,
   final_model = FALSE,
+  n_cores = NULL,
   ...
 )
 }
