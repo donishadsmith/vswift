@@ -1,7 +1,7 @@
 .expand_dataframe <- function(classCV_output, split, n_folds, model_type){
   if(any(!is.null(split), !is.null(n_folds))){
     target <- classCV_output[["parameters"]][["target"]]
-    column_names <- lapply(classCV_output[["classes"]][[target]], function(x) paste(paste("Class:", x), c("Precision", "Recall", "F-Score")))
+    column_names <- c("Classification Accuracy",lapply(classCV_output[["classes"]][[target]], function(x) paste(paste("Class:", x), c("Precision", "Recall", "F-Score"))))
     if(!is.null(split)){
       split_df <- data.frame(sapply(unlist(column_names), function(x) assign(x, rep(NA,2))))
       colnames(split_df) <- unlist(column_names)

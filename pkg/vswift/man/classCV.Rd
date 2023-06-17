@@ -73,6 +73,8 @@ that have not been observed during model training. Some algorithms may produce a
 
 \item{final_model}{A logical value to use all complete observations in the input data for model training. Default = FALSE.}
 
+\item{n_cores}{A numerical value specifying the number of cores to use for parallel processing. Default = NULL.}
+
 \item{...}{Additional arguments specific to the chosen classification algorithm.
 Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.}
 }
