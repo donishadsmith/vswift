@@ -393,7 +393,7 @@ $metrics$lda$cv
 Example using multiple models:
 
 ```R
-args <- list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective =         "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
+args <- list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
 
 result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
 n_folds = 3, mod_args = args, save_data = T, save_models = T, remove_obs = T, stratified = T)
