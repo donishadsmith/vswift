@@ -66,7 +66,7 @@ Acceptable inputs for the `model_type` parameter includes:
   - "multinom" for Multinomial Regression
   - "gbm" for Gradient Boosting Machines
 
-Example using a single model:
+### Using a single model:
 
 ```R
 # Load the package
@@ -389,10 +389,10 @@ $metrics$lda$cv
 7               0.02707463
 8               0.01210814
 ```
-  
-Example using multiple models with parallel processing using:
 
-*Note*: This example uses the (internet advertisement data from the UCI Machine Learning Repository)[https://archive.ics.uci.edu/dataset/51/internet+advertisements].
+### Using multiple models with parallel processing 
+
+*Note*: This example uses the internet advertisement (data)[https://archive.ics.uci.edu/dataset/51/internet+advertisements] from the UCI Machine Learning Repository.
 
 ```R
 # Set url for interet advertisement data from UCI Machine Learning Repository. This data has 3,278 instances and 1558 attributes. 
