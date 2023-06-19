@@ -617,7 +617,24 @@ plot(result, model_type = "gbm" , save_plots = TRUE)
   <summary>Plots</summary>
   
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/e9899071-bb47-42bc-8ae4-b580a593dac5)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/be67de29-2baa-47d5-bb55-16154dcc4140)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e317ca54-52ef-46f7-91e0-850f23771413)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/be4b52e3-100d-4805-9e7a-48c222310ab8)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/8752113d-92a7-4b46-93ce-1325f635b3e5)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0ac6ca45-c360-4783-adca-de1e2f3e11ea)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0a3ea427-8c62-4df7-9eba-861b62f1f5b6)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/deba8b87-9007-4106-a609-a8ec63a7ac24)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/81076f7d-cbe3-45c6-ae34-85832a5923a1)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/c8a51008-d438-4dce-a4ea-db60d60b474f)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/ff4bded1-8f98-47d4-9022-550978b5e315)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/5cdf2619-7ab8-4d43-8254-d399f359372b)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/4b1e80ca-2f31-4a44-b63d-02a55552f69e)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/9f82604c-e8b6-4c01-b995-c850a949f14c)
 
-  
+
+
+
+
+
 
 </details>
