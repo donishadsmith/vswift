@@ -608,19 +608,7 @@ plot(result, model_type = "gbm" , save_plots = TRUE)
 <details>
   
   <summary>Plots</summary>
-  ![Gradient Boosted Machine_train_test_classification_accuracy](https://github.com/donishadsmith/vswift/assets/112973674/54c26b00-3eaf-459c-8e58-7f08d1640d72)
-  ![Gradient Boosted Machine_train_test_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/90847969-8a28-4beb-aa41-de95fa7dd00e)
-  ![Gradient Boosted Machine_train_test_recall_ad](https://github.com/donishadsmith/vswift/assets/112973674/447ba629-86ca-4138-8e77-355e1cf02b01)
-  ![Gradient Boosted Machine_train_test_precision_nonad](https://github.com/donishadsmith/vswift/assets/112973674/06fec5d3-cb20-4e80-b39d-16b14132a633)
-  ![Gradient Boosted Machine_train_test_precision_ad](https://github.com/donishadsmith/vswift/assets/112973674/b0bc909f-3c3a-46e7-a7e1-f537976e9b09)
-  ![Gradient Boosted Machine_train_test_f-score_nonad](https://github.com/donishadsmith/vswift/assets/112973674/462d245d-5f2b-4160-b7f1-93c6080dbeef)
-  ![Gradient Boosted Machine_train_test_f-score_ad](https://github.com/donishadsmith/vswift/assets/112973674/aaa6ec5e-9497-428d-8882-e192a68cef6b)
-  ![Gradient Boosted Machine_cv_classification_accuracy](https://github.com/donishadsmith/vswift/assets/112973674/5a836188-349f-445a-b725-6bc9d9a7f738)
-  ![Gradient Boosted Machine_cv_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/3b3d59b7-6d5e-403f-a523-bfb88313dcba)
-  ![Gradient Boosted Machine_cv_recall_ad](https://github.com/donishadsmith/vswift/assets/112973674/6b0b5776-914e-4db7-846f-9f5cd7297c81)
-  ![Gradient Boosted Machine_cv_precision_nonad](https://github.com/donishadsmith/vswift/assets/112973674/0ba6790d-6b80-4654-8d53-03669c52fed5)
-  ![Gradient Boosted Machine_cv_precision_ad](https://github.com/donishadsmith/vswift/assets/112973674/357e1c05-e7b8-4537-a2fc-6b6ec81470e5)
-  ![Gradient Boosted Machine_cv_f-score_nonad](https://github.com/donishadsmith/vswift/assets/112973674/2052d75a-66fa-43b0-8d2f-ea749e0e18a6)
-  ![Gradient Boosted Machine_cv_f-score_ad](https://github.com/donishadsmith/vswift/assets/112973674/a47f5df0-034c-41ab-9746-6946658686e2)
+  ![Gradient Boosted Machine_train_test_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/7b543138-d373-432b-b4dc-81497956af7b)
+
 
 </details>
