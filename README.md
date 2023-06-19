@@ -154,7 +154,7 @@ virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03)
 ```
 ```R
 # Plot model evaluation metrics
-plot(results, split = TRUE, cv = TRUE, save_plots = FALSE)
+plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)
 ```
 
 <details>
@@ -476,184 +476,10 @@ In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
 ```
 ```R
 # Print parameter information and model evaluation metrics
-print(result, model_type = c("decisiontree", "ann", "knn"))
+print(result, model_type = c("gbm", "knn"))
 ```
 **Output:**
 ```
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: K-Nearest Neighbors
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-missForest Arguments: 
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: ks = 5
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classication Accuracy:  1.00 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               1.00     1.00      1.00 
-nonad.            1.00     1.00      1.00 
-
-
- Test 
-_ _ _ _ 
-
-Classication Accuracy:  0.96 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.86     0.86      0.86 
-nonad.            0.98     0.98      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classication Accuracy:  0.93 (0.01) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.71 (0.05)       0.83 (0.03)       0.76 (0.04) 
-nonad.           0.97 (0.00)       0.95 (0.01)       0.96 (0.01) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Support Vector Machines
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-missForest Arguments: 
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: 
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classication Accuracy:  0.97 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.99     0.81      0.89 
-nonad.            0.97     1.00      0.98 
-
-
- Test 
-_ _ _ _ 
-
-Classication Accuracy:  0.96 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.99     0.76      0.86 
-nonad.            0.96     1.00      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classication Accuracy:  0.97 (0.00) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.99 (0.01)       0.79 (0.03)       0.88 (0.01) 
-nonad.           0.97 (0.01)       1.00 (0.00)       0.98 (0.00) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Decision Tree
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-missForest Arguments: 
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: 
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classication Accuracy:  0.98 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.96     0.91      0.93 
-nonad.            0.99     0.99      0.99 
-
-
- Test 
-_ _ _ _ 
-
-Classication Accuracy:  0.96 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.88     0.82      0.85 
-nonad.            0.97     0.98      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classication Accuracy:  0.96 (0.00) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.89 (0.01)       0.84 (0.02)       0.86 (0.01) 
-nonad.           0.97 (0.01)       0.98 (0.00)       0.98 (0.00) 
-
-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
@@ -714,4 +540,87 @@ nonad.           0.97 (0.01)       0.99 (0.00)       0.98 (0.00)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+
+Model: K-Nearest Neighbors
+
+Number of Predictors: 1558
+
+Classes: ad., nonad.
+
+Fold size: 5
+
+Split: 0.8
+
+Stratified Sampling: FALSE
+
+missForest Arguments: 
+
+Missing Data: 0
+
+Sample Size: 3278
+
+Additional Arguments: ks = 5
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classication Accuracy:  1.00 
+
+Class:       Precision:  Recall:  F-Score:
+
+ad.               1.00     1.00      1.00 
+nonad.            1.00     1.00      1.00 
+
+
+ Test 
+_ _ _ _ 
+
+Classication Accuracy:  0.96 
+
+Class:       Precision:  Recall:  F-Score:
+
+ad.               0.86     0.86      0.86 
+nonad.            0.98     0.98      0.98 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classication Accuracy:  0.93 (0.01) 
+
+Class:       Average Precision:  Average Recall:  Average F-score:
+
+ad.              0.71 (0.05)       0.83 (0.03)       0.76 (0.04) 
+nonad.           0.97 (0.00)       0.95 (0.01)       0.96 (0.01) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 ```
+
+```R
+# Plot results
+
+plot(result, model_type = "gbm" , save_plots = TRUE)
+```
+<details>
+  
+  <summary>Plots</summary>
+  ![Gradient Boosted Machine_train_test_classification_accuracy](https://github.com/donishadsmith/vswift/assets/112973674/54c26b00-3eaf-459c-8e58-7f08d1640d72)
+  ![Gradient Boosted Machine_train_test_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/90847969-8a28-4beb-aa41-de95fa7dd00e)
+  ![Gradient Boosted Machine_train_test_recall_ad](https://github.com/donishadsmith/vswift/assets/112973674/447ba629-86ca-4138-8e77-355e1cf02b01)
+  ![Gradient Boosted Machine_train_test_precision_nonad](https://github.com/donishadsmith/vswift/assets/112973674/06fec5d3-cb20-4e80-b39d-16b14132a633)
+  ![Gradient Boosted Machine_train_test_precision_ad](https://github.com/donishadsmith/vswift/assets/112973674/b0bc909f-3c3a-46e7-a7e1-f537976e9b09)
+  ![Gradient Boosted Machine_train_test_f-score_nonad](https://github.com/donishadsmith/vswift/assets/112973674/462d245d-5f2b-4160-b7f1-93c6080dbeef)
+  ![Gradient Boosted Machine_train_test_f-score_ad](https://github.com/donishadsmith/vswift/assets/112973674/aaa6ec5e-9497-428d-8882-e192a68cef6b)
+  ![Gradient Boosted Machine_cv_classification_accuracy](https://github.com/donishadsmith/vswift/assets/112973674/5a836188-349f-445a-b725-6bc9d9a7f738)
+  ![Gradient Boosted Machine_cv_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/3b3d59b7-6d5e-403f-a523-bfb88313dcba)
+  ![Gradient Boosted Machine_cv_recall_ad](https://github.com/donishadsmith/vswift/assets/112973674/6b0b5776-914e-4db7-846f-9f5cd7297c81)
+  ![Gradient Boosted Machine_cv_precision_nonad](https://github.com/donishadsmith/vswift/assets/112973674/0ba6790d-6b80-4654-8d53-03669c52fed5)
+  ![Gradient Boosted Machine_cv_precision_ad](https://github.com/donishadsmith/vswift/assets/112973674/357e1c05-e7b8-4537-a2fc-6b6ec81470e5)
+  ![Gradient Boosted Machine_cv_f-score_nonad](https://github.com/donishadsmith/vswift/assets/112973674/2052d75a-66fa-43b0-8d2f-ea749e0e18a6)
+  ![Gradient Boosted Machine_cv_f-score_ad](https://github.com/donishadsmith/vswift/assets/112973674/a47f5df0-034c-41ab-9746-6946658686e2)
+
+</details>
