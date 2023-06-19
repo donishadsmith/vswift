@@ -94,21 +94,21 @@
     for(class in as.character(object[["classes"]][[1]])){
       # Save metrics for training and test
       png(filename = paste0(path,sprintf("%s_train_test_precision_%s.png",model_list[[model_name]],class)),...)
-      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("%s - Class: %s Precision", model_list[[model_name]], class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
+      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("Class: %s Precision", class)] , ylim = c(0,1), xlab = "Set", ylab = "Precision" , xaxt = "n",
            main =  sprintf("%s - Class: %s",model_list[[model_name]],class))
       axis(1, at = 1:2, labels = c("Training","Test"))
       # Don't display plot and create new plot
       vswift:::.dev_off_and_new()
       # Save metrics for training and test
       png(filename = paste0(path,sprintf("%s_train_test_recall_%s.png",model_list[[model_name]],class)),...)
-      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("%s - Class: %s Recall", model_list[[model_name]], class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
+      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("Class: %s Recall", class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
            main =  sprintf("%s - Class: %s",model_list[[model_name]],class))
       axis(1, at = 1:2, labels = c("Training","Test"))
       # Don't display plot and create new plot
       vswift:::.dev_off_and_new()
       # Save metrics for training and test
       png(filename = paste0(path,sprintf("%s_train_test_f-score_%s.png", model_list[[model_name]], class)),...)
-      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("%s - Class: %s F-Score", model_list[[model_name]], class)] , ylim = c(0,1), xlab = "Set", ylab = "F-Score" , xaxt = "n",
+      plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("Class: %s F-Score",  class)] , ylim = c(0,1), xlab = "Set", ylab = "F-Score" , xaxt = "n",
            main =  sprintf("%s - Class: %s",model_list[[model_name]],class))
       axis(1, at = 1:2, labels = c("Training","Test"))
     }
