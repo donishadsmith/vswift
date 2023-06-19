@@ -190,6 +190,7 @@ Displaying what is contained in the vswift object by converting its class to a l
 class(results) <- "list"
 print(results)
 ```
+
 **Output**
 ```
 $analysis_type
@@ -474,10 +475,12 @@ In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
    user  system elapsed 
  318.85    2.28  331.50 
 ```
+
 ```R
 # Print parameter information and model evaluation metrics
 print(result, model_type = c("gbm", "knn"))
 ```
+
 **Output:**
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -494,6 +497,8 @@ Fold size: 5
 Split: 0.8
 
 Stratified Sampling: FALSE
+
+Random Seed: 123
 
 missForest Arguments: 
 
@@ -512,7 +517,7 @@ Classication Accuracy:  0.98
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.98     0.87      0.92 
+ad.               0.98     0.90      0.94 
 nonad.            0.98     1.00      0.99 
 
 
@@ -523,19 +528,19 @@ Classication Accuracy:  0.97
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.91     0.83      0.87 
-nonad.            0.97     0.99      0.98 
+ad.               0.98     0.83      0.90 
+nonad.            0.97     1.00      0.98 
 
 
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.97 (0.01) 
+Average Classication Accuracy:  0.97 (0.00) 
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
-ad.              0.95 (0.02)       0.83 (0.06)       0.88 (0.03) 
-nonad.           0.97 (0.01)       0.99 (0.00)       0.98 (0.00) 
+ad.              0.95 (0.02)       0.84 (0.02)       0.89 (0.02) 
+nonad.           0.97 (0.00)       0.99 (0.00)       0.98 (0.00) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -552,6 +557,8 @@ Fold size: 5
 Split: 0.8
 
 Stratified Sampling: FALSE
+
+Random Seed: 123
 
 missForest Arguments: 
 
@@ -570,34 +577,33 @@ Classication Accuracy:  1.00
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               1.00     1.00      1.00 
+ad.               1.00     0.99      1.00 
 nonad.            1.00     1.00      1.00 
 
 
  Test 
 _ _ _ _ 
 
-Classication Accuracy:  0.96 
+Classication Accuracy:  0.95 
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.86     0.86      0.86 
-nonad.            0.98     0.98      0.98 
+ad.               0.86     0.79      0.82 
+nonad.            0.96     0.98      0.97 
 
 
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.93 (0.01) 
+Average Classication Accuracy:  0.92 (0.01) 
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
-ad.              0.71 (0.05)       0.83 (0.03)       0.76 (0.04) 
-nonad.           0.97 (0.00)       0.95 (0.01)       0.96 (0.01) 
+ad.              0.70 (0.06)       0.81 (0.05)       0.75 (0.02) 
+nonad.           0.97 (0.01)       0.94 (0.02)       0.95 (0.01) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 ```
 
 ```R
@@ -605,10 +611,11 @@ nonad.           0.97 (0.00)       0.95 (0.01)       0.96 (0.01)
 
 plot(result, model_type = "gbm" , save_plots = TRUE)
 ```
+
 <details>
   
   <summary>Plots</summary>
-  ![Gradient Boosted Machine_train_test_recall_nonad](https://github.com/donishadsmith/vswift/assets/112973674/7b543138-d373-432b-b4dc-81497956af7b)
+  ![Gradient Boosted Machine_train_test_classification_accuracy](https://github.com/donishadsmith/vswift/assets/112973674/fca81609-138d-40e4-b8ba-096b5e2b720d)
 
 
 </details>
