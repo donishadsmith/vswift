@@ -393,7 +393,7 @@ $metrics$lda$cv
 
 ### Using multiple models with parallel processing 
 
-*Note*: This example uses the (internet advertisement data from the UCI Machine Learning Repository)[https://archive.ics.uci.edu/dataset/51/internet+advertisements].
+*Note*: This example uses the [internet advertisement data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/51/internet+advertisements).
 
 ```R
 # Set url for interet advertisement data from UCI Machine Learning Repository. This data has 3,278 instances and 1558 attributes. 
@@ -633,4 +633,4 @@ plot(result, model_type = "gbm" , save_plots = TRUE)
 
 </details>
 
-[test test](https://archive.ics.uci.edu/dataset/51/internet+advertisements)
+[internet advertisement data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/51/internet+advertisements)
