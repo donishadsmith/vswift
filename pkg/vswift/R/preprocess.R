@@ -5,7 +5,7 @@
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
                                       "randomforest", "multinom", "gbm"),
-                       valid_imputes = c("simple", "missforest"))
+                       valid_imputes = c("simple", "missforest","knn"))
 
 
   # Check if impute method is valid
@@ -15,14 +15,14 @@
       }
     # Check if impute method is valid
     if(!is.null(impute_args)){
-      if(all(impute_method == "missforest", class(impute_args) != "list")){
+      if(all(impute_method == "missforest" | impute_method == "knn", class(impute_args) != "list")){
         stop("impute_args must be a list")
       }
     }
   }
   
   # Check if additional arguments are valid
-  if(all(impute_method == "missforest",!is.null(impute_args))){
+  if(all(impute_method == "missforest"| impute_method == "knn",!is.null(impute_args))){
     vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
   }
   
@@ -158,20 +158,22 @@
             method_name, paste(invalid_args, collapse = ","))
   }
   
+  sub_list <- ifelse(call == "imputation", "imputation", "model")
   # List of valid arguments for each model type
   valid_args_list <- list(
-    "lda" = c("prior", "method", "nu"),
-    "qda" = c("prior", "method", "nu"),
-    "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type", "maxit"),
-    "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
-    "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
-    "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
-    "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
-    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
-    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
-    "multinom" = c("weights", "Hess"),
-    "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds"),
-    "missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes")
+    "model" = list("lda" = c("prior", "method", "nu"),
+                   "qda" = c("prior", "method", "nu"),
+                   "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type", "maxit"),
+                   "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
+                   "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
+                   "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
+                   "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
+                   "decisiontree" = c("weights", "method", "parms", "control", "cost"),
+                   "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
+                   "multinom" = c("weights", "Hess"),
+                   "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds")),
+    "imputation" = list("missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes"),
+                        "knn" = c("metric","k"))
   )
   
   # Obtain user-specified models based on the number of models called
@@ -195,7 +197,7 @@
       additional_args <- names(impute_args)
     }
     
-    valid_args <- valid_args_list[[method]]
+    valid_args <- valid_args_list[[sub_list]][[method]]
     invalid_args <- additional_args[which(!additional_args %in% valid_args)]
     
     if(length(invalid_args) > 0) {
@@ -251,6 +253,18 @@
              }
              missing_information[["missForest"]] <- missforest_output
              data <- missforest_output[["ximp"]]
+           },
+           "knn" = {
+             # Get nymber of columns
+             col <- ncol(data)
+             if(!is.null(impute_args)){
+               impute_args[["data"]] <- data
+               knn_output <- do.call(VIM::kNN, impute_args)
+             } else {
+               knn_output <- VIM::kNN(data)
+             }
+             missing_information[["knn"]] <- knn_output
+             data <- missing_information[["knn"]][,1:col]
            })
   }
   

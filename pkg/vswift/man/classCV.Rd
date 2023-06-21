@@ -53,13 +53,13 @@ For "ann", `size =` must be specified as an additional argument.}
 
 \item{random_seed}{A numerical value for the random seed. Default = NULL.}
 
-\item{impute_method}{A character indicating the imputation method to use. Available options: "simple" (simple imputation) and "missforest" (Random Forest Imputation from missForest package). For simple imputation, the specific method used on columns with missing quantitative data depends on its distribution. A shapiro test is conducted to assess
+\item{impute_method}{A character indicating the imputation method to use. Available options: "simple" (simple imputation), "missforest" (Random Forest Imputation from missForest package), and "knn" (KNN Imputation from VIM). For simple imputation, the specific method used on columns with missing quantitative data depends on its distribution. A shapiro test is conducted to assess
 the normality of the data. If the shapiro test is significant (p-value < 0.05), then missing data is replaced with the column median if it is not significant
 (p-value >= 0.5), then the missing values are replaced with the column mean. Missing qualitative data is replaced with the column mode.
 Default == False. If data is missing and `impute_method == NULL`, observations with missing data will be removed. Default == NULL.}
 
 \item{impute_args}{A list containing additional arguments to pass to missForest for Random Forest Imputation. Available options: "maxiter","ntree","variablewise","decreasing","verbose",
-"mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes". Note: For specific information about each parameter, please refer to the missForest documentation. Default = NULL.}
+"mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes". Available arguments to pass to kNN from VIM: "metric", "k. Note: For specific information about each parameter, please refer to the missForest documentation. Default = NULL.}
 
 \item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
 to the respective model. Default = NULL.}

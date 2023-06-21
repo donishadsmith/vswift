@@ -20,7 +20,7 @@
       store_parameters_output[["parameters"]][["impute_args"]] <- impute_args
     }
   }
-  if(!is.null(imputation_output[["imputation_output"]])) store_parameters_output[["imputation_output"]] <- imputation_output[["imputation_output"]]
+  if(!is.null(imputation_output[["imputation_information"]])) store_parameters_output[["imputation_information"]] <- imputation_output[["imputation_information"]]
   store_parameters_output[["parameters"]][["sample_size"]] <- nrow(preprocessed_data)
   if(!is.null(mod_args)){
     store_parameters_output[["parameters"]][["additional_arguments"]] <- mod_args

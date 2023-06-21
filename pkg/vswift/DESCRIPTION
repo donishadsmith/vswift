@@ -24,6 +24,7 @@ Imports:
     randomForest,
     xgboost,
     missForest,
+    VIM,
 Suggests:
     mlbench,
     testhat,
