@@ -4,8 +4,7 @@
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
-                                      "randomforest", "multinom", "gbm"),
-                       valid_imputes = c("simple", "missforest","knn"))
+                                      "randomforest", "multinom", "gbm"))
 
 
   # Check if impute method is valid
@@ -21,10 +20,7 @@
     }
   }
   
-  # Check if additional arguments are valid
-  if(all(impute_method == "missforest"| impute_method == "knn",!is.null(impute_args))){
-    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
-  }
+
   
   if(!is.null(mod_args)){
     if(class(mod_args) != "list"){
@@ -208,82 +204,19 @@
 }
 
 # Helper function for imputation
-.imputation <- function(data = NULL, impute_method = NULL, impute_args = NULL){
-  # Get data with missing columns
-  missing_columns <- unique(data.frame(which(is.na(data), arr.ind = T))$col)
-  
-  # Check if there is missing data
-  if(all(length(missing_columns) == 0,!is.null(impute_method))){
-    warning("no missing data detected")
-  } else if(all(length(missing_columns) > 0, !is.null(impute_method))){
-    # Create empty list to store information
-    missing_information <- list()
-    
-    # Get missing column information
-    for(col in missing_columns){
-      missing_information[[names(data)[col]]][["missing"]] <- length(which(is.na(data[,col])))
-    }
-    
-    # switch statement
-    switch(impute_method,
-           "simple" = {
-             for(col in missing_columns){
-               if(is.character(data[,col]) || is.factor(data[,col])){
-                 frequent_class <- names(which.max(table(data[,col])))
-                 missing_information[[names(data)[col]]][["mode"]] <- frequent_class
-                 data[which(is.na(data[,col])),col]  <- frequent_class
-               }
-               else{
-                 # Check distribution
-                 missing_information[[names(data)[col]]][["shapiro_p.value"]] <- shapiro_p.value <- shapiro.test(data[,col])[["p.value"]]
-                 # If less than 0.5, distribution is not normal median will be used
-                 if(shapiro_p.value < 0.05){
-                   missing_information[[names(data)[col]]][["median"]] <- data[which(is.na(data[,col])),col] <- median(data[,col], na.rm = TRUE)
-                 } else {
-                   missing_information[[names(data)[col]]][["mean"]] <- data[which(is.na(data[,col])),col] <- mean(data[,col], na.rm = TRUE)
-                 }
-               }
-             }},
-           "missforest" = {
-             if(!is.null(impute_args)){
-               impute_args[["xmis"]] <- data
-               missforest_output <- do.call(missForest::missForest, impute_args)
-             } else {
-               missforest_output <- missForest::missForest(data)
-             }
-             missing_information[["missForest"]] <- missforest_output
-             data <- missforest_output[["ximp"]]
-           },
-           "knn" = {
-             # Get nymber of columns
-             col <- ncol(data)
-             if(!is.null(impute_args)){
-               impute_args[["data"]] <- data
-               knn_output <- do.call(VIM::kNN, impute_args)
-             } else {
-               knn_output <- VIM::kNN(data)
-             }
-             missing_information[["knn"]] <- knn_output
-             data <- missing_information[["knn"]][,1:col]
-           })
-  }
+.remove_missing_data <- function(data){
   
   # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
   miss <- nrow(data) - nrow(data[complete.cases(data),])
   if(miss  > 0){
     data <- data[complete.cases(data),]
     warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
-                    ,miss))
+                    ,paste(miss, collapse = ", ")))
   }
   
-  if(exists("missing_information")){
-    imputation_output <- list("preprocessed_data" = data, "imputation_information" = missing_information)
-  } else {
-    imputation_output <- list("preprocessed_data" = data)
-  }
-  
+  remove_missing_data_output <- data
   # Return output
-  return(imputation_output)
+  return(remove_missing_data_output)
 }
 
 
