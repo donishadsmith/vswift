@@ -62,8 +62,7 @@
 #'   - "multinom": multinom() from nnet package
 #'   - "gbm": xgb.train() from xgboost package
 #'                    
-#' @return A list containing the results of train-test splitting and/or k-fold cross-validation,
-#'         including imputation information (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
+#' @return A list containing the results of train-test splitting and/or k-fold cross-validation (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
 #'         saved models (if specified), and saved datasets (if specified), and a final model (if specified).
 #' 
 #' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
@@ -142,7 +141,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     data_levels <- NA
   }
   
-  # Perform imputation
+  # Perform remove data
   preprocessed_data <- vswift:::.remove_missing_data(data = data)
   
   # Store information

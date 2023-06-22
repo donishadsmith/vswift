@@ -69,8 +69,7 @@ that have not been observed during model training. Some algorithms may produce a
 Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.}
 }
 \value{
-A list containing the results of train-test splitting and/or k-fold cross-validation,
-        including imputation information (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
+A list containing the results of train-test splitting and/or k-fold cross-validation (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
         saved models (if specified), and saved datasets (if specified), and a final model (if specified).
 }
 \description{
