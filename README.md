@@ -22,7 +22,6 @@ This package is currently in beta, but it's functional and ready for use. Additi
 - **Versatile Data Splitting**: Perform train-test splits or k-fold cross-validation on your classification data.
 - **Support for Popular Algorithms**: Choose from a wide range of classification algorithms such as Linear Discriminant Analysis, Quadratic Discriminant Analysis, Logistic Regression, Support Vector Machines, Naive Bayes, Artificial Neural Networks, K-Nearest Neighbors, Decision Trees, Random Forest, Multinomial Logistic Regression, and Gradient Boosting Machines.
 - **Stratified Sampling Option**: Ensure representative class distribution by using stratified sampling based on class proportions.
-- **Missing Data Imputation**: Impute missing values with Simple Imputation (mean, median, mode), Random Forest Imputation (from missForest), or KNN Imputation (from VIM) techniques.
 - **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set that have categories not seen during model training. This is particularly helpful for certain algorithms that might throw errors in such cases.
 - **Model Saving Capabilities**: Save all models utilized for training and testing.
 - **Dataset Saving Options**: Preserve split datasets and folds.
