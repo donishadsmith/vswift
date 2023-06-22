@@ -32,6 +32,7 @@ This package is currently in beta, but it's functional and ready for use. Additi
 - **Parallel Processing**: Use the `n_cores` parameter to specify the number of cores for parallel processing.
 - **Minimal Code Requirement**: Access desired information quickly and efficiently with just a few lines of code.
 
+*Note:* The current version of this package removes missing data before splitting it. Although previous versions did include methods for data imputation, they were applied prior to splitting the data. This approach could potentially lead to data leakage, negatively affecting the validation process's accuracy. Until a better implementation is developed to prevent data leakage, I have decided to remove the imputation feature from this package.
 
 ## Installation
 
