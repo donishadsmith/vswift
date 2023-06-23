@@ -29,7 +29,7 @@ This package is currently in beta, but it's functional and ready for use. Additi
 - **Class Distribution Information**: Obtain information on target class distribution for each training and testing split, as well as within each k-fold, using the classCV() function. The output is a vswift list object, provided stratified sampling is specified.
 - **Performance Metrics**: View performance metrics in the console and generate/save plots for key metrics including overall classification accuracy, as well as f-score, precision, and recall for each class in the target variable across train-test split and k-fold cross-validation.
 - **Automatic Numerical Encoding**: Classes within the target variable are automaically numerically encoded for algorithms such as Logistic Rgression adn Gradient Boosted Models that require numerical inputs for the target variable.
-- **Parallel Processing**: Use the `n_cores` parameter to specify the number of cores for parallel processing. 
+- **Parallel Processing**: Use the `n_cores` parameter to specify the number of cores for parallel processing. **Runs but still testing it**.
 - **Minimal Code Requirement**: Access desired information quickly and efficiently with just a few lines of code.
 
 *Note:* The current version of this package removes missing data before splitting it. Although previous versions did include methods for data imputation, they were applied prior to splitting the data. This approach could potentially lead to data leakage, negatively affecting the validation process's accuracy. Until a better implementation is developed to prevent data leakage, I have decided to remove the imputation feature from this package.
