@@ -4,7 +4,8 @@
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
-                                      "randomforest", "multinom", "gbm"))
+                                      "randomforest", "multinom", "gbm"),
+                       valid_imputes = c("knn_impute","bag_impute"))
 
 
   # Check if impute method is valid
@@ -14,13 +15,17 @@
       }
     # Check if impute method is valid
     if(!is.null(impute_args)){
-      if(all(impute_method == "missforest" | impute_method == "knn", class(impute_args) != "list")){
+      if(all(impute_method == "knn_impute" | impute_method == "bag_impute", class(impute_args) != "list")){
         stop("impute_args must be a list")
       }
     }
   }
   
 
+  # Check if additional arguments are valid
+  if(all(impute_method == "knn_impute"| impute_method == "bag_impute",!is.null(impute_args))){
+    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
+  }
   
   if(!is.null(mod_args)){
     if(class(mod_args) != "list"){
@@ -168,19 +173,15 @@
                    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
                    "multinom" = c("weights", "Hess"),
                    "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds")),
-    "imputation" = list("missforest" = c("maxiter","ntree","variablewise","decreasing","verbose","mtry", "replace", "classwt", "cutoff","strata", "sampsize", "nodesize", "maxnodes"),
-                        "knn" = c("metric","k"))
+    "imputation" = list("knn_impute" = c("neighbors"),
+                        "bag_impute" = c("trees"))
   )
   
   # Obtain user-specified models based on the number of models called
-  if(call == "single"){
+  if(call == "single" | call == "multiple"){
     methods <- model_type
-    additional_args <- names(list(...))
-  } else if(call == "multiple"){
-    methods <- names(list(...))
-  } else {
+  }  else {
     methods <- impute_method
-    additional_args <- names(impute_args)
   }
   
   # Obtain user-specified model arguments based on the number of models called
@@ -203,7 +204,7 @@
   
 }
 
-# Helper function for imputation
+# Helper function to remove missing data
 .remove_missing_data <- function(data){
   
   # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
@@ -219,4 +220,97 @@
   return(remove_missing_data_output)
 }
 
+# Helper function to remove observations with missing target variable prior to imputation
 
+
+.remove_missing_target <- function(data, target){
+  missing_targets <- which(is.na(data[,target]))
+  if(length(missing_targets) > 0){
+    data <- data[-missing_targets,]
+    warning(sprintf("the following observations have been removed due to missing target variable: %s"
+                    ,paste(missing_targets, collapse = ", ")))
+  }
+  return(data)
+}
+
+.imputation <- function(preprocessed_data, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE){
+  # Get training and validation data
+  if(iteration == "Training"){
+    training_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]],]
+    validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
+  } else {
+    training_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]]),]
+    validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]],]
+  }
+  
+  # Get names of rows
+  training_rows <- rownames(training_data)
+  validation_rows <- rownames(validation_data)
+  if(imputation_method == "knn_impute"){
+    if(!is.null(impute_args)){
+      rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+    } else {
+      rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+    }
+  } else if(imputation_method == "bag_impute") {
+    if(!is.null(impute_args)){
+      rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data), trees = impute_args[["trees"]],recipes::all_predictors())  
+    } else {
+      rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+    }
+  }
+  
+  prep <- recipes::prep(rec, data = training_data)
+  
+  # Apply the prepped recipe to the training data
+  training_data_processed <- data.frame(recipes::bake(prep, new_data = training_data))
+  
+  # Apply the prepped recipe to the test data
+  validation_data_processed <- data.frame(recipes::bake(prep, new_data = validation_data))
+  
+  # Update row names of the new processed data
+  rownames(training_data_processed) <- training_rows
+  rownames(validation_data_processed) <- validation_rows
+  
+  # Combine dataset and sort
+  processed_data <- rbind(training_data_processed, validation_data_processed)
+  sorted_rows <- as.character(sort(as.numeric(row.names(processed_data))))
+  processed_data <- processed_data[sorted_rows,]
+  
+  imputation_information <- list()
+  
+  imputation_information[["method"]] <- imputation_method
+  
+  if(is.null(imputation_information[["missing_data"]])){
+    missing_cols <- colnames(preprocessed_data)[unique(as.vector(which(is.na(preprocessed_data),arr.ind = T)[,"col"]))]
+    missing_numbers <- lapply(missing_cols, function(x) length(which(is.na(preprocessed_data[,x]))))
+    names(missing_numbers) <- missing_cols
+    imputation_information[["missing_data"]] <- missing_numbers
+  }
+  
+  
+  if(iteration == "Training"){
+    imputation_information[["split"]][["prep"]] <- prep
+  } else {
+    imputation_information[["cv"]][[tolower(iteration)]][["prep"]] <- prep
+  }
+  
+  if(is.null(classCV_output[["imputation"]])){
+    classCV_output[["imputation"]] <- imputation_information
+  }
+  
+  if(parallel == FALSE){
+    if(iteration != "Training"){
+      if(is.null(classCV_output[["imputation"]][["cv"]])){
+        classCV_output[["imputation"]][["cv"]] <- imputation_information[["cv"]]
+      } else {
+        classCV_output[["imputation"]][["cv"]][[tolower(iteration)]] <- imputation_information[["cv"]][[tolower(iteration)]]
+      }
+    }
+  } 
+  
+  imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
+  
+  return(imputation_output)
+  
+}

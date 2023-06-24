@@ -274,7 +274,7 @@
   return(calculate_metrics_list)
 }
 
-.merge_list <- function(save_data, save_models, model_name, parallel_list, preprocessed_data){
+.merge_list <- function(save_data, save_models, model_name, parallel_list, preprocessed_data, impute_method){
   classCV_output <- parallel_list[[1]]
   for(name in names(parallel_list)[-1]){
     # Merge metrics data
@@ -289,7 +289,7 @@
         classCV_output[["saved_data"]][["cv"]][[tolower(name)]] <- parallel_list[[name]][["saved_data"]][["cv"]][[tolower(name)]]
       }
     }
-    if(all(save_models == TRUE)){
+    if(save_models == TRUE){
       if(name == "Fold 1"){
         classCV_output[["saved_models"]][[model_name]][["cv"]] <- parallel_list[[name]][["saved_models"]][[model_name]][["cv"]]
       } else {
@@ -304,6 +304,17 @@
       row <- as.numeric(unlist(strsplit(name, split = " "))[2])
       classCV_output[["metrics"]][[model_name]][["cv"]][row,2:dataframe_length] <- parallel_list[[name]][["metrics"]][[model_name]][["cv"]][row,2:dataframe_length]
     }
+    
+    if(!is.null(impute_method)){
+      if(name == "Fold 1"){
+        classCV_output[["imputation"]][["cv"]] <- parallel_list[[name]][["imputation"]][["cv"]]
+      } else {
+        classCV_output[["imputation"]][["cv"]][[tolower(name)]] <- parallel_list[[name]][["imputation"]][["cv"]][[tolower(name)]]
+      }
+    }
+
   }
   return(classCV_output)
 }
+
+

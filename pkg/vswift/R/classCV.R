@@ -22,6 +22,8 @@
 #' @param threshold  A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.                 
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
 #' @param random_seed A numerical value for the random seed. Default = NULL.
+#' @param impute_method A character indicating the imputation method to use. Options include "bag_impute" (Bagged Trees Imputation) and "knn_impute" (KNN Imputation).
+#' @param impute_args A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "tree" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.
 #' @param mod_args  list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
 #' to the respective model. Default = NULL.
 #' @param remove_obs A logical value to remove observations with categorical predictors from the test/validation set
@@ -104,14 +106,15 @@
 #' 
 #' 
 #' @export
-classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, 
+classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
                     mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, ...){
   
   # Ensure model type is lowercase
   if(!is.null(model_type)) model_type <- tolower(model_type)
   
   # Checking if inputs are valid
-  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, mod_args = mod_args, n_cores = n_cores, call = "classCV", ...)
+  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, 
+                           impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, call = "classCV", ...)
   
   # Set seed
   if(!is.null(random_seed)){
@@ -142,11 +145,22 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   }
   
   # Perform remove data
-  preprocessed_data <- vswift:::.remove_missing_data(data = data)
-  
-  # Store information
-  classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
-                                               threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, ...)
+  if(is.null(impute_method)){
+    preprocessed_data <- vswift:::.remove_missing_data(data = data)
+    
+    rownames(preprocessed_data) <- 1:nrow(preprocessed_data)
+    
+    # Store information
+    classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
+                                                 threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, ...)
+    
+  } else {
+    preprocessed_data <- vswift:::.remove_missing_target(data = data, target = target)
+    
+    # Store information
+    classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
+                                                 threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, parallel = TRUE, n_cores = n_cores, ...)
+  }
   
   # Get formula
   formula <- classCV_output[["formula"]]
@@ -256,7 +270,17 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     if(any(!is.null(split), !is.null(n_folds))){
       if(is.null(n_cores)){
         for(i in iterator_vector){
-          validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = preprocessed_data, 
+          
+          if(!is.null(impute_method)){
+            imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
+            classCV_output <- imputation_output[["classCV_output"]]
+            processed_data <- imputation_output[["processed_data"]]
+          } else {
+            processed_data <- preprocessed_data
+          }
+          
+          
+          validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                                     data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                                     n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
                                                     save_models = save_models, classCV_output = classCV_output, parallel = FALSE, ...)
@@ -266,10 +290,20 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
       } else {
         registerDoParallel(n_cores)
         parallel_output <- foreach(i = iterator_vector, .combine = "c") %dopar% {
-          vswift:::.validation(i = i, model_name = model_name, preprocessed_data = preprocessed_data, 
+          
+          if(!is.null(impute_method)){
+            imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = TRUE)
+            output <- imputation_output[["classCV_output"]]
+            processed_data <- imputation_output[["processed_data"]]
+          } else {
+            processed_data <- preprocessed_data
+            output <- classCV_output
+          }
+          
+          vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                               save_models = save_models, classCV_output = classCV_output, parallel = TRUE,  ...)
+                               save_models = save_models, classCV_output = output, parallel = TRUE,  ...)
           
         }
         if(!is.null(n_cores)){
@@ -280,7 +314,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           parallel_output  <- split(parallel_output, rep(1:length(iterator_vector), each = list_length))
           # Change names of sublist to names in iterator vector
           names(parallel_output) <- iterator_vector
-          classCV_output <- vswift:::.merge_list(save_data = save_data, save_models = save_models, model_name = model_name, parallel_list = parallel_output, preprocessed_data = preprocessed_data)
+          classCV_output <- vswift:::.merge_list(save_data = save_data, save_models = save_models, model_name = model_name, parallel_list = parallel_output, preprocessed_data = preprocessed_data, impute_method = impute_method)
         }
       }
       # Calculate mean, standard deviation, and standard error for cross validation

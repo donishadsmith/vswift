@@ -14,7 +14,7 @@ Depends:
     R (>= 3.2.0),
     kknn,
     foreach,
-    doParallel
+    doParallel,
 Imports:
     e1071,
     MASS,
@@ -23,6 +23,7 @@ Imports:
     rpart,
     randomForest,
     xgboost,
+    recipes,
 Suggests:
     mlbench,
     testhat,
