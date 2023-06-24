@@ -205,7 +205,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   # Adding information to data frame
   if(!is.null(n_folds)){
     # Create folds; start with randomly shuffling indices
-    indices <- sample(1:nrow(data))
+    indices <- sample(1:nrow(preprocessed_data),nrow(preprocessed_data))
     # Initialize list to store fold indices; third subindex needs to be initialized
     classCV_output[["sample_indices"]][["cv"]] <- list()
     # Creating non-overlapping folds while adding rownames to matrix
@@ -239,7 +239,6 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     }
     iterator_vector <- c(iterator_vector, paste("Fold", 1:n_folds))
   }
-  
   # Expand dataframe
   
   classCV_output <- vswift:::.expand_dataframe(classCV_output = classCV_output, split = split, n_folds = n_folds, model_type = model_type)

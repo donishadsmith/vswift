@@ -11,7 +11,7 @@
     model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
     validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
   }
-  
+
   # Ensure columns have same levels
   if(model_name == "svm"){
     model_data[,names(data_levels)] <- data.frame(lapply(names(data_levels), function(col) factor(model_data[,col], levels = data_levels[[col]])))
