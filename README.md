@@ -79,6 +79,15 @@ results <- classCV(data = iris,
                    model_type = "lda",
                    stratified = TRUE,
                    random_seed = 123)
+# Also valid; the target variable can refer to the column index
+
+results <- classCV(data = iris,
+                   target = 5,
+                   split = 0.8,
+                   n_folds = 5,
+                   model_type = "lda",
+                   stratified = TRUE,
+                   random_seed = 123)
                    
 class(results)
 ```
@@ -94,7 +103,7 @@ print(results, parameters = TRUE, metrics = TRUE)
 ```
 **Output:**
 ```
-Model Type: lda
+Model: Linear Discriminant Analysis
 
 Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
 
@@ -108,6 +117,8 @@ Stratified Sampling: TRUE
 
 Random Seed: 123
 
+missForest Arguments: 
+
 Missing Data: 0
 
 Sample Size: 150
@@ -119,7 +130,7 @@ Additional Arguments:
  Training 
 _ _ _ _ _ _ _ _ 
 
-Classication Accuracy:  0.98 
+Classification Accuracy:  0.98 
 
 Class:           Precision:  Recall:  F-Score:
 
@@ -131,7 +142,7 @@ virginica             0.95     0.98      0.96
  Test 
 _ _ _ _ 
 
-Classication Accuracy:  1.00 
+Classification Accuracy:  1.00 
 
 Class:           Precision:  Recall:  F-Score:
 
@@ -143,13 +154,16 @@ virginica             1.00     1.00      1.00
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.98 (0.02) 
+Average Classification Accuracy:  0.98 (0.02) 
 
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
 versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
 virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
 ```R
 # Plot model evaluation metrics
@@ -182,6 +196,123 @@ plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)
   ![image](https://user-images.githubusercontent.com/112973674/236356341-2af76050-18bf-4d21-8504-c598176f8269.png)
 
 </details>
+
+The number of predictors can be modified:
+
+```R
+# Using knn on iris dataset, using the first, third, and fourth columns as predictors. Also, adding an additional argument, `ks = 5`, which is used in train.kknn() from kknn package
+
+results <- classCV(data = iris,
+                   target = "Species",
+                   predictors = c("Sepal.Length","Petal.Length","Petal.Width"),
+                   split = 0.8,
+                   n_folds = 5,
+                   model_type = "knn",
+                   stratified = TRUE,
+                   random_seed = 123,
+                   ks = 5)
+
+# All configurations below are valid and will produce the same output
+
+results <- classCV(data = iris,
+                   target = 5,
+                   predictors = c(1,3,4),
+                   split = 0.8,
+                   n_folds = 5,
+                   model_type = "knn",
+                   stratified = TRUE,
+                   random_seed = 123,
+                   ks = 5)
+                   
+results <- classCV(data = iris,
+                   target = 5,
+                   predictors = c("Sepal.Length","Petal.Length","Petal.Width"),
+                   split = 0.8,
+                   n_folds = 5,
+                   model_type = "knn",
+                   stratified = TRUE,
+                   random_seed = 123,
+                   ks = 5)
+
+results <- classCV(data = iris,
+                   target = "Species",
+                   predictors = c(1,3,4),
+                   split = 0.8,
+                   n_folds = 5,
+                   model_type = "knn",
+                   stratified = TRUE,
+                   random_seed = 123,
+                   ks = 5)
+
+print(results)                   
+```
+**Output**
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: K-Nearest Neighbors
+
+Predictors: Sepal.Length, Petal.Length, Petal.Width
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 5
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+Random Seed: 123
+
+missForest Arguments: 
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: ks = 5
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classification Accuracy:  0.96 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            0.93     0.95      0.94 
+virginica             0.95     0.92      0.94 
+
+
+ Test 
+_ _ _ _ 
+
+Classification Accuracy:  1.00 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classification Accuracy:  0.97 (0.04) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
+versicolor           0.95 (0.08)       0.96 (0.05)       0.95 (0.06) 
+virginica            0.96 (0.06)       0.94 (0.09)       0.95 (0.06) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+```
 
 Displaying what is contained in the vswift object by converting its class to a list and using R's base `print()` function.
 
@@ -512,7 +643,7 @@ Additional Arguments: params = list("objective = multi:softprob", "num_class = 2
  Training 
 _ _ _ _ _ _ _ _ 
 
-Classication Accuracy:  0.98 
+Classification Accuracy:  0.98 
 
 Class:       Precision:  Recall:  F-Score:
 
@@ -523,7 +654,7 @@ nonad.            0.98     1.00      0.99
  Test 
 _ _ _ _ 
 
-Classication Accuracy:  0.97 
+Classification Accuracy:  0.97 
 
 Class:       Precision:  Recall:  F-Score:
 
@@ -534,7 +665,7 @@ nonad.            0.97     1.00      0.98
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.97 (0.00) 
+Average Classification Accuracy:  0.97 (0.00) 
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
@@ -572,7 +703,7 @@ Additional Arguments: ks = 5
  Training 
 _ _ _ _ _ _ _ _ 
 
-Classication Accuracy:  1.00 
+Classification Accuracy:  1.00 
 
 Class:       Precision:  Recall:  F-Score:
 
@@ -583,7 +714,7 @@ nonad.            1.00     1.00      1.00
  Test 
 _ _ _ _ 
 
-Classication Accuracy:  0.95 
+Classification Accuracy:  0.95 
 
 Class:       Precision:  Recall:  F-Score:
 
@@ -594,7 +725,7 @@ nonad.            0.96     0.98      0.97
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classication Accuracy:  0.92 (0.01) 
+Average Classification Accuracy:  0.92 (0.01) 
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
