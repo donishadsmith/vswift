@@ -197,7 +197,7 @@ plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)
 
 </details>
 
-The number of predictors can be modified:
+The number of predictors can be modified using the `predictors` parameter:
 
 ```R
 # Using knn on iris dataset, using the first, third, and fourth columns as predictors. Also, adding an additional argument, `ks = 5`, which is used in train.kknn() from kknn package
