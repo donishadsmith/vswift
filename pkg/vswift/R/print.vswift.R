@@ -135,7 +135,7 @@
               cat("\n\n",set,"\n")
               cat(rep("_",nchar(set)),"\n\n")
               # Print classification accuracy
-              cat("Classication Accuracy: ", format(round(object[["metrics"]][[model]][["split"]][which(object[["metrics"]][[model]][["split"]]$Set == set),"Classification Accuracy"],2), nsmall = 2),"\n\n")
+              cat("Classification Accuracy: ", format(round(object[["metrics"]][[model]][["split"]][which(object[["metrics"]][[model]][["split"]]$Set == set),"Classification Accuracy"],2), nsmall = 2),"\n\n")
               # Print name of metrics
               cat("Class:",rep("", max_string_length),"Precision:  Recall:  F-Score:\n\n")
               # For loop to obtain vector of values for each class
@@ -177,7 +177,7 @@
                                                  format(round(object[["metrics"]][[model]][["cv"]][which(object[["metrics"]][[model]][["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2), nsmall = 2))
             
             classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],classification_accuracy_metrics[2])
-            cat("Average Classication Accuracy: ", classification_accuracy_metrics ,"\n\n")
+            cat("Average Classification Accuracy: ", classification_accuracy_metrics ,"\n\n")
             cat("Class:",rep("", max_string_length),"Average Precision:  Average Recall:  Average F-score:\n\n")
             # Go through column names, split the colnames and class name to see if the column name is the metric for that class
             for(class in as.character(unlist(object["classes"]))){
