@@ -96,7 +96,7 @@ on classification data using various classification algorithms.
   - "decisiontree": weights, method, parms, control, cost
   - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
   - "multinom": weights, Hess
-  - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth,n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
+  - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth, n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
 }
 
 \section{Functions used from packages for each model type}{

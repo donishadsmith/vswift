@@ -1,6 +1,6 @@
 # Helper function for classCV that performs validation
 
-.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , parallel, ...){
+.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, ...){
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
   if("Training" %in% split_word){
@@ -45,7 +45,7 @@
   else {
     prediction_data[[i]] <- validation_data
   }
-  
+
   
   # Create variables used in for loops to calculate precision, recall, and f1
   if(model_name %in% c("logistic","gbm")){
@@ -223,8 +223,9 @@
     switch(model_type,
            "svm" = {prediction_vector[[var]] <- predict(model, newdata = prediction_data[[var]])},
            "logistic" = {
-             prediction_vector <- predict(model, newdata  = prediction_data[[var]], type = "response")
-             prediction_vector[[var]] <- ifelse(prediction_vector > threshold, 1, 0)},
+             prediction_vector[[var]] <- predict(model, newdata  = prediction_data[[var]], type = "response")
+             prediction_vector[[var]] <- ifelse(prediction_vector[[var]] > threshold, 1, 0)
+             },
            "naivebayes" = {
              if(!is.null(predictors)){
                prediction_data[[var]] <- prediction_data[[var]][,c(predictors,target)]

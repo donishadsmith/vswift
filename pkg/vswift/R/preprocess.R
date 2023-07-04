@@ -4,15 +4,15 @@
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
-                                      "randomforest", "multinom", "gbm"),
+                                        "randomforest", "multinom", "gbm"),
                        valid_imputes = c("knn_impute","bag_impute"))
-
-
+  
+  
   # Check if impute method is valid
   if(!is.null(impute_method)){
     if(!impute_method %in% valid_inputs[["valid_imputes"]]){
       stop("invalid impute method")
-      }
+    }
     # Check if impute method is valid
     if(!is.null(impute_args)){
       if(all(impute_method == "knn_impute" | impute_method == "bag_impute", class(impute_args) != "list")){
@@ -21,7 +21,7 @@
     }
   }
   
-
+  
   # Check if additional arguments are valid
   if(all(impute_method == "knn_impute"| impute_method == "bag_impute",!is.null(impute_args))){
     vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
@@ -126,6 +126,8 @@
     }
   }
 }
+
+
 
 # Helper function to turn character data into factors
 .create_factor <- function(data = NULL, target = NULL, model_type = NULL){

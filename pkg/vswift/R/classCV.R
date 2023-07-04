@@ -48,7 +48,7 @@
 #'   - "decisiontree": weights, method, parms, control, cost
 #'   - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
 #'   - "multinom": weights, Hess
-#'   - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth,n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
+#'   - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth, n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
 #' 
 #' @section Functions used from packages for each model type:
 #'
@@ -282,7 +282,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                                     data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                                     n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                                                    save_models = save_models, classCV_output = classCV_output, parallel = FALSE, ...)
+                                                    save_models = save_models, classCV_output = classCV_output, threshold = threshold, parallel = FALSE, ...)
           
           classCV_output <- validation_output
         }
@@ -302,7 +302,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                               save_models = save_models, classCV_output = output, parallel = TRUE,  ...)
+                               save_models = save_models, classCV_output = output, threshold = threshold, parallel = TRUE,  ...)
           
         }
         if(!is.null(n_cores)){
