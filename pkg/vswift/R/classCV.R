@@ -112,9 +112,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   # Ensure model type is lowercase
   if(!is.null(model_type)) model_type <- tolower(model_type)
   
+  
   # Checking if inputs are valid
   vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, 
                            impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, call = "classCV", ...)
+  # Ensure model types are unique
+  model_type <- unique(model_type)
   
   # Set seed
   if(!is.null(random_seed)){
@@ -253,6 +256,16 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     model_type <- c(model_type[-x],model_type[x])
   }
   
+  if(!is.null(impute_method)){
+    processed_data_list <- list()
+    # Imputation; Create processed data list so each model type uses the same imputated dataset
+    for( i in iterator_vector){
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
+      classCV_output <- imputation_output[["classCV_output"]]
+      processed_data_list[[i]] <- imputation_output[["processed_data"]]
+    }
+  }
+  
   # Variable to keep track of logistic and gbm
   model_eval_tracker <- 1
   # Perform model evaluation
@@ -271,9 +284,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
         for(i in iterator_vector){
           
           if(!is.null(impute_method)){
-            imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
-            classCV_output <- imputation_output[["classCV_output"]]
-            processed_data <- imputation_output[["processed_data"]]
+            processed_data <- processed_data_list[[i]]
           } else {
             processed_data <- preprocessed_data
           }
@@ -291,13 +302,13 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
         parallel_output <- foreach(i = iterator_vector, .combine = "c") %dopar% {
           
           if(!is.null(impute_method)){
-            imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = TRUE)
-            output <- imputation_output[["classCV_output"]]
-            processed_data <- imputation_output[["processed_data"]]
+            processed_data <- processed_data_list[[i]]
           } else {
             processed_data <- preprocessed_data
-            output <- classCV_output
+            
           }
+          
+          output <- classCV_output
           
           vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
