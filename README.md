@@ -703,178 +703,12 @@ print(results, model_type = c("gbm", "knn"))
  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
-Model: K-Nearest Neighbors
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: ks = 5
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classification Accuracy:  1.00 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               1.00     0.99      0.99 
-nonad.            1.00     1.00      1.00 
-
-
- Test 
-_ _ _ _ 
-
-Classification Accuracy:  0.95 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.91     0.78      0.84 
-nonad.            0.96     0.99      0.97 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classification Accuracy:  0.92 (0.01) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.70 (0.04)       0.81 (0.07)       0.75 (0.02) 
-nonad.           0.97 (0.01)       0.94 (0.01)       0.96 (0.00) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Support Vector Machines
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: 
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classification Accuracy:  0.98 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.99     0.84      0.91 
-nonad.            0.97     1.00      0.99 
-
-
- Test 
-_ _ _ _ 
-
-Classification Accuracy:  0.96 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               1.00     0.76      0.86 
-nonad.            0.96     1.00      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classification Accuracy:  0.97 (0.01) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.99 (0.02)       0.78 (0.06)       0.87 (0.04) 
-nonad.           0.97 (0.01)       1.00 (0.00)       0.98 (0.00) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Decision Tree
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: 
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classification Accuracy:  0.98 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.96     0.89      0.92 
-nonad.            0.98     0.99      0.99 
-
-
- Test 
-_ _ _ _ 
-
-Classification Accuracy:  0.96 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.94     0.78      0.85 
-nonad.            0.96     0.99      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classification Accuracy:  0.96 (0.01) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.90 (0.01)       0.83 (0.04)       0.86 (0.03) 
-nonad.           0.97 (0.01)       0.98 (0.00)       0.98 (0.00) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
 Model: Gradient Boosted Machine
 
 Number of Predictors: 1558
 
+Target: ad.
+
 Classes: ad., nonad.
 
 Fold size: 5
@@ -882,150 +716,16 @@ Fold size: 5
 Split: 0.8
 
 Stratified Sampling: FALSE
-
-Missing Data: 0
-
-Sample Size: 3278
-
-Additional Arguments: params = list("objective = multi:softprob", "num_class = 2", "eta = 0.3", "max_depth = 6"), nrounds = 10
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classification Accuracy:  0.98 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.98     0.89      0.94 
-nonad.            0.98     1.00      0.99 
-
-
- Test 
-_ _ _ _ 
-
-Classification Accuracy:  0.97 
-
-Class:       Precision:  Recall:  F-Score:
-
-ad.               0.98     0.84      0.90 
-nonad.            0.97     1.00      0.98 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classification Accuracy:  0.97 (0.01) 
-
-Class:       Average Precision:  Average Recall:  Average F-score:
-
-ad.              0.95 (0.02)       0.84 (0.03)       0.89 (0.02) 
-nonad.           0.97 (0.01)       0.99 (0.00)       0.98 (0.00) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-> results <- classCV(data = iris,
-+                    target = 5,
-+                    split = 0.8,
-+                    n_folds = 5,
-+                    model_type = "lda",
-+                    stratified = TRUE,
-+                    random_seed = 123)
-> print(results)
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Linear Discriminant Analysis
-
-Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
-
-Classes: setosa, versicolor, virginica
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: TRUE
 
 Random Seed: 123
 
 Missing Data: 0
 
-Sample Size: 150
-
-Additional Arguments: 
-
-
-
- Training 
-_ _ _ _ _ _ _ _ 
-
-Classification Accuracy:  0.98 
-
-Class:           Precision:  Recall:  F-Score:
-
-setosa                1.00     1.00      1.00 
-versicolor            0.97     0.95      0.96 
-virginica             0.95     0.98      0.96 
-
-
- Test 
-_ _ _ _ 
-
-Classification Accuracy:  1.00 
-
-Class:           Precision:  Recall:  F-Score:
-
-setosa                1.00     1.00      1.00 
-versicolor            1.00     1.00      1.00 
-virginica             1.00     1.00      1.00 
-
-
- K-fold CV 
-_ _ _ _ _ _ _ _ _ 
-
-Average Classification Accuracy:  0.98 (0.02) 
-
-Class:           Average Precision:  Average Recall:  Average F-score:
-
-setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
-virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
-
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-> results <- classCV(data = ad_data, target = "ad.", split = 0.8, n_folds = 5, model_type = c("knn","svm","decisiontree","gbm"), mod_args = args, n_cores = 4)
-Warning message:
-In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
-  classes are now encoded: ad. = 0, nonad. = 1
-> print(result, model_type = c("gbm", "knn"))
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-Model: Gradient Boosted Machine
-
-Number of Predictors: 1558
-
-Classes: ad., nonad.
-
-Fold size: 5
-
-Split: 0.8
-
-Stratified Sampling: FALSE
-
-Missing Data: 0
-
 Sample Size: 3278
 
 Additional Arguments: params = list("objective = multi:softprob", "num_class = 2", "eta = 0.3", "max_depth = 6"), nrounds = 10
+
+Parallel: TRUE
 
 
 
@@ -1036,7 +736,7 @@ Classification Accuracy:  0.98
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.98     0.89      0.94 
+ad.               0.98     0.90      0.94 
 nonad.            0.98     1.00      0.99 
 
 
@@ -1047,19 +747,19 @@ Classification Accuracy:  0.97
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.98     0.84      0.90 
+ad.               0.98     0.83      0.90 
 nonad.            0.97     1.00      0.98 
 
 
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classification Accuracy:  0.97 (0.01) 
+Average Classification Accuracy:  0.97 (0.00) 
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
-ad.              0.95 (0.02)       0.84 (0.03)       0.89 (0.02) 
-nonad.           0.97 (0.01)       0.99 (0.00)       0.98 (0.00) 
+ad.              0.95 (0.02)       0.84 (0.02)       0.89 (0.02) 
+nonad.           0.97 (0.00)       0.99 (0.00)       0.98 (0.00) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1069,6 +769,8 @@ Model: K-Nearest Neighbors
 
 Number of Predictors: 1558
 
+Target: ad.
+
 Classes: ad., nonad.
 
 Fold size: 5
@@ -1077,11 +779,15 @@ Split: 0.8
 
 Stratified Sampling: FALSE
 
+Random Seed: 123
+
 Missing Data: 0
 
 Sample Size: 3278
 
 Additional Arguments: ks = 5
+
+Parallel: TRUE
 
 
 
@@ -1092,7 +798,7 @@ Classification Accuracy:  1.00
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               1.00     0.99      0.99 
+ad.               1.00     0.99      1.00 
 nonad.            1.00     1.00      1.00 
 
 
@@ -1103,8 +809,8 @@ Classification Accuracy:  0.95
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.91     0.78      0.84 
-nonad.            0.96     0.99      0.97 
+ad.               0.86     0.79      0.82 
+nonad.            0.96     0.98      0.97 
 
 
  K-fold CV 
@@ -1114,38 +820,36 @@ Average Classification Accuracy:  0.92 (0.01)
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
-ad.              0.70 (0.04)       0.81 (0.07)       0.75 (0.02) 
-nonad.           0.97 (0.01)       0.94 (0.01)       0.96 (0.00) 
+ad.              0.70 (0.06)       0.81 (0.05)       0.75 (0.02) 
+nonad.           0.97 (0.01)       0.94 (0.02)       0.95 (0.01) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 ```
 
 ```R
 # Plot results
 
-plot(result, model_type = "gbm" , save_plots = TRUE)
+plot(results, model_type = "gbm" , save_plots = TRUE)
 ```
 
 <details>
   
   <summary>Plots</summary>
-  
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e9899071-bb47-42bc-8ae4-b580a593dac5)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/be67de29-2baa-47d5-bb55-16154dcc4140)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e317ca54-52ef-46f7-91e0-850f23771413)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/be4b52e3-100d-4805-9e7a-48c222310ab8)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/8752113d-92a7-4b46-93ce-1325f635b3e5)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0ac6ca45-c360-4783-adca-de1e2f3e11ea)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0a3ea427-8c62-4df7-9eba-861b62f1f5b6)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/deba8b87-9007-4106-a609-a8ec63a7ac24)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/81076f7d-cbe3-45c6-ae34-85832a5923a1)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/c8a51008-d438-4dce-a4ea-db60d60b474f)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/ff4bded1-8f98-47d4-9022-550978b5e315)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/5cdf2619-7ab8-4d43-8254-d399f359372b)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/4b1e80ca-2f31-4a44-b63d-02a55552f69e)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/9f82604c-e8b6-4c01-b995-c850a949f14c)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/52718363-6e88-4109-8be6-bb9423fc61c4)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/a10b0d84-da52-4e05-8b62-8c171c4287a7)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e974a347-1d90-47ba-9721-5c9a94573192)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/485c93ed-a3f5-49e8-a72a-efa9aae9b476)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e13a5157-73ac-4db8-9664-d85e3211c9ad)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/075b2fce-2023-406d-a218-ab4fd010ea4d)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/bd0cf638-4eaa-4571-be33-46af9c9237be)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/44a7ef0f-1b87-4899-98f0-38c26a06a2ae)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/601bd4fd-9c80-49ba-9995-388e2c06e756)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/6f1535a0-1be5-4fc2-8ea9-b78dec076fcd)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/fdc2e880-9ba0-45de-b686-2ad69508c0fd)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/3faec1ba-8a24-4092-9c69-a7181498d9cd)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/f132f534-42ac-4a18-bdbf-2e74ba651f87)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/4b4fb849-3d0b-43f9-a1f5-06a3e69ebde1)
 
 </details>
 
