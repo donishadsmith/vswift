@@ -257,6 +257,9 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   }
   
   if(!is.null(impute_method)){
+    # Add information to output
+    
+    classCV_output <- vswift:::.store_parameters(impute_method = impute_method, impute_args = impute_args, classCV_output = classCV_output)
     processed_data_list <- list()
     # Imputation; Create processed data list so each model type uses the same imputated dataset
     for( i in iterator_vector){

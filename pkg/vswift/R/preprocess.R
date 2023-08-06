@@ -13,19 +13,23 @@
     if(!impute_method %in% valid_inputs[["valid_imputes"]]){
       stop("invalid impute method")
     }
+    # Check if impute_method is list
+    if(!length(impute_method) == 1){
+      stop("impute_method must be a character not list")
+    }
     # Check if impute method is valid
     if(!is.null(impute_args)){
       if(all(impute_method == "knn_impute" | impute_method == "bag_impute", class(impute_args) != "list")){
         stop("impute_args must be a list")
       }
+      # Check if additional arguments are valid
+      else if(impute_method == "knn_impute"| impute_method == "bag_impute"){
+        vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
+      }
     }
+    
   }
   
-  
-  # Check if additional arguments are valid
-  if(all(impute_method == "knn_impute"| impute_method == "bag_impute",!is.null(impute_args))){
-    vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
-  }
   
   if(!is.null(mod_args)){
     if(class(mod_args) != "list"){

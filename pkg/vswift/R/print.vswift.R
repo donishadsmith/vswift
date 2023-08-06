@@ -75,7 +75,7 @@
           } else {
             cat(sprintf("Predictors: %s\n\n", paste(object[["parameters"]][["predictors"]], collapse = ", ")))
           }
-          cat(sprintf("Target: %s\n\n", object[["parameters"]][["responsd_variable"]]))
+          cat(sprintf("Target: %s\n\n", object[["parameters"]][["target"]]))
           cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
           cat(sprintf("Fold size: %s\n\n", object[["parameters"]][["n_folds"]]))
           cat(sprintf("Split: %s\n\n", object[["parameters"]][["split"]]))
@@ -83,14 +83,11 @@
           cat(sprintf("Random Seed: %s\n\n", object[["parameters"]][["random_seed"]]))
           # Print sample size and missing data for user transparency
           cat(sprintf("Imputation Method: %s\n\n", object[["parameters"]][["impute_method"]]))
-          # Print arguments for missForest
-          if(!is.null(object[["parameters"]][["impute_method"]] == "missforest")){
-            arguments_list <- list()
-            for(name in names(object[["parameters"]][["impute_args"]])){
-              # Add equal sign between name and value
-              arguments_list <- c(arguments_list,paste(name, "=",object[["parameters"]][["impute_args"]][[name]], collapse = " "))
-            }
-            cat(sprintf("missForest Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
+          # Print arguments for imputation method
+          if(!is.null(object[["parameters"]][["impute_method"]])){
+            name <- names(object[["parameters"]][["impute_args"]])
+            cat(sprintf("Imputation Arguments: %s\n\n", 
+                        paste(name, "=",object[["parameters"]][["impute_args"]][[name]], collapse = " ")))
           }
           cat(sprintf("Missing Data: %s\n\n", object[["parameters"]][["missing_data"]]))
           cat(sprintf("Sample Size: %s\n\n", object[["parameters"]][["sample_size"]]))
@@ -117,6 +114,11 @@
               }
             }
             cat(sprintf("Additional Arguments: %s\n\n", paste(unlist(arguments_list), collapse = ", ")))
+          }
+          # Print information for parallel processing
+          cat(sprintf("Parallel: %s\n\n", object[["parameters"]][["parallel"]]))
+          if(object[["parameters"]][["parallel"]] == TRUE){
+            cat(sprintf("n_cores: %s\n\n", object[["parameters"]][["n_cores"]]))
           }
         }
         # Print metrics
