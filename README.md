@@ -836,6 +836,7 @@ plot(results, model_type = "gbm" , save_plots = TRUE)
 <details>
   
   <summary>Plots</summary>
+  
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/52718363-6e88-4109-8be6-bb9423fc61c4)
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/a10b0d84-da52-4e05-8b62-8c171c4287a7)
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/e974a347-1d90-47ba-9721-5c9a94573192)
