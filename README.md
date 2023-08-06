@@ -248,6 +248,156 @@ results <- classCV(data = iris,
                    stratified = TRUE,
                    random_seed = 123,
                    ks = 5)
+
+print(results)
+```
+**Output**
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: Linear Discriminant Analysis
+
+Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
+
+Target: Species
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 5
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+Random Seed: 123
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: 
+
+Parallel: TRUE
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classification Accuracy:  0.98 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            0.97     0.95      0.96 
+virginica             0.95     0.98      0.96 
+
+
+ Test 
+_ _ _ _ 
+
+Classification Accuracy:  1.00 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classification Accuracy:  0.98 (0.02) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
+versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
+virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+> results <- classCV(data = iris,
++                    target = "Species",
++                    predictors = c("Sepal.Length","Petal.Length","Petal.Width"),
++                    split = 0.8,
++                    n_folds = 5,
++                    model_type = "knn",
++                    stratified = TRUE,
++                    random_seed = 123,
++                    ks = 5)
+> print(results, parameters = TRUE, metrics = TRUE)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: K-Nearest Neighbors
+
+Predictors: Sepal.Length, Petal.Length, Petal.Width
+
+Target: Species
+
+Classes: setosa, versicolor, virginica
+
+Fold size: 5
+
+Split: 0.8
+
+Stratified Sampling: TRUE
+
+Random Seed: 123
+
+Missing Data: 0
+
+Sample Size: 150
+
+Additional Arguments: ks = 5
+
+Parallel: TRUE
+
+
+
+ Training 
+_ _ _ _ _ _ _ _ 
+
+Classification Accuracy:  0.96 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            0.93     0.95      0.94 
+virginica             0.95     0.92      0.94 
+
+
+ Test 
+_ _ _ _ 
+
+Classification Accuracy:  1.00 
+
+Class:           Precision:  Recall:  F-Score:
+
+setosa                1.00     1.00      1.00 
+versicolor            1.00     1.00      1.00 
+virginica             1.00     1.00      1.00 
+
+
+ K-fold CV 
+_ _ _ _ _ _ _ _ _ 
+
+Average Classification Accuracy:  0.97 (0.04) 
+
+Class:           Average Precision:  Average Recall:  Average F-score:
+
+setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
+versicolor           0.95 (0.08)       0.96 (0.05)       0.95 (0.06) 
+virginica            0.96 (0.06)       0.94 (0.09)       0.95 (0.06) 
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
 
 Displaying what is contained in the vswift object by converting its class to a list and using R's base `print()` function.
