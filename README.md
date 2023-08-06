@@ -256,6 +256,7 @@ Displaying what is contained in the vswift object by converting its class to a l
 class(results) <- "list"
 print(results)
 ```
+
 <details>
     <summary>Output</summary>
 
@@ -458,6 +459,7 @@ print(results)
     8               0.01210814
     ```
 </details>
+
 ### Using multiple models with parallel processing 
 
 *Note*: This example uses the [internet advertisement data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/51/internet+advertisements).
