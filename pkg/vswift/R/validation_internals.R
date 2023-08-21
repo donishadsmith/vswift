@@ -1,6 +1,6 @@
 # Helper function for classCV that performs validation
 
-.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, ...){
+.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, standardize, ...){
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
   if("Training" %in% split_word){
@@ -10,6 +10,11 @@
   } else if("Fold" %in% split_word){
     model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
     validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
+  }
+  
+  if(class(standardize) %in% c("logical", "integer", "numeric")){
+    model_data <- vswift:::.standardize(data = model_data, target = target, standardize = standardize)
+    validation_data <- vswift:::.standardize(data = validation_data, target = target, standardize = standardize)
   }
 
   # Ensure columns have same levels
@@ -59,10 +64,13 @@
   if(save_data == TRUE){
     if(!is.data.frame(classCV_output[["saved_data"]][[method]][[tolower(i)]])){
       if(i == "Training"){
-        classCV_output[["saved_data"]][[method]][["training"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["training"]],]
-        classCV_output[["saved_data"]][[method]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["test"]],]
+        #classCV_output[["saved_data"]][[method]][["training"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["training"]],]
+        #classCV_output[["saved_data"]][[method]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["test"]],]
+        classCV_output[["saved_data"]][[method]][["training"]] <- model_data
+        classCV_output[["saved_data"]][[method]][["test"]] <- validation_data
       } else {
-        classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],]
+        #classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],
+        classCV_output[["saved_data"]][[method]][[tolower(i)]] <- model_data
       }
     }
   }

@@ -1,6 +1,6 @@
 #Helper function for classCV and genFolds to check if inputs are valid
 .error_handling <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores, call = NULL, ...){
+                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL, standardize = NULL, call = NULL, ...){
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
@@ -8,6 +8,13 @@
                        valid_imputes = c("knn_impute","bag_impute"))
   
   
+  # Check standardize
+  
+  if(!is.null(standardize)){
+    if(!any(standardize == TRUE, is.numeric(standardize))){
+      stop("standardize must either be TRUE or a numeric vector")
+    }
+  }
   # Check if impute method is valid
   if(!is.null(impute_method)){
     if(!impute_method %in% valid_inputs[["valid_imputes"]]){
@@ -319,4 +326,19 @@
   
   return(imputation_output)
   
+}
+
+.standardize <- function(data, standardize, target){
+  predictors <- colnames(data)[colnames(data) != target]
+  if(class(standardize) == "logical"){
+    col_names <- predictors
+  } else{
+    col_names <- predictors[standardize]
+  }
+  for(col in col_names){
+    if(any(is.numeric(data[,col]), is.integer(data[,col]))){
+      data[,col] <- as.vector(scale(as.numeric(data[,col]), center = TRUE, scale = TRUE))
+    }
+  }
+  return(data)
 }

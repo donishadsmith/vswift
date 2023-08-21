@@ -32,6 +32,7 @@
 #' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.
 #' @param final_model A logical value to use all complete observations in the input data for model training. Default = FALSE.
 #' @param n_cores A numerical value specifying the number of cores to use for parallel processing. Default = NULL.
+#' @param standardize A logical value or numerical vector. If TRUE, all columns except the target, columns of class character, and columns of class factor, will be standardized. To specify the columns to be standardized, create a numerical vector consisting of the column indices to be standardized.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
 #'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.
 #' 
@@ -107,7 +108,7 @@
 #' 
 #' @export
 classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
-                    mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, ...){
+                    mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, standardize = NULL, ...){
   
   # Ensure model type is lowercase
   if(!is.null(model_type)) model_type <- tolower(model_type)
@@ -115,7 +116,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   
   # Checking if inputs are valid
   vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, 
-                           impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, call = "classCV", ...)
+                           impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, standardize = standardize, call = "classCV", ...)
   # Ensure model types are unique
   model_type <- unique(model_type)
   
@@ -296,7 +297,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           validation_output <- vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                                     data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                                     n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                                                    save_models = save_models, classCV_output = classCV_output, threshold = threshold, parallel = FALSE, ...)
+                                                    save_models = save_models, classCV_output = classCV_output, threshold = threshold, standardize = standardize, parallel = FALSE, ...)
           
           classCV_output <- validation_output
         }
@@ -315,8 +316,8 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           
           vswift:::.validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
                                data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
-                               n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
-                               save_models = save_models, classCV_output = output, threshold = threshold, parallel = TRUE,  ...)
+                               n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data,  
+                               save_models = save_models, classCV_output = classCV_output, threshold = threshold, standardize = standardize, parallel = TRUE,  ...)
           
         }
         if(!is.null(n_cores)){

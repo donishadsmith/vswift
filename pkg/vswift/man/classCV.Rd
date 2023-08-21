@@ -22,6 +22,7 @@ classCV(
   save_data = FALSE,
   final_model = FALSE,
   n_cores = NULL,
+  standardize = NULL,
   ...
 )
 }
@@ -70,6 +71,8 @@ that have not been observed during model training. Some algorithms may produce a
 \item{final_model}{A logical value to use all complete observations in the input data for model training. Default = FALSE.}
 
 \item{n_cores}{A numerical value specifying the number of cores to use for parallel processing. Default = NULL.}
+
+\item{standardize}{A logical value or numerical vector. If TRUE, all columns except the target, columns of class character, and columns of class factor, will be standardized. To specify the columns to be standardized, create a numerical vector consisting of the column indices to be standardized.}
 
 \item{...}{Additional arguments specific to the chosen classification algorithm.
 Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.}
