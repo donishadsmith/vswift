@@ -317,21 +317,6 @@ setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00)
 versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
 virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
 
-
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-
-> results <- classCV(data = iris,
-+                    target = "Species",
-+                    predictors = c("Sepal.Length","Petal.Length","Petal.Width"),
-+                    split = 0.8,
-+                    n_folds = 5,
-+                    model_type = "knn",
-+                    stratified = TRUE,
-+                    random_seed = 123,
-+                    ks = 5)
-> print(results, parameters = TRUE, metrics = TRUE)
-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
