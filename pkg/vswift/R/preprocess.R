@@ -246,88 +246,124 @@
   return(data)
 }
 
-.imputation <- function(preprocessed_data, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE){
-  # Get training and validation data
-  if(iteration == "Training"){
-    training_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]],]
-    validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
-  } else {
-    training_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]]),]
-    validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]],]
+.imputation <- function(preprocessed_data, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE){
+  if(final == FALSE){
+    # Get training and validation data
+    if(iteration == "Training"){
+      training_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]],]
+      validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
+    } else {
+      training_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]]),]
+      validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]],]
+    }
+    
+    # Get names of rows
+    training_rows <- rownames(training_data)
+    validation_rows <- rownames(validation_data)
+    if(imputation_method == "knn_impute"){
+      if(!is.null(impute_args)){
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+      } else {
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+      }
+    } else if(imputation_method == "bag_impute") {
+      if(!is.null(impute_args)){
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data), trees = impute_args[["trees"]],recipes::all_predictors())  
+      } else {
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+      }
+    }
+    
+    
+    prep <- recipes::prep(rec, data = training_data)
+    
+    # Apply the prepped recipe to the training data
+    training_data_processed <- data.frame(recipes::bake(prep, new_data = training_data))
+    
+    # Apply the prepped recipe to the test data
+    validation_data_processed <- data.frame(recipes::bake(prep, new_data = validation_data))
+    
+    # Update row names of the new processed data
+    rownames(training_data_processed) <- training_rows
+    rownames(validation_data_processed) <- validation_rows
+    
+    # Combine dataset and sort
+    processed_data <- rbind(training_data_processed, validation_data_processed)
+    sorted_rows <- as.character(sort(as.numeric(row.names(processed_data))))
+    processed_data <- processed_data[sorted_rows,]
+    
+    # Create imputation_information list to store information 
+    imputation_information <- .get_missing_info(training_data = training_data, validation_data = validation_data, iteration = iteration, imputation_method = imputation_method)
+    
+    if(iteration == "Training"){
+      imputation_information[["split"]][["prep"]] <- prep
+    } else {
+      imputation_information[["cv"]][[tolower(iteration)]][["prep"]] <- prep
+    }
+    
+    if(is.null(classCV_output[["imputation"]])){
+      classCV_output[["imputation"]] <- imputation_information
+    }
+    
+    if(parallel == FALSE){
+      if(iteration != "Training"){
+        if(is.null(classCV_output[["imputation"]][["cv"]])){
+          classCV_output[["imputation"]][["cv"]] <- imputation_information[["cv"]]
+        } else {
+          classCV_output[["imputation"]][["cv"]][[tolower(iteration)]] <- imputation_information[["cv"]][[tolower(iteration)]]
+        }
+      }
+    } 
+    
+    imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
+    
+    return(imputation_output)
+    
+  } else{
+    # Get missing information
+    imputation_information <- vswift:::.get_missing_info(preprocessed_data = preprocessed_data, imputation_method = imputation_method)
+    # Impute data
+    rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = preprocessed_data),recipes::all_predictors())  
+    prep <- recipes::prep(rec, data = preprocessed_data, new_data = NULL)
+    processed_data <- data.frame(recipes::bake(prep, new_data = NULL))
+    
+    
+    imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
+    return(imputation_output)
   }
   
-  # Get names of rows
-  training_rows <- rownames(training_data)
-  validation_rows <- rownames(validation_data)
-  if(imputation_method == "knn_impute"){
-    if(!is.null(impute_args)){
-      rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
-    } else {
-      rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
-    }
-  } else if(imputation_method == "bag_impute") {
-    if(!is.null(impute_args)){
-      rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data), trees = impute_args[["trees"]],recipes::all_predictors())  
-    } else {
-      rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
-    }
-  }
-  
-  prep <- recipes::prep(rec, data = training_data)
-  
-  # Apply the prepped recipe to the training data
-  training_data_processed <- data.frame(recipes::bake(prep, new_data = training_data))
-  
-  # Apply the prepped recipe to the test data
-  validation_data_processed <- data.frame(recipes::bake(prep, new_data = validation_data))
-  
-  # Update row names of the new processed data
-  rownames(training_data_processed) <- training_rows
-  rownames(validation_data_processed) <- validation_rows
-  
-  # Combine dataset and sort
-  processed_data <- rbind(training_data_processed, validation_data_processed)
-  sorted_rows <- as.character(sort(as.numeric(row.names(processed_data))))
-  processed_data <- processed_data[sorted_rows,]
-  
+}
+
+# Assist function for .imputation to get number of missing data for each column
+.get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL, iteration, imputation_method){
+  # Create imputation list
   imputation_information <- list()
   
   imputation_information[["method"]] <- imputation_method
   
-  if(is.null(imputation_information[["missing_data"]])){
-    missing_cols <- colnames(preprocessed_data)[unique(as.vector(which(is.na(preprocessed_data),arr.ind = T)[,"col"]))]
-    missing_numbers <- lapply(missing_cols, function(x) length(which(is.na(preprocessed_data[,x]))))
+  # Create iteration vector
+  if(is.null(preprocessed_data)){
+    iter_vec <- preprocessed_data
+  } else{
+    iter_vec <- c(training_data, validation_data)
+  }
+  
+  # Store information
+  for(data in iter_vec){
+    missing_cols <- colnames(data)[unique(as.vector(which(is.na(data),arr.ind = T)[,"col"]))]
+    missing_numbers <- lapply(missing_cols, function(x) length(which(is.na(data[,x]))))
     names(missing_numbers) <- missing_cols
-    imputation_information[["missing_data"]] <- missing_numbers
-  }
-  
-  
-  if(iteration == "Training"){
-    imputation_information[["split"]][["prep"]] <- prep
-  } else {
-    imputation_information[["cv"]][[tolower(iteration)]][["prep"]] <- prep
-  }
-  
-  if(is.null(classCV_output[["imputation"]])){
-    classCV_output[["imputation"]] <- imputation_information
-  }
-  
-  if(parallel == FALSE){
-    if(iteration != "Training"){
-      if(is.null(classCV_output[["imputation"]][["cv"]])){
-        classCV_output[["imputation"]][["cv"]] <- imputation_information[["cv"]]
-      } else {
-        classCV_output[["imputation"]][["cv"]][[tolower(iteration)]] <- imputation_information[["cv"]][[tolower(iteration)]]
-      }
+    if(is.null(preprocessed_data)){
+      imputation_information[[iteration]][[deparse(substitute(data))]][["missing_data"]] <- missing_numbers
+    } else{
+      imputation_information[["Final Model"]][["missing_data"]] <- missing_numbers
     }
-  } 
+  }
   
-  imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
-  
-  return(imputation_output)
-  
+  return(imputation_information)
 }
 
+# Function to standardize data
 .standardize <- function(data, standardize, target){
   predictors <- colnames(data)[colnames(data) != target]
   if(class(standardize) == "logical"){

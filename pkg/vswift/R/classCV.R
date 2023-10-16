@@ -257,16 +257,22 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     model_type <- c(model_type[-x],model_type[x])
   }
   
+  # Imputation;
   if(!is.null(impute_method)){
     # Add information to output
     
     classCV_output <- vswift:::.store_parameters(impute_method = impute_method, impute_args = impute_args, classCV_output = classCV_output)
     processed_data_list <- list()
     # Imputation; Create processed data list so each model type uses the same imputated dataset
-    for( i in iterator_vector){
+    for(i in iterator_vector){
       imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
       classCV_output <- imputation_output[["classCV_output"]]
       processed_data_list[[i]] <- imputation_output[["processed_data"]]
+    }
+    if(final_model == TRUE){
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE)
+      classCV_output <- imputation_output[["classCV_output"]]
+      processed_data_list[["Final Model"]] <- imputation_output[["processed_data"]]
     }
   }
   
@@ -275,10 +281,19 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   # Perform model evaluation
   for(model_name in model_type){
     # Convert target variable
-    if(model_name %in% c("logistic","gbm")){
-      if(model_eval_tracker == 1){
-        preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
-      }
+    if(all(model_name %in% c("logistic","gbm"), model_eval_tracker == 1)){
+        if(!is.null(impute_method)){
+          if(final_model == TRUE){
+            new_iterator_vector <- c(iterator_vector, "Final Model")
+          } else{
+            new_iterator_vector <- iterator_vector
+          }
+          for(i in new_iterator_vector){
+            processed_data_list[[i]][,target] <- sapply(processed_data_list[[i]][,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+          }
+        } else{
+          preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+        }
       model_eval_tracker <- model_eval_tracker + 1
     }
     
@@ -349,8 +364,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     
     # Generate final model
     if(final_model == TRUE){
+      if(is.null(impute_method)){
+        processed_data_list <- list()
+        processed_data_list[["Final Model"]] <- preprocessed_data
+      } 
       # Generate model depending on chosen model_type
-      classCV_output[["final_model"]][[model_name]]  <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = preprocessed_data, mod_args = mod_args, ...)
+      classCV_output[["Final Model"]][[model_name]]  <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = processed_data_list[["Final Model"]], mod_args = mod_args, ...)
     }
   }
   
