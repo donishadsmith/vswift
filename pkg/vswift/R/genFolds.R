@@ -53,8 +53,8 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
       # Create separate class indices variable to delete selected indices
       class_indices <- output[["class_indices"]]
       # Split sizes
-      training_n <- nrow(data)*split
-      test_n <- nrow(data) - (nrow(data)*split)
+      training_n <- round(nrow(data)*split,0)
+      test_n <- nrow(data) - training_n
       # Initialize list
       output[["sample_indices"]][["split"]] <- list()
       output[["sample_proportions"]][["split"]] <- list()
