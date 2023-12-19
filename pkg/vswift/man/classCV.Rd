@@ -56,7 +56,7 @@ For "ann", `size =` must be specified as an additional argument.}
 
 \item{impute_method}{A character indicating the imputation method to use. Options include "bag_impute" (Bagged Trees Imputation) and "knn_impute" (KNN Imputation).}
 
-\item{impute_args}{A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "tree" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.}
+\item{impute_args}{A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "trees" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.}
 
 \item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
 to the respective model. Default = NULL.}

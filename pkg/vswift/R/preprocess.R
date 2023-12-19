@@ -217,6 +217,22 @@
   
 }
 
+# Check if data is missing
+
+.check_if_missing <- function(data){
+  # Get rows of missing data
+  miss <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
+  # Warn users the total number of rows with at least one column of missing data
+  if(length(miss) > 0){
+    warning(sprintf("%s observations have at least one column of missing data", length(miss)))
+    override_imputation <- FALSE
+  }else{
+    warning("no observations have missing data; no imputation will be performed")
+    override_imputation <- TRUE
+  }
+  return(override_imputation)
+}
+
 # Helper function to remove missing data
 .remove_missing_data <- function(data){
   
@@ -241,7 +257,7 @@
   if(length(missing_targets) > 0){
     data <- data[-missing_targets,]
     warning(sprintf("the following observations have been removed due to missing target variable: %s"
-                    ,paste(missing_targets, collapse = ", ")))
+                    ,paste(sort(missing_targets), collapse = ", ")))
   }
   return(data)
 }

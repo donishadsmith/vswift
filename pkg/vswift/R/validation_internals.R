@@ -30,9 +30,7 @@
   # Variable to select correct dataframe
   method <- ifelse("Fold" %in% split_word, "cv", "split")
   col <- ifelse(method == "cv", "Fold", "Set")
-  
-  
-  
+
   # Create dataframe for validation testing
   if(remove_obs == TRUE){
     remove_obs_output <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, iter = i, method = method, preprocessed_data = preprocessed_data,
@@ -212,7 +210,6 @@
          "gbm" = {
            model_data <- data.matrix(model_data)
            if(!is.null(predictors)){
-             
              xgb_data <- xgboost::xgb.DMatrix(data = model_data[,predictors], label = model_data[,target])
            } else {
              xgb_data <- xgboost::xgb.DMatrix(data = model_data[,colnames(model_data)[colnames(model_data) != target]], label = model_data[,target])

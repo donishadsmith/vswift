@@ -23,7 +23,7 @@
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
 #' @param random_seed A numerical value for the random seed. Default = NULL.
 #' @param impute_method A character indicating the imputation method to use. Options include "bag_impute" (Bagged Trees Imputation) and "knn_impute" (KNN Imputation).
-#' @param impute_args A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "tree" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.
+#' @param impute_args A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "trees" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.
 #' @param mod_args  list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
 #' to the respective model. Default = NULL.
 #' @param remove_obs A logical value to remove observations with categorical predictors from the test/validation set
@@ -148,7 +148,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     data_levels <- NA
   }
   
-  # Perform remove data
+  # Remove missing data if no imputation specified and remove rows with missing target variables.
   if(is.null(impute_method)){
     preprocessed_data <- vswift:::.remove_missing_data(data = data)
     
@@ -157,9 +157,14 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     # Store information
     classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
                                                  threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, ...)
+    override_imputation <- NULL
     
   } else {
     preprocessed_data <- vswift:::.remove_missing_target(data = data, target = target)
+    
+    # Check if removing missing target variables removes all missing data
+    override_imputation <- vswift:::.check_if_missing(data = preprocessed_data)
+
     
     # Store information
     classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
@@ -257,10 +262,9 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     model_type <- c(model_type[-x],model_type[x])
   }
   
-  # Imputation;
-  if(!is.null(impute_method)){
+  # Imputation
+  if(all(!is.null(impute_method), override_imputation == FALSE)){
     # Add information to output
-    
     classCV_output <- vswift:::.store_parameters(impute_method = impute_method, impute_args = impute_args, classCV_output = classCV_output)
     processed_data_list <- list()
     # Imputation; Create processed data list so each model type uses the same imputated dataset
@@ -272,9 +276,10 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     if(final_model == TRUE){
       imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE)
       classCV_output <- imputation_output[["classCV_output"]]
-      processed_data_list[["Final Model"]] <- imputation_output[["processed_data"]]
+      processed_data_list[["final model"]] <- imputation_output[["processed_data"]]
     }
   }
+  
   
   # Variable to keep track of logistic and gbm
   model_eval_tracker <- 1
@@ -282,9 +287,9 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   for(model_name in model_type){
     # Convert target variable
     if(all(model_name %in% c("logistic","gbm"), model_eval_tracker == 1)){
-        if(!is.null(impute_method)){
+        if(all(!is.null(impute_method), override_imputation == FALSE)){
           if(final_model == TRUE){
-            new_iterator_vector <- c(iterator_vector, "Final Model")
+            new_iterator_vector <- c(iterator_vector, "final model")
           } else{
             new_iterator_vector <- iterator_vector
           }
@@ -301,8 +306,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     if(any(!is.null(split), !is.null(n_folds))){
       if(is.null(n_cores)){
         for(i in iterator_vector){
-          
-          if(!is.null(impute_method)){
+          if(all(!is.null(impute_method), override_imputation == FALSE)){
             processed_data <- processed_data_list[[i]]
           } else {
             processed_data <- preprocessed_data
@@ -320,7 +324,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
         registerDoParallel(n_cores)
         parallel_output <- foreach(i = iterator_vector, .combine = "c") %dopar% {
           
-          if(!is.null(impute_method)){
+          if(all(!is.null(impute_method), override_imputation == FALSE)){
             processed_data <- processed_data_list[[i]]
           } else {
             processed_data <- preprocessed_data
@@ -364,12 +368,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     
     # Generate final model
     if(final_model == TRUE){
-      if(is.null(impute_method)){
+      if(any(is.null(impute_method), override_imputation == TRUE)){
         processed_data_list <- list()
-        processed_data_list[["Final Model"]] <- preprocessed_data
-      } 
+        processed_data_list[["final model"]] <- preprocessed_data
+      }
       # Generate model depending on chosen model_type
-      classCV_output[["Final Model"]][[model_name]]  <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = processed_data_list[["Final Model"]], mod_args = mod_args, ...)
+      classCV_output[["final model"]][[model_name]]  <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = processed_data_list[["final model"]], mod_args = mod_args, ...)
     }
   }
   
