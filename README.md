@@ -82,7 +82,8 @@ results <- classCV(data = iris,
                    n_folds = 5,
                    model_type = "lda",
                    stratified = TRUE,
-                   random_seed = 123)
+                   random_seed = 123,
+                   standardize = TRUE)
 # Also valid; the target variable can refer to the column index
 
 results <- classCV(data = iris,
@@ -91,7 +92,8 @@ results <- classCV(data = iris,
                    n_folds = 5,
                    model_type = "lda",
                    stratified = TRUE,
-                   random_seed = 123)
+                   random_seed = 123,
+                   standardize = TRUE)
                    
 class(results)
 ```
@@ -163,17 +165,16 @@ virginica             1.00     1.00      1.00
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classification Accuracy:  0.98 (0.02) 
+Average Classification Accuracy:  0.97 (0.01) 
 
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
-virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
+versicolor           0.96 (0.05)       0.96 (0.05)       0.96 (0.02) 
+virginica            0.96 (0.05)       0.96 (0.05)       0.96 (0.02) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-```
 ```R
 # Plot model evaluation metrics
 plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)
@@ -183,26 +184,27 @@ plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)
   
   <summary>Plots</summary>
   
-  ![image](https://user-images.githubusercontent.com/112973674/236356074-7f420bc3-63fd-4407-9dc7-4ed09506886c.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356083-f59ebafc-e5a4-4dab-a696-de5a6ae723be.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356088-fe71f5a3-ecfa-4934-9049-13305ce5d56e.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356101-8eccba78-b0be-4473-a822-61eb00edc8d9.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356111-1cf184ba-6ef3-41a4-8c95-5f98902c72ee.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356127-fb8c7da4-762c-4164-a8f0-0496e66c8c04.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356144-33e15f57-ed6a-4be0-a798-e5fbef815e2d.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356158-0afc4f51-7a62-4a28-bd60-07c2a632d311.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356175-d45d32af-115c-48cc-8503-275197a48b61.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356220-998d8e21-0640-444f-8f0b-f3e8133bfe82.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356233-3f5fd69d-d3a3-4d1e-ab51-340e5351db86.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356246-da9dc81e-ae80-4353-8261-a31d9854c9b5.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356256-db6dab3c-7c51-46ad-a6f8-a23cc845ea63.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356275-bafd982f-f6d8-4368-a240-202277ecdc09.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356283-bf0e47dc-f8ac-41fe-bae7-49dbd5785d9e.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356294-933e0eda-e7c6-47d8-8017-a817b4394a01.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356306-b101c0a4-049e-45f1-bf70-371968d90b06.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356316-6bbad7cd-ddf3-460a-8c41-e4198cdb58f6.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356328-45cdbd5d-a88b-4191-92b7-8503d44fb036.png)
-  ![image](https://user-images.githubusercontent.com/112973674/236356341-2af76050-18bf-4d21-8504-c598176f8269.png)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/b5436209-d150-40c5-95df-fc0c6c97b02e)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/ee401b50-7afc-436b-88d1-4ac2e5396af7)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/65a499c3-b140-4e0b-becc-515938ced581)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0fce33c9-1585-411e-8f18-ae0d07297603)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/0c7c0dcc-db28-4600-900d-6578605c9a54)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/38f3be64-72c5-4c30-bec9-84d44c0e6ddd)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/c56b2abd-cd87-426f-a8be-5dc0f41deed2)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/fbc0a9a8-253e-4d8f-b144-b3e0e9c5dec6)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/bbb09b2d-4eec-4188-b363-7470bec9635f)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/809fd1cb-56ab-45d9-b819-716d06689169)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/1f593290-1b4e-4ea4-b2e2-8a9645c4325f)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/aab82a1e-18fe-4506-b409-bef6e5a34218)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/53c686d3-782e-4732-a887-5716d8046a20)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/1bcb2bd0-7874-4c49-83ae-c4110a353f5b)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/38e93e79-3f08-40b5-bc6d-2cad59c4d184)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/3a3de30c-c02a-4b15-9274-d41d80431514)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/5aa8dc51-c03c-4553-94bc-507531897bb5)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/9a5f24b9-7102-4fbb-a250-3fda7a9de9bc)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/abce344d-3f86-4ea4-b59d-c8990c4e9b61)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/8c289855-244d-4b3d-9137-c1873ace31fd)
+
 
 </details>
 
