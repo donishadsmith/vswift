@@ -11,8 +11,8 @@
   # Check standardize
   
   if(!is.null(standardize)){
-    if(!any(standardize == TRUE, is.numeric(standardize))){
-      stop("standardize must either be TRUE or a numeric vector")
+    if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize))){
+      stop("standardize must either be TRUE, FALSE, or a numeric vector")
     }
   }
   # Check if impute method is valid
@@ -382,6 +382,7 @@
 # Function to standardize data
 .standardize <- function(data, standardize, target){
   predictors <- colnames(data)[colnames(data) != target]
+  
   if(class(standardize) == "logical"){
     col_names <- predictors
   } else{

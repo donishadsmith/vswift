@@ -280,7 +280,6 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     }
   }
   
-  
   # Variable to keep track of logistic and gbm
   model_eval_tracker <- 1
   # Perform model evaluation
@@ -363,7 +362,6 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector, na.rm = T)/sqrt(n_folds)
         }
       }
-      
     }
     
     # Generate final model

@@ -12,7 +12,7 @@
     validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]), ]
   }
   
-  if(class(standardize) %in% c("logical", "integer", "numeric")){
+  if(all(class(standardize) %in% c("logical", "integer", "numeric"), standardize != FALSE)){
     model_data <- vswift:::.standardize(data = model_data, target = target, standardize = standardize)
     validation_data <- vswift:::.standardize(data = validation_data, target = target, standardize = standardize)
   }
