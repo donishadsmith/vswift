@@ -25,7 +25,6 @@ functions used from packages for each classification algorithms:
 - **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set with categories not seen during model training. This is particularly helpful for specific algorithms that might throw errors in such cases. [Link to code.](https://github.com/donishadsmith/vswift/blob/3572dc7eb4fadb22ea83d6d3eb5dc6fa9de1bf1c/pkg/vswift/R/validation_internals.R#L107-L138)
 - **Model Saving Capabilities**: Save all models utilized for training and testing.
 - **Dataset Saving Options**: Preserve split datasets and folds.
-<<<<<<< HEAD
 - **Model Creation**: Easily create and save final models.
 - **Missing Data Imputation**: Choose from two imputation methods - Bagged Tree Imputation and KNN Imputation. These two methods use the `step_bag_impute()` and `step_knn_impute()` functions from the recipes package, respectively. The recipes package is used to create an imputation model using the training data to predict missing data in the training data and the validation data. This is done to prevent data leakage. Rows with missing target variables are removed. Link to relevant code [here](https://github.com/donishadsmith/vswift/blob/3572dc7eb4fadb22ea83d6d3eb5dc6fa9de1bf1c/pkg/vswift/R/preprocess.R#L208-L316) and [here](https://github.com/donishadsmith/vswift/blob/2d729dfaab55f3649369b202a393521bd42164b1/pkg/vswift/R/classCV.R#L259-L267).
 =======
