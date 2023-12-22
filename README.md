@@ -100,6 +100,14 @@ class(results)
 `classCV()` produces a vswift object which can be used for custom printing and plotting of performance metrics by using the `print()` and `plot()` functions.
 
 ```R
+print(results$formula)
+```
+**Output**
+```
+[1] Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width
+```
+
+```R
 # Print parameter information and model evaluation metrics
 print(results, parameters = TRUE, metrics = TRUE)
 ```
