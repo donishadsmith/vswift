@@ -32,7 +32,7 @@
 #' @param save_data A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.
 #' @param final_model A logical value to use all complete observations in the input data for model training. Default = FALSE.
 #' @param n_cores A numerical value specifying the number of cores to use for parallel processing. Default = NULL.
-#' @param standardize A logical value or numerical vector. If TRUE, all columns except the target, columns of class character, and columns of class factor, will be standardized. To specify the columns to be standardized, create a numerical vector consisting of the column indices to be standardized.
+#' @param standardize A logical value or numerical vector. If TRUE, all columns except the target, columns of class character, and columns of class factor, will be standardized. To specify the columns to be standardized, create a numerical or character vector consisting of the column indices or names to be standardized.
 #' @param ... Additional arguments specific to the chosen classification algorithm.
 #'            Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.
 #' 

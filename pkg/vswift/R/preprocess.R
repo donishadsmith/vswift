@@ -11,7 +11,7 @@
   # Check standardize
   
   if(!is.null(standardize)){
-    if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize))){
+    if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize), is.integer(standardize), is.character(standardize))){
       stop("standardize must either be TRUE, FALSE, or a numeric vector")
     }
   }
@@ -381,17 +381,41 @@
 
 # Function to standardize data
 .standardize <- function(data, standardize, target){
-  predictors <- colnames(data)[colnames(data) != target]
+  # Get predictor names
+  predictors <- colnames(data)
   
   if(class(standardize) == "logical"){
     col_names <- predictors
-  } else{
+  } else if(class(standardize) %in% c("numeric","integer")){
+    # Remove any index value outside the range of the number of columns
+    n_cols <- 1:ncol(data)
+    standardize <- standardize[which(standardize %in% n_cols)]
+    unused <- standardize[which(!standardize %in% n_cols)]
     col_names <- predictors[standardize]
-  }
-  for(col in col_names){
-    if(any(is.numeric(data[,col]), is.integer(data[,col]))){
-      data[,col] <- as.vector(scale(as.numeric(data[,col]), center = TRUE, scale = TRUE))
+    if(length(unused) > 0){
+      warning(sprintf("some indices are outside possible range and will be ignored: %s",paste(unused)))
     }
+  } else{
+    # Remove any column names not in dataframe
+    unused <- standardize[which(!standardize %in% predictors)]
+    col_names <- predictors[which(standardize %in% predictors)]
+    if(length(unused) > 0){
+      warning(sprintf("some column names not in dataframe and will be ignored: %s",paste(unused)))
+    }
+    
+  }
+  
+  # Remove target
+  col_names <- col_names[col_names != target]
+  
+  if(length(col_names) > 0){
+    for(col in col_names){
+      if(any(is.numeric(data[,col]), is.integer(data[,col]))){
+        data[,col] <- as.vector(scale(as.numeric(data[,col]), center = TRUE, scale = TRUE))
+      }
+    }
+  } else{
+    warning("no standardization has been done; standardization specified but column indices are outside possible range or column names don't exist")
   }
   return(data)
 }
