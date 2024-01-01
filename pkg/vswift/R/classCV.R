@@ -269,12 +269,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     processed_data_list <- list()
     # Imputation; Create processed data list so each model type uses the same imputated dataset
     for(i in iterator_vector){
-      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
       classCV_output <- imputation_output[["classCV_output"]]
       processed_data_list[[i]] <- imputation_output[["processed_data"]]
     }
     if(final_model == TRUE){
-      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE)
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE)
       classCV_output <- imputation_output[["classCV_output"]]
       processed_data_list[["final model"]] <- imputation_output[["processed_data"]]
     }

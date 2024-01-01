@@ -262,7 +262,12 @@
   return(data)
 }
 
-.imputation <- function(preprocessed_data, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE){
+# Imputation function
+.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE){
+  
+  # Get column names
+  col_names <- colnames(preprocessed_data)
+  
   if(final == FALSE){
     # Get training and validation data
     if(iteration == "Training"){
@@ -276,28 +281,34 @@
     # Get names of rows
     training_rows <- rownames(training_data)
     validation_rows <- rownames(validation_data)
+
     if(imputation_method == "knn_impute"){
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
       } else {
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = training_data),recipes::all_predictors())  
       }
     } else if(imputation_method == "bag_impute") {
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data), trees = impute_args[["trees"]],recipes::all_predictors())  
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = training_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
       } else {
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(~., data = training_data),recipes::all_predictors())  
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = training_data),recipes::all_predictors())  
       }
     }
     
-    
-    prep <- recipes::prep(rec, data = training_data)
-    
+    prep <- recipes::prep(rec, training = training_data)
     # Apply the prepped recipe to the training data
     training_data_processed <- data.frame(recipes::bake(prep, new_data = training_data))
     
+    # Create full data
+    if(ncol(training_data_processed) != ncol(training_data)) training_data_processed <- cbind(training_data_processed, subset(training_data, select = col_names[!col_names %in% colnames(training_data_processed)]))[,col_names]
+    
+    
     # Apply the prepped recipe to the test data
     validation_data_processed <- data.frame(recipes::bake(prep, new_data = validation_data))
+    
+    # Create full data
+    if(ncol(validation_data_processed) != ncol(validation_data)) validation_data_processed <- cbind(validation_data_processed, subset(validation_data, select = col_names[!col_names %in% colnames(validation_data_processed)]))[,col_names]
     
     # Update row names of the new processed data
     rownames(training_data_processed) <- training_rows
@@ -332,23 +343,38 @@
     } 
     
     imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
-    
     return(imputation_output)
     
   } else{
     # Get missing information
     imputation_information <- vswift:::.get_missing_info(preprocessed_data = preprocessed_data, imputation_method = imputation_method)
     # Impute data
-    rec <- recipes::step_impute_knn(recipe = recipes::recipe(~., data = preprocessed_data),recipes::all_predictors())  
+    if(imputation_method == "knn_impute"){
+      if(!is.null(impute_args)){
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+      } else {
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = preprocessed_data),recipes::all_predictors())  
+      }
+    } else if(imputation_method == "bag_impute") {
+      if(!is.null(impute_args)){
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = preprocessed_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
+      } else {
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = preprocessed_data), recipes::all_predictors())  
+      }
+    }
+    
     prep <- recipes::prep(rec, data = preprocessed_data, new_data = NULL)
     processed_data <- data.frame(recipes::bake(prep, new_data = NULL))
     
+    # Create full data
+    if(ncol(processed_data) != ncol(preprocessed_data)) processed_data <- cbind(processed_data, subset(preprocessed_data, select = col_names[!col_names %in% colnames(processed_data)]))[,col_names]
     
     imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
     return(imputation_output)
   }
   
 }
+
 
 # Assist function for .imputation to get number of missing data for each column
 .get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL, iteration, imputation_method){
@@ -419,3 +445,4 @@
   }
   return(data)
 }
+

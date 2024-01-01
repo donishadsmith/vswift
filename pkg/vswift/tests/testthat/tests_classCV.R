@@ -178,13 +178,15 @@ test_that("test imputation and missing data", {
   
   data <- iris
   # Introduce NA
-  data[sample(1:nrow(data), size = round(nrow(data)*.20)),1:4] <- NA
+  for(i in 1:ncol(data)){
+    data[sample(1:nrow(data), size = round(nrow(data)*.10)),i] <- NA
+  }
   
   # knn
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "knn_impute", impute_args = list(neighbors = 5), model_type = "lda", stratified = TRUE))
+  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "knn_impute", impute_args = list(neighbors = 5), model_type = "lda", stratified = TRUE))
   
   # bag
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "bag_impute", impute_args = list(trees = 5), model_type = "lda", stratified = TRUE))
+  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, impute_method = "bag_impute", impute_args = list(trees = 5), model_type = "lda", stratified = TRUE))
   
   # complete cases only
   expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "lda", stratified = TRUE))
