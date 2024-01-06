@@ -283,14 +283,14 @@
   return(calculate_metrics_list)
 }
 
-.merge_list <- function(save_data, save_models, model_name, parallel_list, preprocessed_data, impute_method){
+.merge_list <- function(save_data, save_models, model_name, parallel_list, processed_data, impute_method){
   classCV_output <- parallel_list[[1]]
   for(name in names(parallel_list)[-1]){
     # Merge metrics data
     if(save_data == TRUE){
       # Fix for parallel not storing test data
       if(!is.data.frame(classCV_output[["saved_data"]][["split"]][["test"]])){
-        classCV_output[["saved_data"]][["split"]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
+        classCV_output[["saved_data"]][["split"]][["test"]] <- processed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
       }
       if(all("Fold 1" %in% names(parallel_list), !is.data.frame(classCV_output[["saved_data"]][["cv"]][["fold 1"]]))){
         classCV_output[["saved_data"]][["cv"]][["fold 1"]] <- parallel_list[[name]][["saved_data"]][["cv"]][["fold 1"]]

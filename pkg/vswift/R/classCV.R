@@ -346,7 +346,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
           parallel_output  <- split(parallel_output, rep(1:length(iterator_vector), each = list_length))
           # Change names of sublist to names in iterator vector
           names(parallel_output) <- iterator_vector
-          classCV_output <- vswift:::.merge_list(save_data = save_data, save_models = save_models, model_name = model_name, parallel_list = parallel_output, preprocessed_data = preprocessed_data, impute_method = impute_method)
+          classCV_output <- vswift:::.merge_list(save_data = save_data, save_models = save_models, model_name = model_name, parallel_list = parallel_output, processed_data = processed_data, impute_method = impute_method)
         }
       }
       # Calculate mean, standard deviation, and standard error for cross validation
