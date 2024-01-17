@@ -76,6 +76,7 @@
             cat(sprintf("Predictors: %s\n\n", paste(object[["parameters"]][["predictors"]], collapse = ", ")))
           }
           cat(sprintf("Target: %s\n\n", object[["parameters"]][["target"]]))
+          cat(sprintf("Formula: %s\n\n", deparse(object[["formula"]])))
           cat(sprintf("Classes: %s\n\n", paste(unlist(object[["classes"]]), collapse = ", ")))
           cat(sprintf("Fold size: %s\n\n", object[["parameters"]][["n_folds"]]))
           cat(sprintf("Split: %s\n\n", object[["parameters"]][["split"]]))
@@ -85,9 +86,11 @@
           cat(sprintf("Imputation Method: %s\n\n", object[["parameters"]][["impute_method"]]))
           # Print arguments for imputation method
           if(!is.null(object[["parameters"]][["impute_method"]])){
-            name <- names(object[["parameters"]][["impute_args"]])
-            cat(sprintf("Imputation Arguments: %s\n\n", 
-                        paste(name, "=",object[["parameters"]][["impute_args"]][[name]], collapse = " ")))
+            name_vec <- names(object[["parameters"]][["impute_args"]])
+            if(!is.null(object[["parameters"]][["impute_args"]])){
+              cat(sprintf("Imputation Arguments: %s\n\n", 
+                          paste(name_vec, "=",object[["parameters"]][["impute_args"]], collapse = " , ")))
+            }
           }
           cat(sprintf("Missing Data: %s\n\n", object[["parameters"]][["missing_data"]]))
           cat(sprintf("Sample Size: %s\n\n", object[["parameters"]][["sample_size"]]))

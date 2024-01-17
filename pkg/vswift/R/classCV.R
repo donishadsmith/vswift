@@ -3,7 +3,7 @@
 #' `classCV` performs a train-test split and/or k-fold cross validation
 #' on classification data using various classification algorithms.
 #'
-#'
+#' @param formula A formula specifying the model to use.
 #' @param data A data frame containing the dataset.
 #' @param target The target variable's numerical index or name in the data frame.
 #' @param predictors A vector of numerical indices or names for the predictors in the data frame.
@@ -107,7 +107,7 @@
 #' 
 #' 
 #' @export
-classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
+classCV <- function(formula = NULL, data, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
                     mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, standardize = NULL, ...){
   
   # Ensure model type is lowercase
@@ -115,7 +115,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
   
   
   # Checking if inputs are valid
-  vswift:::.error_handling(data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, 
+  vswift:::.error_handling(formula = formula, data = data, target = target, predictors = predictors, n_folds = n_folds, split = split, model_type = model_type, threshold = threshold, stratified = stratified, random_seed = random_seed, 
                            impute_method = impute_method, impute_args = impute_args, mod_args = mod_args, n_cores = n_cores, standardize = standardize, call = "classCV", ...)
   # Ensure model types are unique
   model_type <- unique(model_type)
@@ -125,20 +125,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     set.seed(random_seed)
   }
   
-  # Creating response variable
-  target <- ifelse(is.character(target), target, colnames(data)[target])
+  # Get feature variable and predictor variables
+  get_features_target_output <- vswift:::.get_features_target(formula = formula, target = target, predictors = predictors, data = data)
   
-  # Creating feature vector
-  if(is.null(predictors)){
-    predictor_vec <- colnames(data)[colnames(data) != target]
-  } else {
-    if(all(is.character(predictors))){
-      predictor_vec <- predictors
-    } else {
-      predictor_vec <- colnames(data)[predictors]
-    }
-  }
-  
+  target <- get_features_target_output[["target"]]
+  predictor_vec <- get_features_target_output[["predictor_vec"]]
+
   # Ensure data is factor
   create_factor_output <- vswift:::.create_factor(data = data, target = target, model_type = model_type)
   data <- create_factor_output[["data"]] 
@@ -155,7 +147,7 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     rownames(preprocessed_data) <- 1:nrow(preprocessed_data)
     
     # Store information
-    classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
+    classCV_output <- vswift:::.store_parameters(formula = formula, data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
                                                  threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, ...)
     override_imputation <- NULL
     
@@ -167,8 +159,8 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
 
     
     # Store information
-    classCV_output <- vswift:::.store_parameters(data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
-                                                 threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, parallel = TRUE, n_cores = n_cores, ...)
+    classCV_output <- vswift:::.store_parameters(formula = formula, data = data, preprocessed_data = preprocessed_data, predictor_vec = predictor_vec, target = target, model_type = model_type,
+                                                 threshold = threshold, split = split, n_folds = n_folds, stratified = stratified, random_seed = random_seed, mod_args = mod_args, parallel = n_cores, n_cores = n_cores, ...)
   }
   
   # Get formula
@@ -269,12 +261,12 @@ classCV <- function(data, target, predictors = NULL, split = NULL, n_folds = NUL
     processed_data_list <- list()
     # Imputation; Create processed data list so each model type uses the same imputated dataset
     for(i in iterator_vector){
-      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE)
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, iteration = i, parallel = FALSE, random_seed = random_seed)
       classCV_output <- imputation_output[["classCV_output"]]
       processed_data_list[[i]] <- imputation_output[["processed_data"]]
     }
     if(final_model == TRUE){
-      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE)
+      imputation_output <- vswift:::.imputation(preprocessed_data = preprocessed_data, target = target, predictors = predictors, formula = formula, imputation_method = impute_method, impute_args = impute_args, classCV_output = classCV_output, final = TRUE, random_seed = random_seed)
       classCV_output <- imputation_output[["classCV_output"]]
       processed_data_list[["final model"]] <- imputation_output[["processed_data"]]
     }

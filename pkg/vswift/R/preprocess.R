@@ -1,5 +1,5 @@
 #Helper function for classCV and genFolds to check if inputs are valid
-.error_handling <- function(data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
+.error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
                             impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL, standardize = NULL, call = NULL, ...){
   
   # List of valid inputs
@@ -66,6 +66,16 @@
   # Ensure split is between 0.5 to 0.9
   if(any(is.character(split), split < 0.5, split > 0.9)){
     stop("split must be a numeric value from between 0.5 and 0.9")
+  }
+  
+  # Get target and predictors if formula specified
+  if(!is.null(formula)){
+    if(any(!is.null(formula) & !is.null(target) || !is.null(predictors))){
+      warning("formula specified with target and/or predictors, formula will overwrite the specified target and predictors")
+    }
+    get_features_target <- vswift:::.get_features_target(formula = formula, data = data)
+    target <- get_features_target[["target"]]
+    predictors <- get_features_target[["predictor_vec"]]
   }
   
   # Ensure valid target variable
@@ -186,8 +196,8 @@
                    "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
                    "multinom" = c("weights", "Hess"),
                    "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds")),
-    "imputation" = list("knn_impute" = c("neighbors"),
-                        "bag_impute" = c("trees"))
+    "imputation" = list("knn_impute" = c("formula","neighbors"),
+                        "bag_impute" = c("formula","trees"))
   )
   
   # Obtain user-specified models based on the number of models called
@@ -214,7 +224,36 @@
       stop(error_message(method, invalid_args))
     }
   }
+}
+
+# Function to get name of target and features.
+.get_features_target <- function(formula = NULL, target = NULL, predictors = NULL, data){
+  if(!is.null(formula)){
+    vars <- all.vars(formula)
+    target <- vars[1]
+    predictor_vec <- vars[2:length(vars)]
+    
+    if("." %in% predictor_vec) predictor_vec <- colnames(data)[colnames(data) != target]
+    
+  } else{
+    # Creating response variable
+    target <- ifelse(is.character(target), target, colnames(data)[target])
+    
+    # Creating feature vector
+    if(is.null(predictors)){
+      predictor_vec <- colnames(data)[colnames(data) != target]
+    } else {
+      if(all(is.character(predictors))){
+        predictor_vec <- predictors
+      } else {
+        predictor_vec <- colnames(data)[predictors]
+      }
+    }
+  }
   
+  get_features_target_output <- list("target" = target, "predictor_vec" = predictor_vec)
+  
+  return(get_features_target_output)
 }
 
 # Check if data is missing
@@ -263,8 +302,11 @@
 }
 
 # Imputation function
-.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE){
-  
+.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE, random_seed = NULL){
+  # Set seed
+  if(!is.null(random_seed)){
+    set.seed(random_seed)
+  }
   # Get column names
   col_names <- colnames(preprocessed_data)
   
@@ -284,15 +326,25 @@
 
     if(imputation_method == "knn_impute"){
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+        if(!is.null(impute_args[["formula"]])){
+          formula <- impute_args[["formula"]]
+        } else {
+          formula <- formula
+        }
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
       } else {
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = training_data),recipes::all_predictors())  
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = training_data),recipes::all_predictors())  
       }
     } else if(imputation_method == "bag_impute") {
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = training_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
+        if(!is.null(impute_args[["formula"]])){
+          formula <- impute_args[["formula"]]
+        } else {
+          formula <- formula
+        }
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = training_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
       } else {
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = training_data),recipes::all_predictors())  
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = training_data),recipes::all_predictors())  
       }
     }
     
@@ -351,15 +403,25 @@
     # Impute data
     if(imputation_method == "knn_impute"){
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+        if(!is.null(impute_args[["formula"]])){
+          formula <- impute_args[["formula"]]
+        } else {
+          formula <- formula
+        }
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
       } else {
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula, data = preprocessed_data),recipes::all_predictors())  
+        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = preprocessed_data),recipes::all_predictors())  
       }
     } else if(imputation_method == "bag_impute") {
       if(!is.null(impute_args)){
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = preprocessed_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
+        if(!is.null(impute_args[["formula"]])){
+          formula <- impute_args[["formula"]]
+        } else {
+          formula <- formula
+        }
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = preprocessed_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
       } else {
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula, data = preprocessed_data), recipes::all_predictors())  
+        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = preprocessed_data), recipes::all_predictors())  
       }
     }
     

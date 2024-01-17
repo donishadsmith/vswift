@@ -5,8 +5,9 @@
 \title{Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data}
 \usage{
 classCV(
+  formula = NULL,
   data,
-  target,
+  target = NULL,
   predictors = NULL,
   split = NULL,
   n_folds = NULL,
@@ -27,6 +28,8 @@ classCV(
 )
 }
 \arguments{
+\item{formula}{A formula specifying the model to use.}
+
 \item{data}{A data frame containing the dataset.}
 
 \item{target}{The target variable's numerical index or name in the data frame.}

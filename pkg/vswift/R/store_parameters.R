@@ -1,5 +1,7 @@
-.store_parameters <- function(data = NULL, preprocessed_data = NULL, predictor_vec = NULL, target = NULL, model_type = NULL,
-                               threshold = NULL, split = NULL, n_folds = NULL, stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = FALSE, 
+
+# Helper function to store all model information that will be contained in the main output of the classCV function. 
+.store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL, target = NULL, model_type = NULL,
+                              threshold = NULL, split = NULL, n_folds = NULL, stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL, 
                               impute_method = NULL, impute_args = NULL, classCV_output = NULL, ...){
   if(is.null(impute_method)){
     # Initialize output list
@@ -28,7 +30,12 @@
     # Store classes
     store_parameters_output[["classes"]][[target]] <- names(table(factor(preprocessed_data[,target])))
     # Create formula string
-    store_parameters_output[["formula"]] <- as.formula(paste(target, "~", paste(predictor_vec, collapse = " + ")))
+    if(is.null(formula)){
+      store_parameters_output[["formula"]] <- as.formula(paste(target, "~", paste(predictor_vec, collapse = " + ")))
+    } else{
+      store_parameters_output[["formula"]] <- formula
+    }
+    
     # Return output
     return(store_parameters_output)
   } else{
