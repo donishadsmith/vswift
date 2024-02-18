@@ -65,9 +65,9 @@
   for(model in models){
     if(class(object) == "vswift"){
       if(save_plots == FALSE){
-        vswift:::.visible_plots(object = object, split = split, cv = cv, model_name = model, model_list = model_list)
+        .visible_plots(object = object, split = split, cv = cv, model_name = model, model_list = model_list)
       } else {
-        vswift:::.save_plots(object = object, split = split, cv = cv, path = path, model_name = model, model_list = model_list,...)
+        .save_plots(object = object, split = split, cv = cv, path = path, model_name = model, model_list = model_list,...)
       }
     } else {
       stop("object must be of class 'vswift'")

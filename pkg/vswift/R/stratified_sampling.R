@@ -1,4 +1,6 @@
 #Helper function for classCV for stratified sampling
+#' @noRd
+#' @export
 .stratified_sampling <- function(data, type, output, target, split = NULL, k = NULL,random_seed = NULL){
   switch(type,
          "split" = {
@@ -17,13 +19,13 @@
            # Extract indices for each class
            for(class in names(output[["class_proportions"]])){
              # Check if sampling possible
-             vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
+             .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              # Store indices for training set
              output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
              # Remove indices to not add to test set
              class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
              # Check if sampling possible
-             vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
+             .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
              # Add indices for test set
              output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
            }
@@ -54,7 +56,7 @@
              # Assign class indices to each fold
              for(class in names(output[["class_proportions"]])){
                # Check if sampling possible
-               vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
+               .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
                # Check if sampling possible
                fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
                # Remove already selected indices
@@ -90,6 +92,8 @@
 }
 
 # Helper function for .stratified_sampling to error check
+#' @noRd
+#' @export
 .stratified_check <- function(class, class_indices, output, n){
   # Check if there are zero indices for a specific class
   if(round(n*output[["class_proportions"]][[class]],0) == 0){

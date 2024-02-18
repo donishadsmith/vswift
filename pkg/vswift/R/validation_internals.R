@@ -1,5 +1,6 @@
 # Helper function for classCV that performs validation
-
+#' @noRd
+#' @export
 .validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, standardize, ...){
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
@@ -13,8 +14,8 @@
   }
   
   if(all(class(standardize) %in% c("logical", "integer", "numeric", "character"), standardize != FALSE)){
-    model_data <- vswift:::.standardize(data = model_data, target = target, standardize = standardize)
-    validation_data <- vswift:::.standardize(data = validation_data, target = target, standardize = standardize)
+    model_data <- .standardize(data = model_data, target = target, standardize = standardize)
+    validation_data <- .standardize(data = validation_data, target = target, standardize = standardize)
   }
 
   # Ensure columns have same levels
@@ -24,7 +25,7 @@
   }
   # Generate model depending on chosen model_type
   if(any("Training" %in% split_word, "Fold" %in% split_word)){
-    model <- vswift:::.generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = model_data, mod_args = mod_args, ...)
+    model <- .generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target, model_data = model_data, mod_args = mod_args, ...)
   }
   
   # Variable to select correct dataframe
@@ -33,7 +34,7 @@
 
   # Create dataframe for validation testing
   if(remove_obs == TRUE){
-    remove_obs_output <- vswift:::.remove_obs(training_data = model_data, test_data = validation_data, target = target, iter = i, method = method, preprocessed_data = preprocessed_data,
+    remove_obs_output <- .remove_obs(training_data = model_data, test_data = validation_data, target = target, iter = i, method = method, preprocessed_data = preprocessed_data,
                                               output = classCV_output, stratified = stratified)
     validation_data <- remove_obs_output[["test_data"]]
     classCV_output <- remove_obs_output[["output"]]
@@ -81,9 +82,9 @@
   
   # Get prediction
   if(i == "Training"){
-    prediction_vector <- vswift:::.prediction(model_type = model_name, model = model, prediction_data = prediction_data, predictors = predictors, target = target, threshold = threshold, class_dict = classCV_output[["class_dictionary"]], var_names = c("Training","Test"))
+    prediction_vector <- .prediction(model_type = model_name, model = model, prediction_data = prediction_data, predictors = predictors, target = target, threshold = threshold, class_dict = classCV_output[["class_dictionary"]], var_names = c("Training","Test"))
   } else{
-    prediction_vector <- vswift:::.prediction(model_type = model_name, model = model, prediction_data = prediction_data, predictors = predictors, target = target, threshold = threshold, class_dict = classCV_output[["class_dictionary"]], var_names = i)
+    prediction_vector <- .prediction(model_type = model_name, model = model, prediction_data = prediction_data, predictors = predictors, target = target, threshold = threshold, class_dict = classCV_output[["class_dictionary"]], var_names = i)
   }
   for(j in names(prediction_vector)){
     # Calculate classification accuracy
@@ -92,7 +93,7 @@
     # Class positions to get the name of the class in class_names
     class_position <- 1
     for(class in classes){
-      metrics_list <- vswift:::.calculate_metrics(class = class, target = target, prediction_vector = prediction_vector[[j]], prediction_data = prediction_data[[j]])
+      metrics_list <- .calculate_metrics(class = class, target = target, prediction_vector = prediction_vector[[j]], prediction_data = prediction_data[[j]])
       # Add information to dataframes
       classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == j),sprintf("Class: %s Precision", class_names[class_position])] <- metrics_list[["precision"]]
       classCV_output[["metrics"]][[model_name]][[method]][which(classCV_output[["metrics"]][[model_name]][[method]][,col] == j),sprintf("Class: %s Recall", class_names[class_position])] <- metrics_list[["recall"]]
@@ -113,6 +114,8 @@
 }
 
 #Helper function for classCV to remove unobserved data 
+#' @noRd
+#' @export
 .remove_obs <- function(training_data, test_data, target, iter, method, preprocessed_data, output, stratified){
   # Create empty list
   check_predictor_levels <- list()
@@ -147,26 +150,41 @@
 
 
 # Helper function for classCV to create model
+#' @noRd
+#' @export
+#' @importFrom MASS lda qda 
+#' @importFrom naivebayes naive_bayes 
+#' @importFrom e1071 svm 
+#' @importFrom nnet nnet.formula nnet multinom
+#' @importFrom kknn contr.dummy train.kknn
+#' @importFrom rpart rpart
+#' @importFrom randomForest randomForest 
+#' @importFrom xgboost xgb.DMatrix xgb.train
+
+
 .generate_model <- function(model_type = NULL, formula = NULL, predictors = NULL, target = NULL, model_data = NULL, mod_args = mod_args, ...){
+
   # Turn to call
   if(!is.null(mod_args) & model_type != "gbm"){
-    mod_args[[model_type]][["data"]] <- model_data
     mod_args[[model_type]][["formula"]] <- formula
+    mod_args[[model_type]][["data"]] <- model_data
+    if(model_type == "logistic") mod_args[[model_type]][["family"]] <- "binomial"
   } 
+
   switch(model_type,
          # Use double colon to avoid cluttering user space
          "lda" = { 
            # Have to explicitly call the class "formula" methods
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(MASS:::lda.formula, mod_args[[model_type]])
+             model <- do.call(lda, mod_args[[model_type]])
            } else {
-             model <- MASS::lda(formula, data = model_data, ...)
+             model <- lda(formula, data = model_data, ...)
            }},
          "qda" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(MASS:::qda.formula, mod_args[[model_type]])
+             model <- do.call(qda, mod_args[[model_type]])
            } else {
-             model <- MASS::qda(formula, data = model_data, ...)}},
+             model <- qda(formula, data = model_data, ...)}},
          "logistic" = {
            if(!is.null(mod_args[[model_type]])){
              model <- do.call(glm, mod_args[[model_type]])
@@ -174,56 +192,58 @@
              model <- glm(formula, data = model_data , family = "binomial", ...)}},
          "svm" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(e1071:::svm.formula, mod_args[[model_type]])
+             model <- do.call(svm, mod_args[[model_type]])
            } else {
-             model <- e1071::svm(formula, data = model_data, ...)}},
+             model <- svm(formula, data = model_data, ...)}},
          "naivebayes" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(naivebayes:::naive_bayes.formula, mod_args[[model_type]])
+             model <- do.call(naive_bayes, mod_args[[model_type]])
            } else {
-             model <- naivebayes::naive_bayes(formula = formula, data = model_data, ...)}},
+             model <- naive_bayes(formula = formula, data = model_data, ...)}},
          "ann" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(nnet:::nnet.formula, mod_args[[model_type]])
+             model <- do.call(nnet.formula, mod_args[[model_type]])
            } else {
-             model <- nnet::nnet(formula = formula, data = model_data, ...)}},
+             model <- nnet(formula = formula, data = model_data, ...)}},
          "knn" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(kknn::train.kknn, mod_args[[model_type]])
+             model <- do.call(train.kknn, mod_args[[model_type]])
            } else {
-             model <- kknn::train.kknn(formula = formula, data = model_data, ...)}},
+             model <- train.kknn(formula = formula, data = model_data, ...)}},
          "decisiontree" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(rpart::rpart, mod_args[[model_type]])
+             model <- do.call(rpart, mod_args[[model_type]])
            } else {
-             model <- rpart::rpart(formula = formula, data = model_data, ...)}},
+             model <- rpart(formula = formula, data = model_data, ...)}},
          "randomforest" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(randomForest:::randomForest.formula, mod_args[[model_type]])
+             model <- do.call(randomForest, mod_args[[model_type]])
            } else {
-             model <- randomForest::randomForest(formula = formula, data = model_data, ...)}},
+             model <- randomForest(formula = formula, data = model_data, ...)}},
          "multinom" = {
            if(!is.null(mod_args[[model_type]])){
-             model <- do.call(nnet::multinom, mod_args[[model_type]])
+             model <- do.call(multinom, mod_args[[model_type]])
            } else {
-             model <- nnet::multinom(formula = formula, data = model_data, ...)}},
+             model <- multinom(formula = formula, data = model_data, ...)}},
          "gbm" = {
            model_data <- data.matrix(model_data)
            if(!is.null(predictors)){
-             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,predictors], label = model_data[,target])
+             xgb_data <- xgb.DMatrix(data = model_data[,predictors], label = model_data[,target])
            } else {
-             xgb_data <- xgboost::xgb.DMatrix(data = model_data[,colnames(model_data)[colnames(model_data) != target]], label = model_data[,target])
+             xgb_data <- xgb.DMatrix(data = model_data[,colnames(model_data)[colnames(model_data) != target]], label = model_data[,target])
            }
            if(!is.null(mod_args[[model_type]])){
              mod_args[[model_type]][["data"]] <- xgb_data
-             model <- do.call(xgboost::xgb.train, mod_args[[model_type]])
+             model <- do.call(xgb.train, mod_args[[model_type]])
            } else {
-             model <- xgboost::xgb.train(data = xgb_data, ...)}}
+             model <- xgb.train(data = xgb_data, ...)}}
   )
   return(model)
 }
 
 # Helper function for classCV to predict 
+#' @noRd
+#' @export
 .prediction <- function(model_type, model, prediction_data, threshold, predictors, class_dict, target, var_names){
   # Initialize prediction_vector
   prediction_vector <- list()
@@ -252,9 +272,9 @@
            "gbm" = {
              prediction_data[[var]] <- data.matrix(prediction_data[[var]])
              if(!is.null(predictors)){
-               xgb_data <- xgboost::xgb.DMatrix(data = prediction_data[[var]][,predictors], label = prediction_data[[var]][,target])
+               xgb_data <- xgb.DMatrix(data = prediction_data[[var]][,predictors], label = prediction_data[[var]][,target])
              } else {
-               xgb_data <- xgboost::xgb.DMatrix(data = prediction_data[[var]][,colnames(prediction_data[[var]])[colnames(prediction_data[[var]]) != target]], label = prediction_data[[var]][,target])
+               xgb_data <- xgb.DMatrix(data = prediction_data[[var]][,colnames(prediction_data[[var]])[colnames(prediction_data[[var]]) != target]], label = prediction_data[[var]][,target])
              }
              predictions <- predict(model, xgb_data)
              prediction_matrix <- matrix(predictions, ncol = length(names(class_dict)), byrow = TRUE)
@@ -267,7 +287,8 @@
 }
 
 # Helper function to calculate metrics
-
+#' @noRd
+#' @export
 .calculate_metrics <- function(class, target, prediction_vector, prediction_data){
   # Sum of true positives
   true_pos <- sum(prediction_data[,target][which(prediction_data[,target] == class)] == prediction_vector[which(prediction_data[,target] == class)])
@@ -283,6 +304,9 @@
   return(calculate_metrics_list)
 }
 
+# Helper function to merge contents of lists after using parallel processing
+#' @noRd
+#' @export
 .merge_list <- function(save_data, save_models, model_name, parallel_list, processed_data, impute_method){
   classCV_output <- parallel_list[[1]]
   for(name in names(parallel_list)[-1]){

@@ -1,4 +1,6 @@
 # Helper function to perform proper plotting depending on where command is ran
+#' @noRd
+#' @export
 .check_env <- function(){
   system = as.character(Sys.info()["sysname"])
   if(Sys.getenv("RStudio") == "1"){
@@ -10,9 +12,11 @@
 }
 
 # Helper function for regular plotting
+#' @noRd
+#' @export
 .visible_plots <- function(object, split, cv, model_name, model_list){
   # Check if RStudio or GUI is running for proper plotting
-  new_window <- vswift:::.check_env()
+  new_window <- .check_env()
   if(all(is.data.frame(object[["metrics"]][[model_name]][["split"]]), split == TRUE)){
     # Plot metrics for training and test
     new_window()
@@ -73,6 +77,9 @@
   }
 }
 
+# Detect current environment for proper plotting
+#' @noRd
+#' @export
 .dev_off_and_new <- function(){
   # Don't display plot if save_plot is TRUE
   if(all(Sys.getenv("RStudio") == "1",rstudioapi::isAvailable())){
@@ -82,6 +89,9 @@
   }
 }
 
+# Function for plot saving
+#' @noRd
+#' @export
 .save_plots <- function(object, path, split, cv, model_name, model_list, ...){
   if(all(is.data.frame(object[["metrics"]][[model_name]][["split"]]), split == TRUE)){
     # Save metrics for training and test
@@ -89,7 +99,7 @@
     plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,"Classification Accuracy"] , ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", xaxt = "n",
          main = model_list[[model_name]])
     axis(1, at = 1:2, labels = c("Training","Test"))
-    vswift:::.dev_off_and_new()
+    .dev_off_and_new()
     # Iterate over classes
     for(class in as.character(object[["classes"]][[1]])){
       # Save metrics for training and test
@@ -98,14 +108,14 @@
            main =  sprintf("%s - Class: %s",model_list[[model_name]],class))
       axis(1, at = 1:2, labels = c("Training","Test"))
       # Don't display plot and create new plot
-      vswift:::.dev_off_and_new()
+      .dev_off_and_new()
       # Save metrics for training and test
       png(filename = paste0(path,sprintf("%s_train_test_recall_%s.png",model_list[[model_name]],class)),...)
       plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("Class: %s Recall", class)] , ylim = c(0,1), xlab = "Set", ylab = "Recall" , xaxt = "n",
            main =  sprintf("%s - Class: %s",model_list[[model_name]],class))
       axis(1, at = 1:2, labels = c("Training","Test"))
       # Don't display plot and create new plot
-      vswift:::.dev_off_and_new()
+      .dev_off_and_new()
       # Save metrics for training and test
       png(filename = paste0(path,sprintf("%s_train_test_f-score_%s.png", model_list[[model_name]], class)),...)
       plot(x = 1:2, y = object[["metrics"]][[model_name]][["split"]][1:2,sprintf("Class: %s F-Score",  class)] , ylim = c(0,1), xlab = "Set", ylab = "F-Score" , xaxt = "n",
@@ -150,7 +160,7 @@
       abline(h = mean(num_vector, na.rm = T) + sd(num_vector, na.rm = T), col = "blue", lty = 2, lwd = 1)
       abline(h = mean(num_vector, na.rm = T) - sd(num_vector, na.rm = T), col = "blue", lty = 2, lwd = 1)
       # Don't display plot and create new plot
-      vswift:::.dev_off_and_new()
+      .dev_off_and_new()
     }
   }
 }

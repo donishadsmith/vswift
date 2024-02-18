@@ -1,4 +1,7 @@
 #Helper function for classCV and genFolds to check if inputs are valid
+#' @importFrom parallel detectCores
+#' @noRd
+#' @export
 .error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
                             impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL, standardize = NULL, call = NULL, ...){
   
@@ -31,7 +34,7 @@
       }
       # Check if additional arguments are valid
       else if(impute_method == "knn_impute"| impute_method == "bag_impute"){
-        vswift:::.check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
+        .check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
       }
     }
     
@@ -51,11 +54,11 @@
   }
   
   if(!is.null(mod_args)){
-    vswift:::.check_additional_arguments(model_type = model_type, mod_args = mod_args, call = "multiple")
+    .check_additional_arguments(model_type = model_type, mod_args = mod_args, call = "multiple")
   }
   
   if(length(list(...)) > 0){
-    vswift:::.check_additional_arguments(model_type = model_type, call = "single", ...)
+    .check_additional_arguments(model_type = model_type, call = "single", ...)
   }
   
   # Ensure fold size is valid
@@ -73,7 +76,7 @@
     if(any(!is.null(formula) & !is.null(target) || !is.null(predictors))){
       warning("formula specified with target and/or predictors, formula will overwrite the specified target and predictors")
     }
-    get_features_target <- vswift:::.get_features_target(formula = formula, data = data)
+    get_features_target <- .get_features_target(formula = formula, data = data)
     target <- get_features_target[["target"]]
     predictors <- get_features_target[["predictor_vec"]]
   }
@@ -151,6 +154,8 @@
 
 
 # Helper function to turn character data into factors
+#' @noRd
+#' @export
 .create_factor <- function(data = NULL, target = NULL, model_type = NULL){
   
   # Make target factor, could be factor, numeric, or character
@@ -174,6 +179,8 @@
 
 
 # Helper function for classCV to check if additional arguments are valid
+#' @noRd
+#' @export
 .check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, mod_args = NULL, call = NULL, ...){
   
   # Helper function to generate error message
@@ -227,6 +234,8 @@
 }
 
 # Function to get name of target and features.
+#' @noRd
+#' @export
 .get_features_target <- function(formula = NULL, target = NULL, predictors = NULL, data){
   if(!is.null(formula)){
     vars <- all.vars(formula)
@@ -257,7 +266,8 @@
 }
 
 # Check if data is missing
-
+#' @noRd
+#' @export
 .check_if_missing <- function(data){
   # Get rows of missing data
   miss <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
@@ -273,6 +283,8 @@
 }
 
 # Helper function to remove missing data
+#' @noRd
+#' @export
 .remove_missing_data <- function(data){
   
   # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
@@ -288,9 +300,10 @@
   return(remove_missing_data_output)
 }
 
+
 # Helper function to remove observations with missing target variable prior to imputation
-
-
+#' @noRd
+#' @export
 .remove_missing_target <- function(data, target){
   missing_targets <- which(is.na(data[,target]))
   if(length(missing_targets) > 0){
@@ -302,6 +315,9 @@
 }
 
 # Imputation function
+#' @importFrom recipes step_impute_knn recipe all_predictors step_impute_bag prep bake
+#' @noRd
+#' @export
 .imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE, random_seed = NULL){
   # Set seed
   if(!is.null(random_seed)){
@@ -331,9 +347,9 @@
         } else {
           formula <- formula
         }
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = training_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data), neighbors = impute_args[["neighbors"]], all_predictors())  
       } else {
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = training_data),recipes::all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data),all_predictors())  
       }
     } else if(imputation_method == "bag_impute") {
       if(!is.null(impute_args)){
@@ -342,22 +358,22 @@
         } else {
           formula <- formula
         }
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = training_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data), trees = impute_args[["trees"]], all_predictors()) 
       } else {
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = training_data),recipes::all_predictors())  
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data), all_predictors())  
       }
     }
     
-    prep <- recipes::prep(rec, training = training_data)
+    prep <- prep(rec, training = training_data)
     # Apply the prepped recipe to the training data
-    training_data_processed <- data.frame(recipes::bake(prep, new_data = training_data))
+    training_data_processed <- data.frame(bake(prep, new_data = training_data))
     
     # Create full data
     if(ncol(training_data_processed) != ncol(training_data)) training_data_processed <- cbind(training_data_processed, subset(training_data, select = col_names[!col_names %in% colnames(training_data_processed)]))[,col_names]
     
     
     # Apply the prepped recipe to the test data
-    validation_data_processed <- data.frame(recipes::bake(prep, new_data = validation_data))
+    validation_data_processed <- data.frame(bake(prep, new_data = validation_data))
     
     # Create full data
     if(ncol(validation_data_processed) != ncol(validation_data)) validation_data_processed <- cbind(validation_data_processed, subset(validation_data, select = col_names[!col_names %in% colnames(validation_data_processed)]))[,col_names]
@@ -399,7 +415,7 @@
     
   } else{
     # Get missing information
-    imputation_information <- vswift:::.get_missing_info(preprocessed_data = preprocessed_data, imputation_method = imputation_method)
+    imputation_information <- .get_missing_info(preprocessed_data = preprocessed_data, imputation_method = imputation_method)
     # Impute data
     if(imputation_method == "knn_impute"){
       if(!is.null(impute_args)){
@@ -408,9 +424,9 @@
         } else {
           formula <- formula
         }
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], recipes::all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], all_predictors())  
       } else {
-        rec <- recipes::step_impute_knn(recipe = recipes::recipe(formula = formula, data = preprocessed_data),recipes::all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())  
       }
     } else if(imputation_method == "bag_impute") {
       if(!is.null(impute_args)){
@@ -419,14 +435,14 @@
         } else {
           formula <- formula
         }
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = preprocessed_data), trees = impute_args[["trees"]], recipes::all_predictors()) 
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data), trees = impute_args[["trees"]], all_predictors()) 
       } else {
-        rec <- recipes::step_impute_bag(recipe = recipes::recipe(formula = formula, data = preprocessed_data), recipes::all_predictors())  
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())  
       }
     }
     
-    prep <- recipes::prep(rec, data = preprocessed_data, new_data = NULL)
-    processed_data <- data.frame(recipes::bake(prep, new_data = NULL))
+    prep <- prep(rec, data = preprocessed_data, new_data = NULL)
+    processed_data <- data.frame(bake(prep, new_data = NULL))
     
     # Create full data
     if(ncol(processed_data) != ncol(preprocessed_data)) processed_data <- cbind(processed_data, subset(preprocessed_data, select = col_names[!col_names %in% colnames(processed_data)]))[,col_names]
@@ -439,6 +455,8 @@
 
 
 # Assist function for .imputation to get number of missing data for each column
+#' @noRd
+#' @export
 .get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL, iteration, imputation_method){
   # Create imputation list
   imputation_information <- list()
@@ -468,6 +486,8 @@
 }
 
 # Function to standardize data
+#' @noRd
+#' @export
 .standardize <- function(data, standardize, target){
   # Get predictor names
   predictors <- colnames(data)

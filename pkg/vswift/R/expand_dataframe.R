@@ -1,3 +1,6 @@
+# Function to expand the dataframe containing the performance metrics
+#' @noRd
+#' @export
 .expand_dataframe <- function(classCV_output, split, n_folds, model_type){
   if(any(!is.null(split), !is.null(n_folds))){
     target <- classCV_output[["parameters"]][["target"]]

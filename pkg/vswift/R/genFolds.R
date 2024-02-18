@@ -26,7 +26,7 @@
 
 genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
   # Check input
-  vswift:::.error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
+  .error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
   # Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -60,13 +60,13 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
       output[["sample_proportions"]][["split"]] <- list()
       for(class in as.character(output[["classes"]][[target]])){
         # Check if sampling possible
-        vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
+        .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
         # Store indices for training set
         output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
         # Remove indices to not add to test set
         class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
         # Check if sampling possible
-        vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
+        .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
         # Add indices for test set
         output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
       }
@@ -96,7 +96,7 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
         fold_size <- floor(nrow(data)/n_folds)
         for(class in as.character(output[["classes"]][[target]])){
           # Check if sampling possible
-          vswift:::.stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
+          .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
           # Check if sampling possible
           fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
           # Remove already selected indices

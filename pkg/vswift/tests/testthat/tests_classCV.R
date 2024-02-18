@@ -239,8 +239,10 @@ test_that("test random seed", {
 test_that("running multiple models", {
   data <- iris 
   
-  args <- list("knn" = list(ks = 3), "ann" = list(size = 10))
+  data$Species <- ifelse(data$Species == "setosa","setosa","not setosa")
   
-  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "randomforest","ann","svm"), 
+  args <- list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10))
+  
+  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "randomforest","ann","svm", "lda", "qda", "gbm", "logistic"), 
                                     n_folds = 5, mod_args = args, save_data = T, save_models = T, remove_obs = T, stratified = T))
 })
