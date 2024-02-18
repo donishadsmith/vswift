@@ -156,7 +156,7 @@
 #' @importFrom naivebayes naive_bayes 
 #' @importFrom e1071 svm 
 #' @importFrom nnet nnet.formula nnet multinom
-#' @importFrom kknn contr.dummy train.kknn
+#' @importFrom kknn train.kknn 
 #' @importFrom rpart rpart
 #' @importFrom randomForest randomForest 
 #' @importFrom xgboost xgb.DMatrix xgb.train
@@ -350,4 +350,7 @@
   return(classCV_output)
 }
 
-
+# Get contr.dummy since importFrom kknn doesnt seem to work
+#' @noRd
+#' @export
+contr.dummy <- kknn::contr.dummy
