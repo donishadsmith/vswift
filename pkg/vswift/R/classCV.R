@@ -106,7 +106,7 @@
 #' @author Donisha Smith
 #' 
 #' @importFrom doParallel registerDoParallel stopImplicitCluster
-#' @importFrom foreach foreach
+#' @importFrom foreach foreach %dopar%
 #' @export
 classCV <- function(formula = NULL, data, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
                     mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, standardize = NULL, ...){
