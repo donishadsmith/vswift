@@ -243,6 +243,6 @@ test_that("running multiple models", {
   
   args <- list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10))
   
-  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "randomforest","ann","svm", "lda", "qda", "gbm", "logistic"), 
+  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "randomforest","ann","svm","naivebayes", "decisiontree", "lda", "qda", "gbm", "logistic"), 
                                     n_folds = 5, mod_args = args, save_data = T, save_models = T, remove_obs = T, stratified = T))
 })
