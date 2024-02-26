@@ -1,5 +1,5 @@
 # vswift
-This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms from popular R packages. The 
+This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation for classification data using various classification algorithms from popular R packages. The 
 functions used from packages for each classification algorithms:
 
   - `lda()` from MASS package for Linear Discriminant Analysis
