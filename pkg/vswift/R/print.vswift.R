@@ -220,7 +220,7 @@
             }
           }
         }
-        # Add space and speration
+        # Add space and separation
         cat("\n\n")
         cat(rep("-",nchar(paste("Class:",rep("", max_string_length),"Average Precision:  Average Recall:  Average F-score:\n\n"))[1] %/% 1.5),"\n")
         cat("\n\n") 

@@ -2,20 +2,17 @@
 This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation of classification data using various classification algorithms from popular R packages. The 
 functions used from packages for each classification algorithms:
 
-  - lda() from MASS package for Linear Discriminant Analysis
-  - qda() from MASS package for Quadratic Discriminant Analysis
-  - glm() from base package with family = "binomial" for Logistic Regression
-  - svm() from e1071 package for Support Vector Machines
-  - naive_bayes() from naivebayes package for Naive Bayes
-  - nnet() from nnet package for Artificial Neural Network
-  - train.kknn() from kknn package for K-Nearest Neighbors
-  - rpart() from rpart package for Decision Trees
-  - randomForest() from randomForest package for Random Forest
-  - multinom() from nnet package for Multinomial Regression
-  - xgb.train() from xgboost package for Gradient Boosting Machines
-  
-**This package is currently in beta, but it's functional and is currently usable**.
-
+  - `lda()` from MASS package for Linear Discriminant Analysis
+  - `qda()` from MASS package for Quadratic Discriminant Analysis
+  - `glm()` from base package with family = "binomial" for Logistic Regression
+  - `svm()` from e1071 package for Support Vector Machines
+  - `naive_bayes()` from naivebayes package for Naive Bayes
+  - `nnet()` from nnet package for Artificial Neural Network
+  - `train.kknn()` from kknn package for K-Nearest Neighbors
+  - `rpart()` from rpart package for Decision Trees
+  - `randomForest()` from randomForest package for Random Forest
+  - `multinom()` from nnet package for Multinomial Regression
+  - `xgb.train()` from xgboost package for Gradient Boosting Machines
 
 ## Features
 
