@@ -630,20 +630,20 @@ print(end_par)
 [1] "Without Parallel Processing:"
 
 Warning message:
-In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
+In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 304.95    2.17  333.54 
+ 333.57    1.94  343.02  
 
 [1] "Parallel Processing:"
 
 Warning message:
-In vswift:::.create_dictionary(preprocessed_data = preprocessed_data,  :
+In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   6.39   12.69  163.61 
+   7.49   16.70  206.94 
 ```
 
 ```R
