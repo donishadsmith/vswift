@@ -14,7 +14,7 @@ functions used from packages for each classification algorithms:
   - `multinom()` from nnet package for Multinomial Regression
   - `xgb.train()` from xgboost package for Gradient Boosting Machines
 
-**Still in beta but stable**
+**Still in beta but stable.**
 ## Features
 
 - **Versatile Data Splitting**: Perform train-test splits or k-fold cross-validation on your classification data.
