@@ -790,6 +790,7 @@ plot(results, model_type = "gbm" , save_plots = TRUE,
 <details>
   
   <summary>Plots</summary>
+  
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/a40add51-661e-42f5-861a-7776483352aa)
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/945d31db-940d-4feb-9697-cdade79f0fc3)
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/e3c6a948-1ef4-4a7a-98fe-8a778fb3aac5)
@@ -797,9 +798,6 @@ plot(results, model_type = "gbm" , save_plots = TRUE,
 
 </details>
 
-<!-- badges: start -->
-[![R-CMD-check](https://github.com/donishadsmith/vswift/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/R-CMD-check.yaml)
-<!-- badges: end -->
 
 
 
