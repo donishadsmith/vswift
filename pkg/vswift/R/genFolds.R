@@ -1,6 +1,6 @@
 #' Create split datasets and/or folds with optional stratification
 #' 
-#' `genFolds` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+#' `genFolds` standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
 #' 
 #' 
 #' @param data A data frame.

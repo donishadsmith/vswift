@@ -65,12 +65,9 @@
   if(save_data == TRUE){
     if(!is.data.frame(classCV_output[["saved_data"]][[method]][[tolower(i)]])){
       if(i == "Training"){
-        #classCV_output[["saved_data"]][[method]][["training"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["training"]],]
-        #classCV_output[["saved_data"]][[method]][["test"]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][["test"]],]
         classCV_output[["saved_data"]][[method]][["training"]] <- model_data
         classCV_output[["saved_data"]][[method]][["test"]] <- validation_data
       } else {
-        #classCV_output[["saved_data"]][[method]][[tolower(i)]] <- preprocessed_data[classCV_output[["sample_indices"]][[method]][[tolower(i)]],
         classCV_output[["saved_data"]][[method]][[tolower(i)]] <- model_data
       }
     }
@@ -161,7 +158,6 @@
 #' @importFrom randomForest randomForest 
 #' @importFrom xgboost xgb.DMatrix xgb.train
 
-
 .generate_model <- function(model_type = NULL, formula = NULL, predictors = NULL, target = NULL, model_data = NULL, mod_args = mod_args, ...){
 
   # Turn to call
@@ -172,7 +168,6 @@
   } 
 
   switch(model_type,
-         # Use double colon to avoid cluttering user space
          "lda" = { 
            # Have to explicitly call the class "formula" methods
            if(!is.null(mod_args[[model_type]])){
@@ -293,7 +288,7 @@
   # Sum of true positives
   true_pos <- sum(prediction_data[,target][which(prediction_data[,target] == class)] == prediction_vector[which(prediction_data[,target] == class)])
   # Sum of false negatives
-  false_neg <- sum(prediction_data[, target] == class & prediction_vector != class)
+  false_neg <- sum(prediction_data[,target] == class & prediction_vector != class)
   # Sum of the false positive
   false_pos <- sum(prediction_vector == class) - true_pos
   # Calculate metrics 

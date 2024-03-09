@@ -6,9 +6,9 @@
 \usage{
 classCV(
   formula = NULL,
-  data,
   target = NULL,
   predictors = NULL,
+  data,
   split = NULL,
   n_folds = NULL,
   model_type,
@@ -30,12 +30,12 @@ classCV(
 \arguments{
 \item{formula}{A formula specifying the model to use.}
 
-\item{data}{A data frame containing the dataset.}
-
 \item{target}{The target variable's numerical index or name in the data frame.}
 
 \item{predictors}{A vector of numerical indices or names for the predictors in the data frame.
 If not specified, all variables except the response variable will be used as predictors.}
+
+\item{data}{A data frame containing the dataset.}
 
 \item{split}{A number from 0.5 and 0.9 for the proportion of data to use for the training set,
 leaving the rest for the test set. If not specified, train-test splitting will not be done.}

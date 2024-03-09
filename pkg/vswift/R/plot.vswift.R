@@ -7,6 +7,9 @@
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.
 #' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
 #' and dashed blue line represents the standard deviation. Default = TRUE.
+#' @param metrics A vector consisting of which metrics to plot. Available metrics includes, "accuracy", "precision", "recall", "f1".
+#' Default = c("accuracy","precision", "recall", "f1").
+#' @param class_names A vector consisting of class names to plot. If NULL, plots are generated for each class.Defaeult = NULL
 #' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.
 #' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
 #' working directory.
@@ -36,41 +39,54 @@
 #' @author Donisha Smith
 #' @export
 
-"plot.vswift" <- function(object, split = TRUE, cv = TRUE, save_plots = FALSE, path = NULL, model_type = NULL ,...){
-  # Create list
+"plot.vswift" <- function(object, split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"), class_names = NULL, save_plots = FALSE, path = NULL, model_type = NULL ,...){
   
-  model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis", "svm" = "Support Vector Machines",
-                    "ann" = "Neural Network", "decisiontree" = "Decision Tree", "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                    "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression", "knn" = "K-Nearest Neighbors",
-                    "naivebayes" = "Naive Bayes")
-  # Get models
-  if(is.null(model_type)){
-    models <- object[["parameters"]][["model_type"]]
-  } else {
-    # Make lowercase
-    model_type <- sapply(model_type, function(x) tolower(x))
-    models <- intersect(model_type, object[["parameters"]][["model_type"]])
-    if(length(models) == 0){
-      stop("no models specified in model_type")
-    } 
-    # Warning when invalid models specified
-    invalid_models <- model_type[which(!model_type %in% models)]
-    if(length(invalid_models) > 0){
-      warning(sprintf("invalid model in model_type or information for specified model not present in vswift object: %s", paste(unlist(invalid_models), collapse = ", ")))
+  if(class(object) == "vswift"){
+    # Create list
+    model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis", "svm" = "Support Vector Machines",
+                      "ann" = "Neural Network", "decisiontree" = "Decision Tree", "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+                      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression", "knn" = "K-Nearest Neighbors",
+                      "naivebayes" = "Naive Bayes")
+    
+    # Lowercase and intersect common names
+    metrics <- intersect(unlist(lapply(as.vector(metrics), function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
+    if(length(metrics) == 0){
+      stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy","precision","recall","f1"), collapse = ", ")))
     }
-  }
-  
-  
-  # Iterate over models
-  for(model in models){
-    if(class(object) == "vswift"){
-      if(save_plots == FALSE){
-        .visible_plots(object = object, split = split, cv = cv, model_name = model, model_list = model_list)
-      } else {
-        .save_plots(object = object, split = split, cv = cv, path = path, model_name = model, model_list = model_list,...)
+    # intersect common names
+    if(!is.null(class_names)){
+      class_names <- intersect(class_names, object[["classes"]][[1]])
+      if(length(class_names) == 0){
+        stop(sprintf("no classes specified, available classes: %s", paste(object[["classes"]][[1]], collapse = ", ")))
       }
-    } else {
-      stop("object must be of class 'vswift'")
     }
+    
+    # Get models
+    if(is.null(model_type)){
+      models <- object[["parameters"]][["model_type"]]
+    } else {
+      # Make lowercase
+      model_type <- sapply(model_type, function(x) tolower(x))
+      models <- intersect(model_type, object[["parameters"]][["model_type"]])
+      if(length(models) == 0){
+        stop("no models specified in model_type")
+      } 
+      # Warning when invalid models specified
+      invalid_models <- model_type[which(!model_type %in% models)]
+      if(length(invalid_models) > 0){
+        warning(sprintf("invalid model in model_type or information for specified model not present in vswift object: %s", 
+                        paste(unlist(invalid_models), collapse = ", ")))
+      }
+    }
+    # Iterate over models
+    for(model in models){
+      if(save_plots == FALSE){
+        .visible_plots(object = object, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model, model_list = model_list)
+      } else {
+        .save_plots(object = object, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path, model_name = model, model_list = model_list,...)
+      }
+    }
+  } else {
+    stop("object must be of class 'vswift'")
   }
 }

@@ -21,13 +21,13 @@
              # Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              # Store indices for training set
-             output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]], sample(class_indices[[class]], size = round(training_n*output[["class_proportions"]][[class]], 0), replace = F))
              # Remove indices to not add to test set
              class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
              # Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
              # Add indices for test set
-             output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
+             output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]], sample(class_indices[[class]], size = round(test_n*output[["class_proportions"]][[class]], 0), replace = F))
            }
            # Store proportions of data in training set
            output[["sample_proportions"]][["split"]][["training"]] <- table(data[,target][output[["sample_indices"]][["split"]][["training"]]])/sum(table(data[,target][output[["sample_indices"]][["split"]][["training"]]]))
@@ -58,7 +58,7 @@
                # Check if sampling possible
                .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
                # Check if sampling possible
-               fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
+               fold_idx <- c(fold_idx, sample(class_indices[[class]], size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
                # Remove already selected indices
                class_indices[[class]] <- class_indices[[class]][-which(class_indices[[class]] %in% fold_idx)]
              }
@@ -96,11 +96,11 @@
 #' @export
 .stratified_check <- function(class, class_indices, output, n){
   # Check if there are zero indices for a specific class
-  if(round(n*output[["class_proportions"]][[class]],0) == 0){
+  if(round(n*output[["class_proportions"]][[class]], 0) == 0){
     stop(sprintf("0 indices selected for %s class\n not enough samples for stratified sampling", class))
   }
   # Check if there there are enough indices in class for proper assignment
-  if(round(n*output[["class_proportions"]][[class]],0) > length(class_indices[[class]])){
+  if(round(n*output[["class_proportions"]][[class]], 0) > length(class_indices[[class]])){
     stop(sprintf("not enough samples of %s class for stratified sampling", class))
   }
 }

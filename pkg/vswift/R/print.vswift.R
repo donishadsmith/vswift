@@ -131,8 +131,10 @@
             cat(paste("Model Type:", model_list[[model]]),"\n\n")
           }
           string_diff <- max_string_length - string_length 
+          # Simplify parameter name
+          df <- object[["metrics"]][[model]]
           # Print metrics metrics for train test set if the dataframe exists
-          if(is.data.frame(object[["metrics"]][[model]][["split"]])){
+          if(is.data.frame(df[["split"]])){
             for(set in c("Training","Test")){
               # Variable for which class string length to print to ensure all values have equal spacing
               class_position <- 1 
@@ -140,7 +142,7 @@
               cat("\n\n",set,"\n")
               cat(rep("_",nchar(set)),"\n\n")
               # Print classification accuracy
-              cat("Classification Accuracy: ", format(round(object[["metrics"]][[model]][["split"]][which(object[["metrics"]][[model]][["split"]]$Set == set),"Classification Accuracy"],2), nsmall = 2),"\n\n")
+              cat("Classification Accuracy: ", format(round(df[["split"]][which(df[["split"]]$Set == set),"Classification Accuracy"],2), nsmall = 2),"\n\n")
               # Print name of metrics
               cat("Class:",rep("", max_string_length),"Precision:  Recall:  F-Score:\n\n")
               # For loop to obtain vector of values for each class
@@ -148,7 +150,7 @@
                 # Empty class_col or initialize variable
                 class_col <- c()
                 # Go through column names, split the colnames and class name to see if the column name is the metric for that class
-                for(colname in colnames(object[["metrics"]][[model]][["split"]])){
+                for(colname in colnames(df[["split"]])){
                   split_colname <- unlist(strsplit(colname,split = " "))
                   split_classname <- unlist(strsplit(class,split = " ")) 
                   if(all(split_classname %in% split_colname)){
@@ -157,7 +159,7 @@
                   }
                 }
                 # Print metric corresponding to class
-                class_metrics <- sapply(object[["metrics"]][[model]][["split"]][which(object[["metrics"]][[model]][["split"]]$Set == set),class_col], function(x) format(round(x,2), nsmall = 2))  
+                class_metrics <- sapply(df[["split"]][which(df[["split"]]$Set == set),class_col], function(x) format(round(x,2), nsmall = 2))  
                 # Add spacing
                 padding <- nchar(paste("Class:",rep("", max_string_length),"Pre"))[1]
                 if(class_metrics[1] == "NaN"){
@@ -170,7 +172,7 @@
               }
             }
           }
-          if(is.data.frame(object[["metrics"]][[model]][["cv"]])){
+          if(is.data.frame(df[["cv"]])){
             # Variable for which class string length to print to ensure all values have equal spacing
             class_position <- 1 
             # Get number of folds to select the correct rows for mean and stdev
@@ -178,8 +180,8 @@
             # Print parameters name
             cat("\n\n","K-fold CV","\n")
             cat(rep("_",nchar("K-fold CV")),"\n\n")
-            classification_accuracy_metrics <- c(format(round(object[["metrics"]][[model]][["cv"]][which(object[["metrics"]][[model]][["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),
-                                                 format(round(object[["metrics"]][[model]][["cv"]][which(object[["metrics"]][[model]][["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2), nsmall = 2))
+            classification_accuracy_metrics <- c(format(round(df[["cv"]][which(df[["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),
+                                                 format(round(df[["cv"]][which(df[["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2), nsmall = 2))
             
             classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],classification_accuracy_metrics[2])
             cat("Average Classification Accuracy: ", classification_accuracy_metrics ,"\n\n")
@@ -188,7 +190,7 @@
             for(class in as.character(unlist(object["classes"]))){
               # Empty class_col or initialize variable
               class_col <- c()
-              for(colname in colnames(object[["metrics"]][[model]][["cv"]])){
+              for(colname in colnames(df[["cv"]])){
                 split_colname <- unlist(strsplit(colname,split = " "))
                 split_classname <- unlist(strsplit(class,split = " ")) 
                 if(all(split_classname %in% split_colname)){
@@ -197,8 +199,8 @@
                 }
               }
               # Print metric corresponding to class
-              mean_class_metrics <- sapply(object[["metrics"]][[model]][["cv"]][((n_folds+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-              sd_class_metrics <- sapply(object[["metrics"]][[model]][["cv"]][((n_folds+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
+              mean_class_metrics <- sapply(df[["cv"]][((n_folds+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
+              sd_class_metrics <- sapply(df[["cv"]][((n_folds+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
               sd_metric_position <- 1
               class_metrics <- c()
               for(metric in mean_class_metrics){

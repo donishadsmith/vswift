@@ -8,6 +8,8 @@
   object,
   split = TRUE,
   cv = TRUE,
+  metrics = c("accuracy", "precision", "recall", "f1"),
+  class_names = NULL,
   save_plots = FALSE,
   path = NULL,
   model_type = NULL,
@@ -21,6 +23,11 @@
 
 \item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
 and dashed blue line represents the standard deviation. Default = TRUE.}
+
+\item{metrics}{A vector consisting of which metrics to plot. Available metrics includes, "accuracy", "precision", "recall", "f1".
+Default = c("accuracy","precision", "recall", "f1").}
+
+\item{class_names}{A vector consisting of class names to plot. If NULL, plots are generated for each class.Defaeult = NULL}
 
 \item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.}
 

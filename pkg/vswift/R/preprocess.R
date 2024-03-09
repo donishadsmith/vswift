@@ -12,7 +12,6 @@
   
   
   # Check standardize
-  
   if(!is.null(standardize)){
     if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize), is.integer(standardize), is.character(standardize))){
       stop("standardize must either be TRUE, FALSE, or a numeric vector")
@@ -59,6 +58,10 @@
   
   if(length(list(...)) > 0){
     .check_additional_arguments(model_type = model_type, call = "single", ...)
+  }
+  
+  if (all(is.null(split), is.null(n_folds))){
+    stop("Both `split` and `n_folds` cannot be null.")
   }
   
   # Ensure fold size is valid

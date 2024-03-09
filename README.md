@@ -783,7 +783,7 @@ nonad.           0.97 (0.01)       0.94 (0.02)       0.95 (0.01)
 ```R
 # Plot results
 
-plot(results, model_type = "gbm" , save_plots = TRUE)
+plot(results, model_type = "gbm" , save_plots = TRUE, class_names = "ad.", metrics = c("precision", "recall"))
 ```
 
 <details>
@@ -806,5 +806,10 @@ plot(results, model_type = "gbm" , save_plots = TRUE)
   ![image](https://github.com/donishadsmith/vswift/assets/112973674/4b4fb849-3d0b-43f9-a1f5-06a3e69ebde1)
 
 </details>
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/donishadsmith/vswift/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 
 

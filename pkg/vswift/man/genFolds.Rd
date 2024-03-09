@@ -34,7 +34,7 @@ A list containing the indices for train-test splitting and/or k-fold cross-valid
         as well as the generated split datasets and folds based on the indices.
 }
 \description{
-`genFolds` generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+`genFolds` standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
 }
 \examples{
 # Load example dataset 

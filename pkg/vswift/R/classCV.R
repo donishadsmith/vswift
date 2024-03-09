@@ -4,10 +4,10 @@
 #' on classification data using various classification algorithms.
 #'
 #' @param formula A formula specifying the model to use.
-#' @param data A data frame containing the dataset.
 #' @param target The target variable's numerical index or name in the data frame.
 #' @param predictors A vector of numerical indices or names for the predictors in the data frame.
 #'              If not specified, all variables except the response variable will be used as predictors.
+#' @param data A data frame containing the dataset.
 #' @param split A number from 0.5 and 0.9 for the proportion of data to use for the training set,
 #'              leaving the rest for the test set. If not specified, train-test splitting will not be done.
 #' @param n_folds An integer from 3 and 30 for the number of folds to use. If not specified,
@@ -108,7 +108,7 @@
 #' @importFrom doParallel registerDoParallel stopImplicitCluster
 #' @importFrom foreach foreach %dopar%
 #' @export
-classCV <- function(formula = NULL, data, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
+classCV <- function(formula = NULL, target = NULL, predictors = NULL, data, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
                     mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, standardize = NULL, ...){
   
   # Ensure model type is lowercase
