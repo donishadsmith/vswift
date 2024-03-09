@@ -43,7 +43,7 @@
       axis(1, at = 1:2, labels = c("Training","Test"))
     }
     # Iterate over classes
-    if(any(c("precision","recall","f1") %in% metrics)){
+    if(any(names(metrics_list) %in% metrics)){
       for(class in classes){
         for(metric in specified_metrics){
           # Plot metrics for training and test
@@ -64,7 +64,7 @@
     # Create vector of metrics to obtain
     col_names <- c()
     if("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if(any(c("precision","recall","f1") %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
+    if(any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
     
     for(col_name in col_names){
       # Get values
@@ -74,7 +74,7 @@
         # Get ylab and main 
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
-      } else if(any(c("precision","recall","f1") %in% metrics)){
+      } else if(any(names(metrics_list) %in% metrics)){
           # Get name of metric - "Precision", "Recall", "F-Score
           split_name <- unlist(strsplit(col_name, split = " "))
           split_metric_name <- split_name[length(split_name)]
@@ -145,7 +145,7 @@
       .dev_off_and_new()
     }
     # Iterate over classes
-    if(any(c("precision","recall","f1") %in% metrics)){
+    if(any(names(metrics_list) %in% metrics)){
       for(class in classes){
         for(metric in specified_metrics){
           # Create png
@@ -170,7 +170,7 @@
     # Create vector of metrics to obtain
     col_names <- c()
     if("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if(any(c("precision","recall","f1") %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
+    if(any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
     
     for(col_name in col_names){
       # Get values
@@ -181,7 +181,7 @@
         # Get ylab and main 
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
-      } else if(any(c("precision","recall","f1") %in% metrics)){
+      } else if(any(names(metrics_list) %in% metrics)){
           # Get name of metric - "Precision", "Recall", "F-Score
           split_name <- unlist(strsplit(col_name, split = " "))
           split_metric_name <- split_name[length(split_name)]
