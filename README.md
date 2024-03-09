@@ -783,27 +783,17 @@ nonad.           0.97 (0.01)       0.94 (0.02)       0.95 (0.01)
 ```R
 # Plot results
 
-plot(results, model_type = "gbm" , save_plots = TRUE, class_names = "ad.", metrics = c("precision", "recall"))
+plot(results, model_type = "gbm" , save_plots = TRUE,
+     class_names = "ad.", metrics = c("precision", "recall"))
 ```
 
 <details>
   
   <summary>Plots</summary>
-  
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/52718363-6e88-4109-8be6-bb9423fc61c4)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/a10b0d84-da52-4e05-8b62-8c171c4287a7)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e974a347-1d90-47ba-9721-5c9a94573192)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/485c93ed-a3f5-49e8-a72a-efa9aae9b476)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e13a5157-73ac-4db8-9664-d85e3211c9ad)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/075b2fce-2023-406d-a218-ab4fd010ea4d)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/bd0cf638-4eaa-4571-be33-46af9c9237be)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/44a7ef0f-1b87-4899-98f0-38c26a06a2ae)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/601bd4fd-9c80-49ba-9995-388e2c06e756)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/6f1535a0-1be5-4fc2-8ea9-b78dec076fcd)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/fdc2e880-9ba0-45de-b686-2ad69508c0fd)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/3faec1ba-8a24-4092-9c69-a7181498d9cd)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/f132f534-42ac-4a18-bdbf-2e74ba651f87)
-  ![image](https://github.com/donishadsmith/vswift/assets/112973674/4b4fb849-3d0b-43f9-a1f5-06a3e69ebde1)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/a40add51-661e-42f5-861a-7776483352aa)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/945d31db-940d-4feb-9697-cdade79f0fc3)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/e3c6a948-1ef4-4a7a-98fe-8a778fb3aac5)
+  ![image](https://github.com/donishadsmith/vswift/assets/112973674/dae5e55f-0bf4-421f-82a2-5844798f23d6)
 
 </details>
 
