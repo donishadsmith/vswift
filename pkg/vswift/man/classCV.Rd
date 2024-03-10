@@ -94,15 +94,15 @@ on classification data using various classification algorithms.
 
   - "lda": prior, method, nu
   - "qda": prior, method, nu
-  - "logistic": weights, start, etastart, mustart, offset, control, contrasts, intercept, singular.ok, type, maxit
-  - "svm": scale, type, kernel, degree, gamma, coef0, cost, nu, class.weights, cachesize, tolerance, epsilon, shrinking, cross, probability, fitted
-  - "naivebayes": prior, laplace, usekernel, usepoisson
-  - "ann": weights, size, Wts, mask, linout, entropy, softmax, censored, skip, rang, decay, maxit, Hess, trace, MaxNWts, abstol, reltol
-  - "knn": kmax, ks, distance, kernel, scale, contrasts, ykernel
+  - "logistic": weights, singular.ok, maxit
+  - "svm": kernel, degree, gamma, cost, nu
+  - "naivebayes": prior, laplace, usekernel
+  - "ann": size, rang, decay, maxit, softmax
+  - "knn": kmax, ks, distance, kernel
   - "decisiontree": weights, method, parms, control, cost
-  - "randomforest": ntree, mtry, weights, replace, classwt, cutoff, strata, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag
+  - "randomforest": weights, ntree, mtry, nodesize, importance
   - "multinom": weights, Hess
-  - "gbm": distribution, weights, var.monotone, n.trees, interaction.depth, n.minobsinnode, shrinkage, train.faction, cv.folds, keep.data, verbose, class.stratify.cv, n.cores
+  - "gbm": params, nrounds
 }
 
 \section{Functions used from packages for each model type}{

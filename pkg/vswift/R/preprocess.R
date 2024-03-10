@@ -197,15 +197,15 @@
   valid_args_list <- list(
     "model" = list("lda" = c("prior", "method", "nu"),
                    "qda" = c("prior", "method", "nu"),
-                   "logistic" = c("weights", "start", "etastart", "mustart", "offset", "control", "contrasts", "intercept", "singular.ok", "type", "maxit"),
-                   "svm" = c("scale", "type", "kernel", "degree", "gamma", "coef0", "cost", "nu", "class.weights", "cachesize", "tolerance", "epsilon", "shrinking", "cross", "probability", "fitted"),
-                   "naivebayes" = c("prior", "laplace", "usekernel", "usepoisson"),
-                   "ann" = c("weights", "size", "Wts", "mask", "linout", "entropy", "softmax", "censored", "skip", "rang", "decay", "maxit", "Hess", "trace", "MaxNWts", "abstol", "reltol"),
-                   "knn" = c("kmax", "ks", "distance", "kernel", "scale", "contrasts", "ykernel"),
+                   "logistic" = c("weights","singular.ok", "maxit"),
+                   "svm" = c("kernel", "degree", "gamma", "cost", "nu"),
+                   "naivebayes" = c("prior", "laplace", "usekernel"),
+                   "ann" = c("size", "rang", "decay", "maxit", "softmax"),
+                   "knn" = c("kmax", "ks", "distance", "kernel"),
                    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
-                   "randomforest" = c("ntree", "mtry", "weights", "replace", "classwt", "cutoff", "strata", "nodesize", "maxnodes", "importance", "localImp", "nPerm", "proximity", "oob.prox", "norm.votes", "do.trace", "keep.forest", "corr.bias", "keep.inbag"),
+                   "randomforest" = c("weights", "ntree", "mtry", "nodesize", "importance"),
                    "multinom" = c("weights", "Hess"),
-                   "gbm" = c("params", "nrounds", "verbose", "print_every_n", "early_stopping_rounds")),
+                   "gbm" = c("params", "nrounds")),
     "imputation" = list("knn_impute" = c("formula","neighbors"),
                         "bag_impute" = c("formula","trees"))
   )
