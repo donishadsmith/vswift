@@ -60,7 +60,7 @@ model_type = "qda", stratified = TRUE)
 
 # Plot performance metrics for train-test split
 
-plot(result)
+plot(result, class_names = "setosa", metrics = "f1")
 
 }
 \author{

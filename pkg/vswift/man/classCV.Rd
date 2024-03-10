@@ -130,10 +130,7 @@ result <- classCV(data = iris, target = "Species",
                   split = 0.8, model_type = "lda")
 
 # Print parameters and metrics
-print(result)
-
-# Plot metrics
-plot(result)
+result
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
 result <- classCV(data = iris, target = "Species", n_folds = 5, 
@@ -143,10 +140,8 @@ result <- classCV(data = iris, target = "Species", n_folds = 5,
                                 nrounds = 10)
 
 # Print parameters and metrics
-print(result)
+result
 
-# Plot metrics
-plot(result)
 
 # Perform 5-fold cross-validation a train-test split w/multiple models
 
@@ -156,10 +151,8 @@ result <- classCV(data = iris, target = 5, split = 0.8,
                   n_folds = 3,mod_args = args, stratified = TRUE)
 
 # Print parameters and metrics
-print(result)
+result
 
-# Plot metrics
-plot(result)
 }
 \seealso{
 \code{\link{print.vswift}}, \code{\link{plot.vswift}}

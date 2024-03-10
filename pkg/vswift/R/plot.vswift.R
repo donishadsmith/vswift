@@ -34,7 +34,7 @@
 #' 
 #' # Plot performance metrics for train-test split
 #' 
-#' plot(result)
+#' plot(result, class_names = "setosa", metrics = "f1")
 #' 
 #' @author Donisha Smith
 #' @importFrom grDevices dev.new dev.off graphics.off png
@@ -51,7 +51,7 @@
                       "naivebayes" = "Naive Bayes")
     
     # Lowercase and intersect common names
-    metrics <- intersect(unlist(lapply(as.vector(metrics), function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
+    metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
     if(length(metrics) == 0){
       stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy","precision","recall","f1"), collapse = ", ")))
     }
