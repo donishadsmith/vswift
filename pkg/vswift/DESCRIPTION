@@ -11,7 +11,7 @@ License: MIT + file LICENSE
 URL: https://github.com/donishadsmith/vswift
 BugReports: https://github.com/donishadsmith/vswift/issues
 Depends:
-    R (>= 4.1.0),
+    R (>= 4.2.0),
 Imports:
     e1071,
     MASS,
