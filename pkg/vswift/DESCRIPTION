@@ -25,7 +25,6 @@ Imports:
     doParallel,
     kknn
 Suggests:
-    mlbench,
     testhat,
 VignetteBuilder: 
     knitr
