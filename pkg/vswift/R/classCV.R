@@ -75,7 +75,8 @@
 #' data(iris)
 #'
 #' # Perform a train-test split with an 80% training set using LDA
-#' result <- classCV(data = iris, target = "Species", split = 0.8, model_type = "lda")
+#' result <- classCV(data = iris, target = "Species", 
+#'                   split = 0.8, model_type = "lda")
 #' 
 #' # Print parameters and metrics
 #' print(result)
@@ -84,7 +85,11 @@
 #' plot(result)
 #'
 #' # Perform 5-fold cross-validation using Gradient Boosted Model
-#' result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)
+#' result <- classCV(data = iris, target = "Species", n_folds = 5, 
+#'                   model_type = "gbm",
+#'                   params = list(objective = "multi:softprob",
+#'                                 num_class = 3,eta = 0.3,max_depth = 6), 
+#'                                 nrounds = 10)
 #' 
 #' # Print parameters and metrics
 #' print(result)
@@ -92,11 +97,12 @@
 #' # Plot metrics
 #' plot(result)
 #' 
-#' # Perform 5-fold cross-validation a train-test split with an 80% training set using multiple models
+#' # Perform 5-fold cross-validation a train-test split w/multiple models
 #' 
-#' result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
-#' n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)), 
-#' save_data = T, save_models = T, remove_obs = T, stratified = T)
+#' args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
+#' result <- classCV(data = iris, target = 5, split = 0.8, 
+#'                   model_type = c("decisiontree","knn", "ann","svm"), 
+#'                   n_folds = 3,mod_args = args, stratified = TRUE)
 #' 
 #' # Print parameters and metrics
 #' print(result)
@@ -107,6 +113,7 @@
 #' 
 #' @importFrom doParallel registerDoParallel stopImplicitCluster
 #' @importFrom foreach foreach %dopar%
+#' @importFrom stats as.formula complete.cases glm predict sd
 #' @export
 classCV <- function(formula = NULL, target = NULL, predictors = NULL, data, split = NULL, n_folds = NULL, model_type, threshold = 0.5, stratified = FALSE, random_seed = NULL, impute_method = NULL, impute_args = NULL, 
                     mod_args = NULL, remove_obs = FALSE, save_models = FALSE, save_data = FALSE, final_model = FALSE, n_cores = NULL, standardize = NULL, ...){
@@ -305,7 +312,7 @@ classCV <- function(formula = NULL, target = NULL, predictors = NULL, data, spli
           }
           
           
-          validation_output <- .validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
+          validation_output <- .validation(i = i, model_name = model_name, preprocessed_data = processed_data, stratified = stratified, 
                                                     data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                                     n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
                                                     save_models = save_models, classCV_output = classCV_output, threshold = threshold, standardize = standardize, parallel = FALSE, ...)
@@ -325,7 +332,7 @@ classCV <- function(formula = NULL, target = NULL, predictors = NULL, data, spli
           
           output <- classCV_output
           
-          .validation(i = i, model_name = model_name, preprocessed_data = processed_data, 
+          .validation(i = i, model_name = model_name, preprocessed_data = processed_data, stratified = stratified,
                                data_levels = data_levels, formula = formula, target = target, predictors = predictors, split = split, 
                                n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs, save_data = save_data,  
                                save_models = save_models, classCV_output = classCV_output, threshold = threshold, standardize = standardize, parallel = TRUE,  ...)
@@ -350,9 +357,9 @@ classCV <- function(formula = NULL, target = NULL, predictors = NULL, data, spli
         for(colname in colnames(classCV_output[["metrics"]][[model_name]][["cv"]] )[colnames(classCV_output[["metrics"]][[model_name]][["cv"]] ) != "Fold"]){
           # Create vector containing corresponding column name values for each fold
           num_vector <- classCV_output[["metrics"]][[model_name]][["cv"]][1:idx, colname]
-          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector, na.rm = T)
-          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector, na.rm = T)
-          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector, na.rm = T)/sqrt(n_folds)
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Mean CV:"),colname] <- mean(num_vector, na.rm = TRUE)
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Deviation CV:"),colname] <- sd(num_vector, na.rm = TRUE)
+          classCV_output[["metrics"]][[model_name]][["cv"]][which(classCV_output[["metrics"]][[model_name]][["cv"]]$Fold == "Standard Error CV:"),colname] <- sd(num_vector, na.rm = TRUE)/sqrt(n_folds)
         }
       }
     }

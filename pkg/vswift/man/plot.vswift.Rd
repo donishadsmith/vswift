@@ -5,19 +5,21 @@
 \title{Plot model evaluation metrics}
 \usage{
 \method{plot}{vswift}(
-  object,
+  x,
+  ...,
   split = TRUE,
   cv = TRUE,
   metrics = c("accuracy", "precision", "recall", "f1"),
   class_names = NULL,
   save_plots = FALSE,
   path = NULL,
-  model_type = NULL,
-  ...
+  model_type = NULL
 )
 }
 \arguments{
-\item{object}{An object of class vswift.}
+\item{x}{An x of class vswift.}
+
+\item{...}{Additional arguments that can be passed to the `png()` function.}
 
 \item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
 
@@ -39,14 +41,12 @@ working directory.}
 "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
 "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).}
-
-\item{...}{Additional arguments that can be passed to the `png()` function.}
 }
 \value{
 Plots representing evaluation metrics.
 }
 \description{
-`plot.vswift` plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
+`plot.vswift` plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x.
 }
 \examples{
 # Load an example dataset

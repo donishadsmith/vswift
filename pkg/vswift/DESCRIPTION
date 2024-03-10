@@ -7,7 +7,7 @@ Authors@R: person(given = "Donisha",
              role = c("aut", "cre"),
              email = "donishasmith@outlook.com")
 Description: The vswift package streamlines model evaluation by providing tools to perform train-test splitting and k-fold cross-validation. It supports a wide range of popular classification algorithms, including logistic regression, linear discriminant analysis, quadratic discriminant analysis, support vector machines, k-nearest neighbors, artificial neural networks, decision trees, random forests, multinomial logistic regression, and gradient boosting machine.
-License: MIT
+License: MIT + file LICENSE
 URL: https://github.com/donishadsmith/vswift
 BugReports: https://github.com/donishadsmith/vswift/issues
 Depends:
@@ -26,8 +26,11 @@ Imports:
     kknn
 Suggests:
     testthat,
+    knitr,
+    rmarkdown
 VignetteBuilder: 
-    knitr
+    knitr,
+    rmarkdown
 Encoding: UTF-8
 RoxygenNote: 7.3.1
 Config/testthat/edition: 3

@@ -1,7 +1,7 @@
 # Helper function for classCV that performs validation
 #' @noRd
 #' @export
-.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, standardize, ...){
+.validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds, mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel, standardize, stratified, ...){
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
   if("Training" %in% split_word){
@@ -345,7 +345,4 @@
   return(classCV_output)
 }
 
-# Get contr.dummy since importFrom kknn doesnt seem to work
-#' @noRd
-#' @export
-contr.dummy <- kknn::contr.dummy
+

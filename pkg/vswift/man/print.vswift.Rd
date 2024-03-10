@@ -4,16 +4,18 @@
 \alias{print.vswift}
 \title{Print parameter information and/or model evaluation metrics}
 \usage{
-\method{print}{vswift}(object, parameters = TRUE, metrics = TRUE, model_type = NULL)
+\method{print}{vswift}(x, ..., parameters = TRUE, metrics = TRUE, model_type = NULL)
 }
 \arguments{
-\item{object}{An object of class vswift.}
+\item{x}{An x of class vswift.}
 
-\item{parameters}{A logical value indicating whether to print parameter information from the vswift object. Default = TRUE.}
+\item{...}{Additional arguments to be passed.}
 
-\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will display the precision, recall, and f-score for each class.
-If the vswift object contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
-will be displayed. If the vswift object contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.}
+\item{parameters}{A logical value indicating whether to print parameter information from the vswift x. Default = TRUE.}
+
+\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift x. This will display the precision, recall, and f-score for each class.
+If the vswift x contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
+will be displayed. If the vswift x contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.}
 
 \item{model_type}{A character or vector of the model information to be printed. If not specified, all model information will be printed. Available options:
 "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
@@ -22,7 +24,7 @@ will be displayed. If the vswift object contains information for k-fold validati
 "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).}
 }
 \description{
-`print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift object.
+`print.vswift` prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x.
 }
 \examples{
 # Load an example dataset

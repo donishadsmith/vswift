@@ -126,7 +126,8 @@ on classification data using various classification algorithms.
 data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
-result <- classCV(data = iris, target = "Species", split = 0.8, model_type = "lda")
+result <- classCV(data = iris, target = "Species", 
+                  split = 0.8, model_type = "lda")
 
 # Print parameters and metrics
 print(result)
@@ -135,7 +136,11 @@ print(result)
 plot(result)
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
-result <- classCV(data = iris, target = "Species", n_folds = 5, model_type = "gbm",params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)
+result <- classCV(data = iris, target = "Species", n_folds = 5, 
+                  model_type = "gbm",
+                  params = list(objective = "multi:softprob",
+                                num_class = 3,eta = 0.3,max_depth = 6), 
+                                nrounds = 10)
 
 # Print parameters and metrics
 print(result)
@@ -143,11 +148,12 @@ print(result)
 # Plot metrics
 plot(result)
 
-# Perform 5-fold cross-validation a train-test split with an 80\% training set using multiple models
+# Perform 5-fold cross-validation a train-test split w/multiple models
 
-result <- classCV(data = iris, target = 5, split = 0.8, model_type = c("decisiontree","gbm","knn", "ann","svm"), 
-n_folds = 3, mod_args = list("knn" = list(ks = 3), "ann" = list(size = 10), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10)), 
-save_data = T, save_models = T, remove_obs = T, stratified = T)
+args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
+result <- classCV(data = iris, target = 5, split = 0.8, 
+                  model_type = c("decisiontree","knn", "ann","svm"), 
+                  n_folds = 3,mod_args = args, stratified = TRUE)
 
 # Print parameters and metrics
 print(result)

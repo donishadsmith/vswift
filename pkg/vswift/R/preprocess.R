@@ -28,7 +28,7 @@
     }
     # Check if impute method is valid
     if(!is.null(impute_args)){
-      if(all(impute_method == "knn_impute" | impute_method == "bag_impute", class(impute_args) != "list")){
+      if(all(impute_method == "knn_impute" | impute_method == "bag_impute", !inherits(impute_args, "list"))){
         stop("impute_args must be a list")
       }
       # Check if additional arguments are valid
@@ -41,7 +41,7 @@
   
   
   if(!is.null(mod_args)){
-    if(class(mod_args) != "list"){
+    if(!inherits(mod_args, "list")){
       stop("mod_args must be a list")
     }
     if(length(model_type) == 1){
@@ -126,7 +126,7 @@
   
   #Ensure model_type has been assigned
   if(call == "classCV"){
-    if(class(model_type) != "character"){
+    if(!inherits(model_type, "character")){
       stop("model_type must be a character or a vector containing characters")
     }
     if(!all(model_type %in% valid_inputs[["valid_models"]])){
@@ -475,7 +475,7 @@
   
   # Store information
   for(data in iter_vec){
-    missing_cols <- colnames(data)[unique(as.vector(which(is.na(data),arr.ind = T)[,"col"]))]
+    missing_cols <- colnames(data)[unique(as.vector(which(is.na(data),arr.ind = TRUE)[,"col"]))]
     missing_numbers <- lapply(missing_cols, function(x) length(which(is.na(data[,x]))))
     names(missing_numbers) <- missing_cols
     if(is.null(preprocessed_data)){
@@ -495,9 +495,9 @@
   # Get predictor names
   predictors <- colnames(data)
   
-  if(class(standardize) == "logical"){
+  if(inherits(standardize, "logical")){
     col_names <- predictors
-  } else if(class(standardize) %in% c("numeric","integer")){
+  } else if(inherits(standardize, c("numeric","integer"))){
     # Remove any index value outside the range of the number of columns
     n_cols <- 1:ncol(data)
     standardize <- standardize[which(standardize %in% n_cols)]
