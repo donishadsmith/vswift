@@ -1,4 +1,4 @@
-name: testthat testing
+cname: testthat testing
 
 on:
   push:
@@ -17,17 +17,14 @@ jobs:
         with:
           r-version: ${{ matrix.r }}
       - name: Install dependencies
-        run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE); pak::pak("r-lib/devtools")'
+        run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE)'
         working-directory: pkg/vswift
       - name: Build tar
         run: R CMD build .
         shell: cmd
         working-directory: pkg/vswift
-      - name: Check R CMD
-        run: R CMD check --no-manual vswift_0.1.0.tar.gz
+      - name: Check R CMD CRAN
+        run: R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
         shell: cmd
         working-directory: pkg/vswift
-      - name: Devtools as CRAN
-        run: Rscript -e 'devtools::check(args = "--as-cran")'
-        shell: cmd
-        working-directory: pkg/vswift
+
