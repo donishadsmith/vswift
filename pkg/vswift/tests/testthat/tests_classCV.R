@@ -9,8 +9,8 @@ test_that("test train-test split and no stratified sampling", {
 
 test_that("test new formula method", {
   data <- iris
-  result1 <- classCV(data = data, target = "Species", split = 0.8, model_type = "lda", random_seed = 123)
-  expect_no_error(result2 <- classCV(formula = Species ~ ., data = data, split = 0.8, model_type = "lda",random_seed = 123))
+  result1 <- classCV(data = data, target = "Species", split = 0.8, model_type = "qda", random_seed = 123)
+  expect_no_error(result2 <- classCV(formula = Species ~ ., data = data, split = 0.8, model_type = "qda",random_seed = 123))
   expect_equal(result1$metrics$lda$split,result2$metrics$lda$split)
 })
 
@@ -33,7 +33,7 @@ test_that("train-test split and k-fold CV with stratified", {
 
 test_that("train-test split and k-fold CV without stratified sampling", {
   data <- iris
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "randomforest"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3, model_type = "multinom"))
 })
 
 
@@ -69,7 +69,7 @@ test_that("running multiple models", {
   
   args <- list("knn" = list(ks = 3), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,max_depth = 6), nrounds = 10))
   
-  expect_warning(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm"), 
+  expect_warning(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm", "randomforest"), 
                                    n_folds = 5, save_data = T, mod_args = args, save_models = T, remove_obs = T, stratified = T, random_seed = 123))
   
   class(data$Species) <- "character"
@@ -78,6 +78,6 @@ test_that("running multiple models", {
   
   args <- list("knn" = list(ks = 3), "gbm" = list(params = list(objective = "multi:softprob",num_class = 2,eta = 0.3,max_depth = 6), nrounds = 10))
   
-  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm"), 
+  expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm", "randomforest"), 
                                    n_folds = 5, save_data = T, mod_args = args, save_models = T, remove_obs = T, stratified = T, random_seed = 123))
 })
