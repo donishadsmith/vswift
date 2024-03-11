@@ -17,7 +17,7 @@ jobs:
         with:
           r-version: ${{ matrix.r }}
       - name: Install dependencies
-        run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE); pak::pack("r-lib/devtools")'
+        run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE); pak::pak("r-lib/devtools")'
         working-directory: pkg/vswift
       - name: Build tar
         run: R CMD build .

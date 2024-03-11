@@ -18,7 +18,7 @@ jobs:
           r-version: ${{ matrix.r }}
       - name: Install dependencies
         run: |
-          Rscript -e 'install.packages("pak"); pak::pak("igraph/rigraph"); pak::pack("r-lib/devtools")'
+          Rscript -e 'install.packages("pak"); pak::pak("igraph/rigraph"); pak::pak("r-lib/devtools")'
           Rscript -e 'pak::local_install(dependencies = TRUE)'
         working-directory: pkg/vswift
       - name: Build tar
