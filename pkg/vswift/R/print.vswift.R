@@ -4,6 +4,7 @@
 #' 
 #' 
 #' @param x An x of class vswift.
+#' @param ... Additional arguments to be passed.
 #' @param parameters A logical value indicating whether to print parameter information from the vswift x. Default = TRUE.
 #' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift x. This will display the precision, recall, and f-score for each class.
 #' If the vswift x contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
@@ -13,7 +14,6 @@
 #'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
 #'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
 #'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).
-#'@param ... Additional arguments to be passed.
 #' @examples
 #' # Load an example dataset
 #' 
