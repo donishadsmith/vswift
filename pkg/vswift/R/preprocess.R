@@ -14,7 +14,7 @@
   # Check standardize
   if(!is.null(standardize)){
     if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize), is.integer(standardize), is.character(standardize))){
-      stop("standardize must either be TRUE, FALSE, or a numeric vector")
+      stop("`standardize` must either be TRUE, FALSE, or a numeric vector")
     }
   }
   # Check if impute method is valid
@@ -24,12 +24,12 @@
     }
     # Check if impute_method is list
     if(!length(impute_method) == 1){
-      stop("impute_method must be a character not list")
+      stop("`impute_method` must be a character not list")
     }
     # Check if impute method is valid
     if(!is.null(impute_args)){
       if(all(impute_method == "knn_impute" | impute_method == "bag_impute", !inherits(impute_args, "list"))){
-        stop("impute_args must be a list")
+        stop("`impute_args` must be a list")
       }
       # Check if additional arguments are valid
       else if(impute_method == "knn_impute"| impute_method == "bag_impute"){
@@ -39,16 +39,19 @@
     
   }
   
+  if(all(length(model_type) > 1, length(list(...)) > 0)){
+    stop("use `mod_args` parameter to specify model-specific arguments when calling multiple models")
+  }
   
   if(!is.null(mod_args)){
     if(!inherits(mod_args, "list")){
-      stop("mod_args must be a list")
+      stop("`mod_args` must be a list")
     }
     if(length(model_type) == 1){
-      stop("mod_args used only when multiple models are specified")
+      stop("`mod_args`` used only when multiple models are specified")
     }
     if(!all(names(mod_args) %in% valid_inputs[["valid_models"]])){
-      stop("invalid model in mod_args")
+      stop("invalid model in `mod_args`")
     }
   }
   
@@ -71,13 +74,13 @@
   
   # Ensure split is between 0.5 to 0.9
   if(any(is.character(split), split < 0.5, split > 0.9)){
-    stop("split must be a numeric value from between 0.5 and 0.9")
+    stop("`split` must be a numeric value from between 0.5 and 0.9")
   }
   
   # Get target and predictors if formula specified
   if(!is.null(formula)){
     if(any(!is.null(formula) & !is.null(target) || !is.null(predictors))){
-      warning("formula specified with target and/or predictors, formula will overwrite the specified target and predictors")
+      warning("`formula` specified with `target` and/or `predictors`, `formula` will overwrite the specified `target` and `predictors`")
     }
     get_features_target <- .get_features_target(formula = formula, data = data)
     target <- get_features_target[["target"]]
@@ -88,25 +91,25 @@
   if(call == "classCV" || call == "genFolds" & stratified == TRUE){
     # Ensure target is also not in predictors 
     if(target %in% predictors){
-      stop("target cannot also be a predictor")
+      stop("`target` cannot also be a `predictor`")
     }
     
     # Ensure there is only one target variable
     if(length(target) != 1){
-      stop("length of target must be 1")
+      stop("length of `target` must be 1")
     }
     
     # Check if target is in dataframe
     if(is.numeric(target)){
       if(!(target %in% c(1:ncol(data)))){
-        stop("target not in dataframe")
+        stop("`target` not in dataframe")
       }
     } else if (is.character(target)){
       if(!(target %in% colnames(data))){
-        stop("target not in dataframe")
+        stop("`target` not in dataframe")
       }
     } else {
-      stop("target must be an integer or character")
+      stop("`target` must be an integer or character")
     }
   }
   
@@ -117,26 +120,44 @@
     } else if (all(is.character(predictors))){
       check_x <- colnames(data)[colnames(data) != target]
     } else {
-      stop("predictors must be a character vector or integer vector")
+      stop("`predictors` must be a character vector or integer vector")
     }
     if(!(all(predictors %in% check_x))){
       stop("at least one predictor is not in dataframe")
     }
   }
   
+  # Warning for knn
+  
+  if(all("knn" %in% model_type, !is.null(n_folds))){
+    if(all(length(model_type) > 1, !is.null(mod_args))){
+      if("knn" %in% names(mod_args)){
+        check_ks <- ifelse("ks" %in% names(mod_args[["knn"]]), TRUE, FALSE)
+      } else{
+        check_ks <- FALSE
+      }
+    }
+    else{
+      check_ks <- ifelse("ks" %in% names(list(...)), TRUE, FALSE)
+    }
+    if(check_ks == FALSE){
+      warning("if `ks` not specified, knn may select a different optimal k for each fold")
+    }
+  }
+  
   #Ensure model_type has been assigned
   if(call == "classCV"){
     if(!inherits(model_type, "character")){
-      stop("model_type must be a character or a vector containing characters")
+      stop("`model_type` must be a character or a vector containing characters")
     }
     if(!all(model_type %in% valid_inputs[["valid_models"]])){
-      stop("invalid model in model_type")
+      stop("invalid model in `model_type`")
     }
     if("logistic" %in% model_type & any(length(levels(factor(data[,target], exclude = NA))) != 2, !is.numeric(threshold), threshold < 0.30 || threshold > 0.70)){
       if(length(levels(factor(data[,target], exclude = NA))) != 2){
         stop("logistic regression requires a binary variable")
       } else {
-        stop("threshold must a numeric value from 0.30 to 0.70")
+        stop("`threshold` must a numeric value from 0.30 to 0.70")
       }
     }
   }
