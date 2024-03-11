@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        r: [4.2.0, 4.3.0]
+        r: [4.3.0] # issue with 4.2.0 when installing igrapgh for mac
     name: R ${{ matrix.r }} check on MacOs-latest
     steps:
       - uses: actions/checkout@v3
