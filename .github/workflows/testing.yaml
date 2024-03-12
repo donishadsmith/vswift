@@ -28,9 +28,11 @@ jobs:
       - name: Install dependencies for Mac
         if: ${{ matrix.os == 'macos-latest' }}
         run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE); pak::pak("igraph/rigraph")'
+        working-directory: pkg/vswift
       - name: Install dependencies for Windows and Ubuntu
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' }}
         run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE)'
+        working-directory: pkg/vswift
       - name: Build tar & CRAN check for Mac & Ubuntu
         if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
