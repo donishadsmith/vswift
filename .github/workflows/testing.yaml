@@ -1,22 +1,24 @@
-name: testthat testing
+name: test build and check
 
 on:
   push:
-    branches: [main, master, experimental]
+    branches: [main, master]
 
 jobs:
-  test-build:
-    runs-on: ubuntu-latest
+  run-tests:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         r: [4.2.0, 4.3.0]
-    name: R ${{ matrix.r }} check on Ubuntu-latest
+        os: ['macos-latest', 'windows-latest', 'ubuntu-latest']
+
     steps:
       - uses: actions/checkout@v3
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.r }}
-      - name: Install libraries
+      - name: Install Linux libraries
+        if: ${{ matrix.os }} == 'ubuntu-latest'
         run: |
           sudo apt-get install -y libssl-dev libfontconfig1-dev libcurl4-openssl-dev libxml2-dev libharfbuzz-dev
           sudo apt-get install -y libgit2-dev libharfbuzz-dev libfribidi-dev
@@ -26,11 +28,17 @@ jobs:
       - name: Install dependencies
         run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE)'
         working-directory: pkg/vswift
-      - name: Build tar
-        run: R CMD build --no-build-vignettes .
+      - name: Build tar & CRAN check for MAC & Ubuntu
+        if: ${{ matrix.os }} == 'ubuntu-latest' || ${{ matrix.os }} == 'macos-latest'
+        run: |
+          R CMD build --no-build-vignettes .
+          R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
         shell: bash
         working-directory: pkg/vswift
-      - name: Check R CMD CRAN
-        run: R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
-        shell: bash
+      - name: Build tar & CRAN check for Windows
+        if: ${{ matrix.os }} == 'windows-latest'
+        run: |
+          R CMD build --no-build-vignettes .
+          R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
+        shell: cmd
         working-directory: pkg/vswift
