@@ -22,7 +22,7 @@ jobs:
           Rscript -e 'pak::local_install(dependencies = TRUE)'
         working-directory: pkg/vswift
       - name: Build tar
-        run: R CMD build .
+        run: R CMD build --no-build-vignettes .
         shell: bash
         working-directory: pkg/vswift
       - name: Check R CMD CRAN
