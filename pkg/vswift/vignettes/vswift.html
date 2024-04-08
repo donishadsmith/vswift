@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to vswift</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to vswift</h1>
+
+
+
+<p>Import <strong>vswift</strong> into the current R session</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(vswift)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co"># Display documentation for the &#39;vswift&#39; package</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">help</span>(<span class="at">package =</span> <span class="st">&quot;vswift&quot;</span>)</span></code></pre></div>
+<pre><code>
+The main function of the **vswift** package is `classCV`
+
+```r
+# Perform a train-test split with an 80% training set using LDA
+
+result1 &lt;- classCV(data = iris, target = &quot;Species&quot;, 
+                   split = 0.8, model_type = &quot;lda&quot;, random_seed = 123)
+
+# Perform a train-test split with five folds using stratified sampling with K-Nearest Neighbors while also specifying an additional argument for knn to specify the number of neighbors to consider
+
+result2 &lt;- classCV(data = iris, target = &quot;Species&quot;, 
+                   n_folds = 5, model_type = &quot;knn&quot;, ks = 5, random_seed = 123)
+
+#Perform a train-test split with an 80% training set and five folds with stratified sampling LDA and knn. Also specify an argument for knn and save the models for lda and knn.
+
+args &lt;- list(&quot;knn&quot; = list(ks=5))
+result3 &lt;- classCV(data = iris, target = &quot;Species&quot;, 
+                   split = 0.8, n_folds = 5, model_type = c(&quot;lda&quot;, &quot;knn&quot;),
+                   save_models = TRUE, mod_args = args)</code></pre>
+<p>You can also output specific results using the <em>print</em>
+function</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="fu">print</span>(result3, <span class="at">model_type =</span> <span class="st">&quot;knn&quot;</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - </span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; Model: K-Nearest Neighbors</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; Target: Species</span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="co">#&gt; Formula: Species ~ Sepal.Length + Sepal.Width + Petal.Length + Petal.Width</span></span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt; Classes: setosa, versicolor, virginica</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Fold size: 5</span></span>
+<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; Split: 0.8</span></span>
+<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; Stratified Sampling: FALSE</span></span>
+<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; Missing Data: 0</span></span>
+<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a><span class="co">#&gt; Sample Size: 150</span></span>
+<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a><span class="co">#&gt; Additional Arguments: ks = 5</span></span>
+<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a><span class="co">#&gt; Parallel: FALSE</span></span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a><span class="co">#&gt;  Training </span></span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a><span class="co">#&gt; _ _ _ _ _ _ _ _ </span></span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a><span class="co">#&gt; Classification Accuracy:  0.98 </span></span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a><span class="co">#&gt; Class:           Precision:  Recall:  F-Score:</span></span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a><span class="co">#&gt; setosa                1.00     1.00      1.00 </span></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#&gt; versicolor            0.95     0.98      0.96 </span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="co">#&gt; virginica             0.97     0.95      0.96 </span></span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a><span class="co">#&gt;  Test </span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a><span class="co">#&gt; _ _ _ _ </span></span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a><span class="co">#&gt; Classification Accuracy:  0.97 </span></span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a><span class="co">#&gt; Class:           Precision:  Recall:  F-Score:</span></span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a><span class="co">#&gt; setosa                1.00     1.00      1.00 </span></span>
+<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a><span class="co">#&gt; versicolor            1.00     0.90      0.95 </span></span>
+<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a><span class="co">#&gt; virginica             0.92     1.00      0.96 </span></span>
+<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-56"><a href="#cb3-56" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-57"><a href="#cb3-57" tabindex="-1"></a><span class="co">#&gt;  K-fold CV </span></span>
+<span id="cb3-58"><a href="#cb3-58" tabindex="-1"></a><span class="co">#&gt; _ _ _ _ _ _ _ _ _ </span></span>
+<span id="cb3-59"><a href="#cb3-59" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-60"><a href="#cb3-60" tabindex="-1"></a><span class="co">#&gt; Average Classification Accuracy:  0.96 (0.04) </span></span>
+<span id="cb3-61"><a href="#cb3-61" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-62"><a href="#cb3-62" tabindex="-1"></a><span class="co">#&gt; Class:           Average Precision:  Average Recall:  Average F-score:</span></span>
+<span id="cb3-63"><a href="#cb3-63" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-64"><a href="#cb3-64" tabindex="-1"></a><span class="co">#&gt; setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) </span></span>
+<span id="cb3-65"><a href="#cb3-65" tabindex="-1"></a><span class="co">#&gt; versicolor           0.93 (0.07)       0.93 (0.07)       0.93 (0.07) </span></span>
+<span id="cb3-66"><a href="#cb3-66" tabindex="-1"></a><span class="co">#&gt; virginica            0.93 (0.07)       0.93 (0.07)       0.93 (0.07) </span></span>
+<span id="cb3-67"><a href="#cb3-67" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-68"><a href="#cb3-68" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb3-69"><a href="#cb3-69" tabindex="-1"></a><span class="co">#&gt; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span></span></code></pre></div>
+<p>You can also output specific results using the <em>plot</em>
+function</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="fu">plot</span>(result3, <span class="at">model_type =</span> <span class="st">&quot;knn&quot;</span>, <span class="at">split =</span> <span class="cn">FALSE</span>, <span class="at">cv =</span> <span class="cn">TRUE</span>, <span class="at">class_names =</span> <span class="fu">c</span>(<span class="st">&quot;setosa&quot;</span>, <span class="st">&quot;virginica&quot;</span>), <span class="at">metrics =</span> <span class="st">&quot;precision&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --><img src="data:image/png;base64,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" /><!-- --></p>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
