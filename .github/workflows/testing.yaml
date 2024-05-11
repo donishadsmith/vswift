@@ -27,14 +27,8 @@ jobs:
           sudo apt-get install -y libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
           sudo apt-get install -y gfortran libglpk-dev
         shell: bash
-        
-      - name: Install dependencies for Mac
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: Rscript -e 'install.packages("pak"); pak::pak("igraph/rigraph"); pak::local_install(dependencies = TRUE)'
-        working-directory: pkg/vswift
-        
-      - name: Install dependencies for Windows and Ubuntu
-        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'windows-latest' }}
+
+      - name: Install dependencies
         run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE)'
         working-directory: pkg/vswift
         
