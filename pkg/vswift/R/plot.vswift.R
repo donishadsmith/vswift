@@ -1,7 +1,7 @@
 #' Plot model evaluation metrics
-#' 
-#' `plot.vswift` plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x. 
 #'
+#' @name plot
+#' @description Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x. 
 #'
 #' @param x An x of class vswift.
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.

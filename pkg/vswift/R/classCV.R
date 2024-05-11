@@ -1,6 +1,7 @@
 #' Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data
 #'
-#' `classCV` performs a train-test split and/or k-fold cross validation
+#' @name classCV 
+#' @description performs a train-test split and/or k-fold cross validation
 #' on classification data using various classification algorithms.
 #'
 #' @param formula A formula specifying the model to use.
@@ -44,7 +45,7 @@
 #'   - "logistic": weights, singular.ok, maxit
 #'   - "svm": kernel, degree, gamma, cost, nu
 #'   - "naivebayes": prior, laplace, usekernel
-#'   - "ann": size, rang, decay, maxit, softmax
+#'   - "ann": size, rang, decay, maxit, softmax, entropy, abstol, reltol
 #'   - "knn": kmax, ks, distance, kernel
 #'   - "decisiontree": weights, method, parms, control, cost
 #'   - "randomforest": weights, ntree, mtry, nodesize, importance

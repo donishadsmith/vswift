@@ -221,7 +221,7 @@
                    "logistic" = c("weights","singular.ok", "maxit"),
                    "svm" = c("kernel", "degree", "gamma", "cost", "nu"),
                    "naivebayes" = c("prior", "laplace", "usekernel"),
-                   "ann" = c("size", "rang", "decay", "maxit", "softmax"),
+                   "ann" = c("size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol"),
                    "knn" = c("kmax", "ks", "distance", "kernel"),
                    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
                    "randomforest" = c("weights", "ntree", "mtry", "nodesize", "importance"),
