@@ -27,6 +27,7 @@ jobs:
             scheme-basic
             cleveref
             hyperref
+            inconsolata
           
       - name: Install Linux libraries
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -52,7 +53,6 @@ jobs:
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          tlmgr install inconsolata
           R CMD build .
           R CMD check --as-cran vswift_0.1.0.tar.gz
         shell: cmd
