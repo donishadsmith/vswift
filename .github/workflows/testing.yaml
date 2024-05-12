@@ -74,47 +74,6 @@ jobs:
             titling
             xstring
             courier
-            IEEEtran
-            datetime
-            fmtcount
-            cite
-            glossaries
-            mfirstuc
-            textcase
-            xfor
-            datatool
-            crop
-            fancyhdr
-            subfiles
-            pdfpages
-            lipsum
-            sidecap
-            babel-english
-            type1cm
-            psnfss
-            ae
-            sectsty
-            colortbl
-            titlesec
-            nomencl
-            koma-script
-            pdfx
-            colorprofiles
-            xmpincl
-            tabulary
-            tabu
-            multirow
-            fncychap
-            pgfplots
-            zref
-            smartdiagram
-            xstring
-            pythonhighlight
-            listings
-            bookmark
-            glossaries-extra
-            tracklang
-            pdflscape
         
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
