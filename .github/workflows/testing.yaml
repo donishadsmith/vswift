@@ -22,6 +22,7 @@ jobs:
           r-version: ${{ matrix.r }}
 
       - name: Install additional LaTeX packages
+        if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
           tlmgr update --self
           tlmgr install titlesec
@@ -48,6 +49,31 @@ jobs:
         shell: bash
         working-directory: pkg/vswift
 
+      - uses: teatimeguest/setup-texlive-action@v3
+        with:
+          packages: |
+            scheme-basic
+            cleveref
+            hyperref
+            xkeyval
+            etoolbox
+            acronym
+            background
+            bigfoot
+            blindtext
+            cleveref
+            enumitem
+            everypage
+            floatrow
+            framed
+            inconsolata
+            pgf
+            multirow
+            preprint
+            soul
+            titling
+            xstring
+        
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
