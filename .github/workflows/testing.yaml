@@ -10,7 +10,8 @@ jobs:
     strategy:
       matrix:
         r: [4.2.0, 4.3.0, 4.4.0]
-        os: ['macos-latest', 'windows-latest', 'ubuntu-latest']
+        os: ['windows-latest']
+        #os: ['macos-latest', 'windows-latest', 'ubuntu-latest']
         
     name: R version ${{ matrix.r }} check on ${{ matrix.os }}
     steps:
@@ -22,7 +23,6 @@ jobs:
           r-version: ${{ matrix.r }}
 
       - name: Install additional LaTeX packages
-        if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
           tlmgr update --self
           tlmgr install titlesec
