@@ -39,7 +39,7 @@ jobs:
       - name: Build tar & CRAN check for Mac & Ubuntu
         if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
-          R CMD build --no-build-vignettes .
+          R CMD build .
           R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
         shell: bash
         working-directory: pkg/vswift
@@ -47,7 +47,7 @@ jobs:
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          R CMD build --no-build-vignettes .
-          R CMD check --no-manual --as-cran vswift_0.1.0.tar.gz
+          R CMD build .
+          R CMD check --as-cran vswift_0.1.0.tar.gz
         shell: cmd
         working-directory: pkg/vswift
