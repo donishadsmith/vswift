@@ -85,7 +85,7 @@ A list containing the results of train-test splitting and/or k-fold cross-valida
         saved models (if specified), and saved datasets (if specified), and a final model (if specified).
 }
 \description{
-`classCV` performs a train-test split and/or k-fold cross validation
+performs a train-test split and/or k-fold cross validation
 on classification data using various classification algorithms.
 }
 \section{Model-specific additional arguments}{
@@ -97,7 +97,7 @@ on classification data using various classification algorithms.
   - "logistic": weights, singular.ok, maxit
   - "svm": kernel, degree, gamma, cost, nu
   - "naivebayes": prior, laplace, usekernel
-  - "ann": size, rang, decay, maxit, softmax
+  - "ann": size, rang, decay, maxit, softmax, entropy, abstol, reltol
   - "knn": kmax, ks, distance, kernel
   - "decisiontree": weights, method, parms, control, cost
   - "randomforest": weights, ntree, mtry, nodesize, importance

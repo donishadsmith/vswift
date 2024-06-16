@@ -1,4 +1,7 @@
 # vswift
+[![Test Status](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation for classification data using various classification algorithms from popular R packages. The 
 functions used from packages for each classification algorithms:
 
