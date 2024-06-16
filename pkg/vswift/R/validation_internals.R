@@ -14,8 +14,9 @@
   }
   
   if(all(class(standardize) %in% c("logical", "integer", "numeric", "character"), standardize != FALSE)){
-    model_data <- .standardize(data = model_data, target = target, standardize = standardize)
-    validation_data <- .standardize(data = validation_data, target = target, standardize = standardize)
+    standardize_output <- .standardize(training_data = model_data, validation_data = validation_data ,target = target, standardize = standardize)
+    model_data <- standardize_output[["training_data"]]
+    validation_data <- standardize_output[["validation_data"]]
   }
 
   # Ensure columns have same levels

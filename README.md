@@ -129,12 +129,13 @@ print(results, parameters = TRUE, metrics = TRUE)
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-
 Model: Linear Discriminant Analysis
 
 Predictors: Sepal.Length, Sepal.Width, Petal.Length, Petal.Width
 
 Target: Species
+
+Formula: Species ~ .
 
 Classes: setosa, versicolor, virginica
 
@@ -152,7 +153,7 @@ Sample Size: 150
 
 Additional Arguments: 
 
-Parallel: TRUE
+Parallel: FALSE
 
 
 
@@ -183,13 +184,13 @@ virginica             1.00     1.00      1.00
  K-fold CV 
 _ _ _ _ _ _ _ _ _ 
 
-Average Classification Accuracy:  0.97 (0.01) 
+Average Classification Accuracy:  0.98 (0.02) 
 
 Class:           Average Precision:  Average Recall:  Average F-score:
 
 setosa               1.00 (0.00)       1.00 (0.00)       1.00 (0.00) 
-versicolor           0.96 (0.05)       0.96 (0.05)       0.96 (0.02) 
-virginica            0.96 (0.05)       0.96 (0.05)       0.96 (0.02) 
+versicolor           0.98 (0.04)       0.96 (0.05)       0.97 (0.03) 
+virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03) 
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

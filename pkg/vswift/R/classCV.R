@@ -22,7 +22,7 @@
 #'                   For "ann", `size =` must be specified as an additional argument.
 #' @param threshold  A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.                 
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
-#' @param random_seed A numerical value for the random seed. Default = NULL.
+#' @param random_seed A numerical value for the random seed to ensure random splitting is reproducible. Default = NULL.
 #' @param impute_method A character indicating the imputation method to use. Options include "bag_impute" (Bagged Trees Imputation) and "knn_impute" (KNN Imputation).
 #' @param impute_args A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "trees" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.
 #' @param mod_args  list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 

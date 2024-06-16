@@ -512,15 +512,15 @@
 # Function to standardize data
 #' @noRd
 #' @export
-.standardize <- function(data, standardize, target){
+.standardize <- function(training_data, validation_data, standardize, target){
   # Get predictor names
-  predictors <- colnames(data)
+  predictors <- colnames(training_data)
   
   if(inherits(standardize, "logical")){
     col_names <- predictors
   } else if(inherits(standardize, c("numeric","integer"))){
     # Remove any index value outside the range of the number of columns
-    n_cols <- 1:ncol(data)
+    n_cols <- 1:ncol(training_data)
     standardize <- standardize[which(standardize %in% n_cols)]
     unused <- standardize[which(!standardize %in% n_cols)]
     col_names <- predictors[standardize]
@@ -542,13 +542,22 @@
   
   if(length(col_names) > 0){
     for(col in col_names){
-      if(any(is.numeric(data[,col]), is.integer(data[,col]))){
-        data[,col] <- as.vector(scale(as.numeric(data[,col]), center = TRUE, scale = TRUE))
+      if(any(is.numeric(training_data[,col]), is.integer(training_data[,col]))){
+        # Get mean and sample sd of the training data
+        training_col_mean <- mean(as.numeric(training_data[,col]))
+        training_col_sd <- sd(as.numeric(training_data[,col]))
+        # Scale training and test data using the training mean and sample sd
+        scaled_training_col <- (training_data[,col] - training_col_mean)/training_col_sd
+        training_data[,col] <- as.vector(scaled_training_col)
+        scaled_validation_col <- (validation_data[,col] - training_col_mean)/training_col_sd
+        validation_data[,col] <- as.vector(scaled_validation_col)
       }
     }
   } else{
     warning("no standardization has been done; standardization specified but column indices are outside possible range or column names don't exist")
   }
-  return(data)
+  
+  standardize_list <- list("training_data" = training_data, "validation_data" = validation_data)
+  return(standardize_list)
 }
 
