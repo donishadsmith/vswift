@@ -18,36 +18,44 @@
 )
 }
 \arguments{
-\item{x}{An x of class vswift.}
+\item{x}{An vswift object.}
 
-\item{...}{Additional arguments that can be passed to the `png()` function.}
+\item{...}{Additional arguments that can be passed to the \code{png()} function.}
 
-\item{split}{A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.}
+\item{split}{A logical value indicating whether to plot metrics for train-test splitting results.
+Default = \code{TRUE}.}
 
-\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
-and dashed blue line represents the standard deviation. Default = TRUE.}
+\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results.
+Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
+Default = \code{TRUE}.}
 
-\item{metrics}{A vector consisting of which metrics to plot. Available metrics includes, "accuracy", "precision", "recall", "f1".
-Default = c("accuracy","precision", "recall", "f1").}
+\item{metrics}{A vector consisting of which metrics to plot. Available metrics includes, \code{"accuracy"},
+\code{"precision"}, \code{"recall"}, \code{"f1"}.
+Default = \code{c("accuracy","precision", "recall", "f1")}.}
 
-\item{class_names}{A vector consisting of class names to plot. If NULL, plots are generated for each class.Defaeult = NULL}
+\item{class_names}{A vector consisting of class names to plot. If NULL, plots are generated for each class.
+Default = \code{NULL}.}
 
-\item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.}
+\item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE.
+Default = \code{FALSE}.}
 
-\item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
-working directory.}
+\item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots
+will be saved to the current working directory. Default = \code{NULL}.}
 
-\item{model_type}{A character or vector of the model metrics to be printed. If not specified, all model metrics will be printed. Available options:
-"lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
-"logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
-"ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).}
+\item{model_type}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
+be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
+(Quadratic Discriminant Analysis), code{"logistic"} (Logistic Regression), \code{"svm"}
+(Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
+(Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
+(Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.}
 }
 \value{
 Plots representing evaluation metrics.
 }
 \description{
-Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x.
+Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each
+             class) from a vswift object.
 }
 \examples{
 # Load an example dataset

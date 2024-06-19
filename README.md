@@ -39,11 +39,11 @@ functions used from packages for each classification algorithms:
 To install and use vswift:
 
 ```R
-# Install 'devtools' to install packages from Github
-install.packages("devtools")
+# Install 'remotes' to install packages from Github
+install.packages("remotes")
 
 # Install 'vswift' package
-devtools::install_github(repo = "donishadsmith/vswift", subdir = "pkg/vswift", build_vignettes = TRUE)
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.1.1/vswift_0.1.1.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")

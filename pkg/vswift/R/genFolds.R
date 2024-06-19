@@ -1,17 +1,24 @@
 #' Create split datasets and/or folds with optional stratification
 #' 
 #' @name genFolds 
-#' @description Standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+#' @description Standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the
+#'              option to perform stratified sampling based on class distribution.
 #' 
 #' @param data A data frame.
-#' @param target A numerical index or character name for the target variable. Only needs to be specified if stratified = TRUE. Default = NULL.
-#' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.
-#' @param n_folds A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.
-#' @param stratified A logical value indicating if stratified sampling should be used. Default = FALSE.
-#' @param random_seed A numerical value for the random seed to be used. Default = NULL.
-#' @param create_data A logical value indicating whether to create all training and test/validation data frames. Default = FALSE. 
-#' @return A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on the class distribution in the training, test sets, and folds (if applicable)
-#'         as well as the generated split datasets and folds based on the indices.
+#' @param target A numerical index or character name for the target variable. Only needs to be specified if
+#'               \code{stratified = TRUE}. Default = \code{NULL}.
+#' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set,
+#'              leaving the rest for the test set. If not specified, train-test splitting will not be done.
+#'              Default = \code{NULL}.
+#' @param n_folds A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross
+#'                validation will not be performed. Default = \code{NULL}.
+#' @param stratified A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.
+#' @param random_seed A numerical value for the random seed to be used. Default = \code{NULL}.
+#' @param create_data A logical value indicating whether to create all training and test/validation data frames.
+#'                    Default = \code{FALSE}. 
+#' @return A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on
+#'         the class distribution in the training, test sets, and folds (if applicable) as well as the generated split
+#'         datasets and folds based on the indices.
 #' @examples
 #' # Load example dataset 
 #' 
@@ -24,9 +31,11 @@
 #' @author Donisha Smith
 #' @export
 
-genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL, create_data = FALSE){
+genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL,
+                     create_data = FALSE){
   # Check input
-  .error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified, random_seed = random_seed, call = "stratified_split")
+  .error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified,
+                  random_seed = random_seed, call = "stratified_split")
   # Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -172,7 +181,3 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
   }
   return(output)
 }
-
-
-
-

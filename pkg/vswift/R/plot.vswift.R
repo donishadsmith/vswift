@@ -1,25 +1,32 @@
 #' Plot model evaluation metrics
 #'
 #' @name plot
-#' @description Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x. 
+#' @description Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each
+#'              class) from a vswift object. 
 #'
-#' @param x An x of class vswift.
-#' @param split A logical value indicating whether to plot metrics for train-test splitting results. Default = TRUE.
-#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results. Note: Solid red line represents the mean
-#' and dashed blue line represents the standard deviation. Default = TRUE.
-#' @param metrics A vector consisting of which metrics to plot. Available metrics includes, "accuracy", "precision", "recall", "f1".
-#' Default = c("accuracy","precision", "recall", "f1").
-#' @param class_names A vector consisting of class names to plot. If NULL, plots are generated for each class.Defaeult = NULL
-#' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE. Default = FALSE.
-#' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots will be saved to the current
-#' working directory.
-#' @param model_type A character or vector of the model metrics to be printed. If not specified, all model metrics will be printed. Available options:
-#'                   "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
-#'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
-#'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-#'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).
-#' @param ... Additional arguments that can be passed to the `png()` function.
-#' 
+#' @param x An vswift object.
+#' @param split A logical value indicating whether to plot metrics for train-test splitting results.
+#'              Default = \code{TRUE}.
+#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results.
+#'           Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
+#'           Default = \code{TRUE}.
+#' @param metrics A vector consisting of which metrics to plot. Available metrics includes, \code{"accuracy"},
+#'                \code{"precision"}, \code{"recall"}, \code{"f1"}.
+#'                Default = \code{c("accuracy","precision", "recall", "f1")}.
+#' @param class_names A vector consisting of class names to plot. If NULL, plots are generated for each class.
+#'                    Default = \code{NULL}.
+#' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE.
+#'                   Default = \code{FALSE}.
+#' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots
+#'             will be saved to the current working directory. Default = \code{NULL}.
+#' @param model_type A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
+#'                   be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
+#'                   (Quadratic Discriminant Analysis), code{"logistic"} (Logistic Regression), \code{"svm"}
+#'                   (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
+#'                   (Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
+#'                   (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.
+#' @param ... Additional arguments that can be passed to the \code{png()} function.
 #' 
 #' @return Plots representing evaluation metrics.
 #' @examples
@@ -41,14 +48,16 @@
 #' @importFrom graphics abline axis
 #' @export
 
-"plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"), class_names = NULL, save_plots = FALSE, path = NULL, model_type = NULL){
+"plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"),
+                          class_names = NULL, save_plots = FALSE, path = NULL, model_type = NULL){
   
   if(inherits(x, "vswift")){
     # Create list
-    model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis", "svm" = "Support Vector Machines",
-                      "ann" = "Neural Network", "decisiontree" = "Decision Tree", "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression", "knn" = "K-Nearest Neighbors",
-                      "naivebayes" = "Naive Bayes")
+    model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
+                      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
+                      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+                      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+                      "knn" = "K-Nearest Neighbors","naivebayes" = "Naive Bayes")
     
     # Lowercase and intersect common names
     metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
@@ -83,9 +92,11 @@
     # Iterate over models
     for(model in models){
       if(save_plots == FALSE){
-        .visible_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model, model_list = model_list)
+        .visible_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
+                       model_list = model_list)
       } else {
-        .save_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path, model_name = model, model_list = model_list,...)
+        .save_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path,
+                    model_name = model, model_list = model_list,...)
       }
     }
   } else {

@@ -5,84 +5,109 @@
 \title{Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data}
 \usage{
 classCV(
+  data,
   formula = NULL,
   target = NULL,
   predictors = NULL,
-  data,
-  split = NULL,
-  n_folds = NULL,
   model_type,
   threshold = 0.5,
+  mod_args = NULL,
+  final_model = FALSE,
+  split = NULL,
+  n_folds = NULL,
   stratified = FALSE,
   random_seed = NULL,
   impute_method = NULL,
   impute_args = NULL,
-  mod_args = NULL,
-  remove_obs = FALSE,
   save_models = FALSE,
   save_data = FALSE,
-  final_model = FALSE,
   n_cores = NULL,
+  remove_obs = FALSE,
   standardize = NULL,
   ...
 )
 }
 \arguments{
-\item{formula}{A formula specifying the model to use.}
+\item{data}{A data frame containing the dataset. Default = \code{NULL}}
 
-\item{target}{The target variable's numerical index or name in the data frame.}
+\item{formula}{A formula specifying the model to use. Default = \code{NULL}}
 
-\item{predictors}{A vector of numerical indices or names for the predictors in the data frame.
-If not specified, all variables except the response variable will be used as predictors.}
+\item{target}{The target variable's numerical index or name in the data frame. Default = \code{NULL}.}
 
-\item{data}{A data frame containing the dataset.}
-
-\item{split}{A number from 0.5 and 0.9 for the proportion of data to use for the training set,
-leaving the rest for the test set. If not specified, train-test splitting will not be done.}
-
-\item{n_folds}{An integer from 3 and 30 for the number of folds to use. If not specified,
-k-fold cross validation will not be performed.}
+\item{predictors}{A vector of numerical indices or names for the predictors in the data frame. Default = \code{NULL}.
+If not specified, all variables except the response variable will be used as predictors.
+Default = \code{NULL}.}
 
 \item{model_type}{A character string or list indicating the classification algorithm to use. Available options:
-"lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
-"logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
-"ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).
-For "knn", the optimal k will be used unless specified with `ks =`.
-For "ann", `size =` must be specified as an additional argument.}
+\code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis), 
+\code{"logistic"} (Logistic Regression), \code{"svm"} (Support Vector Machines),
+\code{"naivebayes"} (Naive Bayes), \code{"ann"} (Artificial Neural Network), \code{"knn"}
+(K-Nearest Neighbors), \code{"decisiontree"} (Decision Tree), \code{"randomforest"} (Random Forest),
+\code{"multinom"} (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine).
+\itemize{
+ \item For \code{"knn"}, the optimal k will be used unless specified with \code{ks}.
+ \item For \code{"ann"}, \code{size} must be specified as an additional argument.
+}}
 
-\item{threshold}{A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.}
+\item{threshold}{A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.
+Default = \code{0.5}}
 
-\item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
+\item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the \code{model_type}}
 
-\item{random_seed}{A numerical value for the random seed. Default = NULL.}
+\item{final_model}{A logical value to use all complete observations in the input data for model training.
+Default = \code{FALSE}.}
 
-\item{impute_method}{A character indicating the imputation method to use. Options include "bag_impute" (Bagged Trees Imputation) and "knn_impute" (KNN Imputation).}
+\item{split}{A number from 0.5 and 0.9 for the proportion of data to use for the training set,
+leaving the rest for the test set. If not specified, train-test splitting will not be done.
+Default = \code{NULL}.}
 
-\item{impute_args}{A list specifying an additional argument for the imputation method. For "bag_impute", the additional argument is "trees" and for "knn_impute", the additional argument is "neighbors". For specific information about each parameter, please refer to the recipes documentation. Default = NULL.}
+\item{n_folds}{An integer from 3 and 30 for the number of folds to use. If not specified,
+k-fold cross validation will not be performed. Default = \code{NULL}.}
 
-\item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the `model_type` parameter, and contains the parameters to be passed 
-to the respective model. Default = NULL.}
+\item{stratified}{A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.}
+
+\item{random_seed}{A numerical value for the random seed to ensure random splitting is reproducible.
+Default = \code{NULL}.}
+
+\item{impute_method}{A character indicating the imputation method to use. Options include \code{"bag_impute"}
+(Bagged Trees Imputation) and \code{"knn_impute"} (KNN Imputation).}
+
+\item{impute_args}{A list specifying an additional argument for the imputation method. Below are the additional
+  arguments available for each imputation option.
+  \itemize{
+    \item \code{"bag_impute"}: \code{trees}
+    \item \code{"knn_impute"}: \code{neighbors}
+  }
+  For specific information about each parameter, please refer to the recipes documentation.
+  Default = \code{NULL}.
+parameter, and contains the parameters to be passed to the respective model. Default = \code{NULL}.}
+
+\item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation.
+Default = \code{FALSE}.}
+
+\item{save_data}{A logical value to save all training and test/validation sets during train-test splitting
+and/or k-fold cross validation. Default = \code{FALSE}.}
+
+\item{n_cores}{A numerical value specifying the number of cores to use for parallel processing.
+Default = \code{NULL}.}
 
 \item{remove_obs}{A logical value to remove observations with categorical predictors from the test/validation set
-that have not been observed during model training. Some algorithms may produce an error if this occurs. Default = FALSE.}
+that have not been observed during model training. Some algorithms may produce an error if this
+occurs. Default = \code{FALSE}.}
 
-\item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation. Default = FALSE.}
-
-\item{save_data}{A logical value to save all training and test/validation sets during train-test splitting and/or k-fold cross validation. Default = FALSE.}
-
-\item{final_model}{A logical value to use all complete observations in the input data for model training. Default = FALSE.}
-
-\item{n_cores}{A numerical value specifying the number of cores to use for parallel processing. Default = NULL.}
-
-\item{standardize}{A logical value or numerical vector. If TRUE, all columns except the target, columns of class character, and columns of class factor, will be standardized. To specify the columns to be standardized, create a numerical or character vector consisting of the column indices or names to be standardized.}
+\item{standardize}{A logical value or numerical vector. If \code{TRUE}, all columns except the target, that are
+numeric, will be standardized. To specify the columns to be standardized, create a numerical
+or character vector consisting of the column indices or names to be standardized.}
 
 \item{...}{Additional arguments specific to the chosen classification algorithm.
-Please refer to the corresponding algorithm's documentation for additional arguments and their descriptions.}
+Please refer to the corresponding algorithm's documentation for additional arguments and their
+descriptions.}
 }
 \value{
-A list containing the results of train-test splitting and/or k-fold cross-validation (if specified), performance metrics, information on the class distribution in the training, test sets, and folds (if applicable), 
-        saved models (if specified), and saved datasets (if specified), and a final model (if specified).
+A list containing the results of train-test splitting and/or k-fold cross-validation (if specified),
+        performance metrics, information on the class distribution in the training, test sets, and folds
+        (if applicable), saved models (if specified), and saved datasets (if specified), and a final model
+        (if specified).
 }
 \description{
 performs a train-test split and/or k-fold cross validation
@@ -90,35 +115,39 @@ on classification data using various classification algorithms.
 }
 \section{Model-specific additional arguments}{
 
-  Each model type accepts additional arguments specific to the classification algorithm. The available arguments for each model type are:
-
-  - "lda": prior, method, nu
-  - "qda": prior, method, nu
-  - "logistic": weights, singular.ok, maxit
-  - "svm": kernel, degree, gamma, cost, nu
-  - "naivebayes": prior, laplace, usekernel
-  - "ann": size, rang, decay, maxit, softmax, entropy, abstol, reltol
-  - "knn": kmax, ks, distance, kernel
-  - "decisiontree": weights, method, parms, control, cost
-  - "randomforest": weights, ntree, mtry, nodesize, importance
-  - "multinom": weights, Hess
-  - "gbm": params, nrounds
+  Each option of \code{model_type} accepts additional arguments specific to the classification algorithm. The
+  available arguments for each \code{model_type} are:
+  \itemize{
+   \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}
+   \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
+   \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
+   \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}
+   \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}
+   \item \code{"ann"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
+                       \code{entropy}, \code{abstol}, \code{reltol}
+   \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
+   \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
+   \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance}
+   \item \code{"multinom"}: \code{weights}, \code{Hess}
+   \item \code{"gbm"}: \code{params}, \code{nrounds}
+  }
 }
 
-\section{Functions used from packages for each model type}{
+\section{Functions used from packages for each option for \code{model_type}}{
 
-
-  - "lda": lda() from MASS package
-  - "qda": qda() from MASS package
-  - "logistic": glm() from base package with family = "binomial"
-  - "svm": svm() from e1071 package
-  - "naivebayes": naive_bayes() from naivebayes package
-  - "ann": nnet() from nnet package
-  - "knn": train.kknn() from kknn package
-  - "decisiontree": rpart() from rpart package
-  - "randomforest": randomForest() from randomForest package 
-  - "multinom": multinom() from nnet package
-  - "gbm": xgb.train() from xgboost package
+  \itemize{
+   \item \code{"lda"}: \code{lda()} from MASS package
+   \item \code{"qda"}: \code{qda()} from MASS package
+   \item \code{"logistic"}: \code{glm()} from base package with \code{family = "binomial"}
+   \item \code{"svm"}: \code{svm()} from e1071 package
+   \item \code{"naivebayes"}: \code{naive_bayes()} from naivebayes package
+   \item \code{"ann"}: \code{nnet()} from nnet package
+   \item \code{"knn"}: \code{train.kknn()} from kknn package
+   \item \code{"decisiontree"}: \code{rpart()} from rpart package
+   \item \code{"randomforest"}: \code{randomForest()} from randomForest package 
+   \item \code{"multinom"}: \code{multinom()} from nnet package
+   \item \code{"gbm"}: \code{xgb.train()} from xgboost package
+  }
 }
 
 \examples{
@@ -133,7 +162,7 @@ result <- classCV(data = iris, target = "Species",
 result
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
-result <- classCV(data = iris, target = "Species", n_folds = 5, 
+result <- classCV(data = iris, formula = Species~., n_folds = 5, 
                   model_type = "gbm",
                   params = list(objective = "multi:softprob",
                                 num_class = 3,eta = 0.3,max_depth = 6), 

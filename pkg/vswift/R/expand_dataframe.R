@@ -22,5 +22,3 @@
     return(classCV_output)
   }
 }
-
-
