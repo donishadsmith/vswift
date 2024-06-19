@@ -1,8 +1,9 @@
 # Helper function to store all model information that will be contained in the main output of the classCV function. 
 #' @noRd
 #' @export
-.store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL, target = NULL, model_type = NULL,
-                              threshold = NULL, split = NULL, n_folds = NULL, stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL, 
+.store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL,
+                              target = NULL, model_type = NULL, threshold = NULL, split = NULL, n_folds = NULL,
+                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL, 
                               impute_method = NULL, impute_args = NULL, classCV_output = NULL, ...){
   if(is.null(impute_method)){
     # Initialize output list

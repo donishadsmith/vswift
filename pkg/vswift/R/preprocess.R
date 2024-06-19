@@ -2,8 +2,10 @@
 #' @importFrom parallel detectCores
 #' @noRd
 #' @export
-.error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL, model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL, standardize = NULL, call = NULL, ...){
+.error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL,
+                            model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
+                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL,
+                            standardize = NULL, call = NULL, ...){
   
   # List of valid inputs
   valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
@@ -13,8 +15,8 @@
   
   # Check standardize
   if(!is.null(standardize)){
-    if(!any(standardize == TRUE, standardize == FALSE, is.numeric(standardize), is.integer(standardize), is.character(standardize))){
-      stop("`standardize` must either be TRUE, FALSE, or a numeric vector")
+    if(!inherits(standardize, c("logical", "numeric", "integer", "character"))){
+      stop("`standardize` must either be TRUE, FALSE, a numeric vector, or a character vector")
     }
   }
   # Check if impute method is valid
@@ -80,7 +82,8 @@
   # Get target and predictors if formula specified
   if(!is.null(formula)){
     if(any(!is.null(formula) & !is.null(target) || !is.null(predictors))){
-      warning("`formula` specified with `target` and/or `predictors`, `formula` will overwrite the specified `target` and `predictors`")
+      warning("`formula` specified with `target` and/or `predictors`, `formula` will overwrite the specified `target`
+              and `predictors`")
     }
     get_features_target <- .get_features_target(formula = formula, data = data)
     target <- get_features_target[["target"]]
@@ -170,7 +173,8 @@
       stop("number of cores must be a numeric value")
     }
     if(n_cores > detectCores()){
-      stop(sprintf("more cores specified than available; only %s cores available but %s cores specified", detectCores(), n_cores))
+      stop(sprintf("more cores specified than available; only %s cores available but %s cores specified",
+                   detectCores(), n_cores))
     }
   }
 }
@@ -205,7 +209,8 @@
 # Helper function for classCV to check if additional arguments are valid
 #' @noRd
 #' @export
-.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, mod_args = NULL, call = NULL, ...){
+.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, mod_args = NULL,
+                                        call = NULL, ...){
   
   # Helper function to generate error message
   error_message <- function(method_name, invalid_args) {
@@ -342,7 +347,8 @@
 #' @importFrom recipes step_impute_knn recipe all_predictors step_impute_bag prep bake
 #' @noRd
 #' @export
-.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output, iteration, parallel = TRUE, final = FALSE, random_seed = NULL){
+.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output,
+                        iteration, parallel = TRUE, final = FALSE, random_seed = NULL){
   # Set seed
   if(!is.null(random_seed)){
     set.seed(random_seed)
@@ -371,7 +377,8 @@
         } else {
           formula <- formula
         }
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data), neighbors = impute_args[["neighbors"]], all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data),
+                               neighbors = impute_args[["neighbors"]], all_predictors())  
       } else {
         rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data),all_predictors())  
       }
@@ -382,7 +389,8 @@
         } else {
           formula <- formula
         }
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data), trees = impute_args[["trees"]], all_predictors()) 
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data),
+                               trees = impute_args[["trees"]], all_predictors()) 
       } else {
         rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data), all_predictors())  
       }
@@ -412,7 +420,8 @@
     processed_data <- processed_data[sorted_rows,]
     
     # Create imputation_information list to store information 
-    imputation_information <- .get_missing_info(training_data = training_data, validation_data = validation_data, iteration = iteration, imputation_method = imputation_method)
+    imputation_information <- .get_missing_info(training_data = training_data, validation_data = validation_data,
+                                                iteration = iteration, imputation_method = imputation_method)
     
     if(iteration == "Training"){
       imputation_information[["split"]][["prep"]] <- prep
@@ -439,7 +448,8 @@
     
   } else{
     # Get missing information
-    imputation_information <- .get_missing_info(preprocessed_data = preprocessed_data, imputation_method = imputation_method)
+    imputation_information <- .get_missing_info(preprocessed_data = preprocessed_data,
+                                                imputation_method = imputation_method)
     # Impute data
     if(imputation_method == "knn_impute"){
       if(!is.null(impute_args)){
@@ -448,7 +458,8 @@
         } else {
           formula <- formula
         }
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data), neighbors = impute_args[["neighbors"]], all_predictors())  
+        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data),
+                               neighbors = impute_args[["neighbors"]], all_predictors())  
       } else {
         rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())  
       }
@@ -459,7 +470,8 @@
         } else {
           formula <- formula
         }
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data), trees = impute_args[["trees"]], all_predictors()) 
+        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data),
+                               trees = impute_args[["trees"]], all_predictors()) 
       } else {
         rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())  
       }
@@ -481,7 +493,8 @@
 # Assist function for .imputation to get number of missing data for each column
 #' @noRd
 #' @export
-.get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL, iteration, imputation_method){
+.get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL,
+                              iteration, imputation_method){
   # Create imputation list
   imputation_information <- list()
   
@@ -554,10 +567,10 @@
       }
     }
   } else{
-    warning("no standardization has been done; standardization specified but column indices are outside possible range or column names don't exist")
+    warning("no standardization has been done; standardization specified but column indices are outside possible range
+            or column names don't exist")
   }
   
   standardize_list <- list("training_data" = training_data, "validation_data" = validation_data)
   return(standardize_list)
 }
-

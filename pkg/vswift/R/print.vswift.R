@@ -1,19 +1,23 @@
 #' Print parameter information and/or model evaluation metrics
 #'
 #' @name print
-#' @description Prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x. 
+#' @description Prints parameter information and/or model evaluation metrics (classification accuracy, precision,
+#'              recall, and f-score for each class) from a vswift object. 
 #' 
-#' @param x An x of class vswift.
+#' @param x The vswift object.
 #' @param ... Additional arguments to be passed.
-#' @param parameters A logical value indicating whether to print parameter information from the vswift x. Default = TRUE.
-#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift x. This will display the precision, recall, and f-score for each class.
-#' If the vswift x contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
-#' will be displayed. If the vswift x contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.
-#' @param model_type A character or vector of the model information to be printed. If not specified, all model information will be printed. Available options:
-#'                   "lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
-#'                   "logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
-#'                   "ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-#'                   "randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).
+#' @param parameters A logical value indicating whether to print parameter information from the vswift object.
+#'                   Default = \code{TRUE}.
+#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. This will
+#'                display the precision, recall, and f-score for each class, along with the means of each metric (if
+#'                k-fold validation was used). Default = \code{TRUE}.
+#' @param model_type A character or vector of the model information to be printed. If \code{NULL}, all model
+#'                   information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
+#'                   \code{"qda"} (Quadratic Discriminant Analysis), code{"logistic"} (Logistic Regression),
+#'                   \code{"svm"} (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
+#'                   (Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
+#'                   (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.
 #' @examples
 #' # Load an example dataset
 #' 
@@ -29,13 +33,15 @@
 #'
 #' @author Donisha Smith
 #' @export
-"print.vswift"<- function(x, ..., parameters = TRUE, metrics = TRUE, model_type = NULL){
+
+"print.vswift" <- function(x , ..., parameters = TRUE, metrics = TRUE, model_type = NULL){
   if(inherits(x, "vswift")){
     # List for model names
-    model_list <- list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis", "svm" = "Support Vector Machines",
-                       "ann" = "Neural Network", "decisiontree" = "Decision Tree", "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression", "knn" = "K-Nearest Neighbors",
-                       "naivebayes" = "Naive Bayes")
+    model_list <- list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
+                       "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
+                       "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+                       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+                       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes")
     
     # Get models
     if(is.null(model_type)){
@@ -50,7 +56,8 @@
       # Warning when invalid models specified
       invalid_models <- model_type[which(!model_type %in% models)]
       if(length(invalid_models) > 0){
-        warning(sprintf("invalid model in model_type or information for specified model not present in vswift x: %s", paste(unlist(invalid_models), collapse = ", ")))
+        warning(sprintf("invalid model in model_type or information for specified model not present in vswift x: %s",
+                        paste(unlist(invalid_models), collapse = ", ")))
       }
     }
    
@@ -58,7 +65,8 @@
     string_length <- sapply(unlist(x["classes"]), function(x) nchar(x))
     max_string_length <- max(string_length)
     cat("\n")
-    cat(rep("-",nchar(paste("Class:",rep("", max_string_length),"Average Precision:  Average Recall:  Average F-score:\n\n"))[1] %/% 1.5),"\n")
+    partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
+    cat(rep("-",nchar(paste("Class:",rep("", max_string_length),partial_output_names))[1] %/% 1.5),"\n")
     cat("\n\n")
     
     for(model in models){
@@ -180,10 +188,13 @@
             # Print parameters name
             cat("\n\n", "K-fold CV","\n")
             cat(rep("_",nchar("K-fold CV")), "\n\n")
-            classification_accuracy_metrics <- c(format(round(df[["cv"]][which(df[["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2), nsmall = 2),
-                                                 format(round(df[["cv"]][which(df[["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2), nsmall = 2))
+            mean_cv <- round(df[["cv"]][which(df[["cv"]]$Fold == "Mean CV:"),"Classification Accuracy"],2)
+            sd_cv <- round(df[["cv"]][which(df[["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2)
+            classification_accuracy_metrics <- c(format(mean_cv, nsmall = 2),
+                                                 format(sd_cv, nsmall = 2))
             
-            classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1], classification_accuracy_metrics[2])
+            classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],
+                                                       classification_accuracy_metrics[2])
             cat("Average Classification Accuracy: ", classification_accuracy_metrics ,"\n\n")
             cat("Class:",rep("", max_string_length),"Average Precision:  Average Recall:  Average F-score:\n\n")
             # Go through column names, split the colnames and class name to see if the column name is the metric for that class
@@ -199,8 +210,8 @@
                 }
               }
               # Print metric corresponding to class
-              mean_class_metrics <- sapply(df[["cv"]][((n_folds+1)),class_col], function(x) format(round(x,2), nsmall = 2))  
-              sd_class_metrics <- sapply(df[["cv"]][((n_folds+2)),class_col], function(x) format(round(x,2), nsmall = 2))  
+              mean_class_metrics <- sapply(df[["cv"]][((n_folds+1)), class_col], function(x) format(round(x,2), nsmall = 2))  
+              sd_class_metrics <- sapply(df[["cv"]][((n_folds+2)), class_col], function(x) format(round(x,2), nsmall = 2))  
               sd_metric_position <- 1
               class_metrics <- c()
               for(metric in mean_class_metrics){
@@ -224,7 +235,8 @@
         }
         # Add space and separation
         cat("\n\n")
-        cat(rep("-", nchar(paste("Class:", rep("", max_string_length), "Average Precision:  Average Recall:  Average F-score:\n\n"))[1] %/% 1.5), "\n")
+        partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
+        cat(rep("-", nchar(paste("Class:", rep("", max_string_length), partial_output_names))[1] %/% 1.5), "\n")
         cat("\n\n") 
       }
     }

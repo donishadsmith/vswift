@@ -8,24 +8,28 @@
 \method{print}{vswift}(x, ..., parameters = TRUE, metrics = TRUE, model_type = NULL)
 }
 \arguments{
-\item{x}{An x of class vswift.}
+\item{x}{The vswift object.}
 
 \item{...}{Additional arguments to be passed.}
 
-\item{parameters}{A logical value indicating whether to print parameter information from the vswift x. Default = TRUE.}
+\item{parameters}{A logical value indicating whether to print parameter information from the vswift object.
+Default = \code{TRUE}.}
 
-\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift x. This will display the precision, recall, and f-score for each class.
-If the vswift x contains information for train-test splitting, the classification accuracy for the training and test set as well as the precision, recall, and f-score for each class
-will be displayed. If the vswift x contains information for k-fold validation, the mean and standard deviation for the classification accuracy and class' precision, recall, and f-score will be displayed. Default = TRUE.}
+\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will
+display the precision, recall, and f-score for each class, along with the means of each metric (if
+k-fold validation was used). Default = \code{TRUE}.}
 
-\item{model_type}{A character or vector of the model information to be printed. If not specified, all model information will be printed. Available options:
-"lda" (Linear Discriminant Analysis), "qda" (Quadratic Discriminant Analysis), 
-"logistic" (Logistic Regression), "svm" (Support Vector Machines), "naivebayes" (Naive Bayes), 
-"ann" (Artificial Neural Network), "knn" (K-Nearest Neighbors), "decisiontree" (Decision Tree), 
-"randomforest" (Random Forest), "multinom" (Multinomial Logistic Regression), "gbm" (Gradient Boosting Machine).}
+\item{model_type}{A character or vector of the model information to be printed. If \code{NULL}, all model
+information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
+\code{"qda"} (Quadratic Discriminant Analysis), code{"logistic"} (Logistic Regression),
+\code{"svm"} (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
+(Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
+(Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.}
 }
 \description{
-Prints parameter information and/or model evaluation metrics (classification accuracy and precision, recall, and f-score for each class) from a vswift x.
+Prints parameter information and/or model evaluation metrics (classification accuracy, precision,
+             recall, and f-score for each class) from a vswift object.
 }
 \examples{
 # Load an example dataset

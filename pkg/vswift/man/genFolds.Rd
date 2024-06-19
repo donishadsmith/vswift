@@ -17,24 +17,31 @@ genFolds(
 \arguments{
 \item{data}{A data frame.}
 
-\item{target}{A numerical index or character name for the target variable. Only needs to be specified if stratified = TRUE. Default = NULL.}
+\item{target}{A numerical index or character name for the target variable. Only needs to be specified if
+\code{stratified = TRUE}. Default = \code{NULL}.}
 
-\item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set, leaving the rest for the test set. If not specified, train-test splitting will not be done.}
+\item{split}{A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set,
+leaving the rest for the test set. If not specified, train-test splitting will not be done.
+Default = \code{NULL}.}
 
-\item{n_folds}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross validation will not be performed.}
+\item{n_folds}{A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross
+validation will not be performed. Default = \code{NULL}.}
 
-\item{stratified}{A logical value indicating if stratified sampling should be used. Default = FALSE.}
+\item{stratified}{A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.}
 
-\item{random_seed}{A numerical value for the random seed to be used. Default = NULL.}
+\item{random_seed}{A numerical value for the random seed to be used. Default = \code{NULL}.}
 
-\item{create_data}{A logical value indicating whether to create all training and test/validation data frames. Default = FALSE.}
+\item{create_data}{A logical value indicating whether to create all training and test/validation data frames.
+Default = \code{FALSE}.}
 }
 \value{
-A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on the class distribution in the training, test sets, and folds (if applicable)
-        as well as the generated split datasets and folds based on the indices.
+A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on
+        the class distribution in the training, test sets, and folds (if applicable) as well as the generated split
+        datasets and folds based on the indices.
 }
 \description{
-Standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the option to perform stratified sampling based on class distribution.
+Standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the
+             option to perform stratified sampling based on class distribution.
 }
 \examples{
 # Load example dataset 
