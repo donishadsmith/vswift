@@ -43,7 +43,7 @@ To install and use vswift:
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.1.1/vswift_0.1.1.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.1.2/vswift_0.1.2.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")

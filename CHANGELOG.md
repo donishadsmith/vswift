@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.1.2] - 2024-06-20
+### 🐛 Fixes
+- kknn's `contr.dummy` not being found as a function.
+
 ## [0.1.1] - 2024-06-19
 ### ♻ Changed
 - Changed order of parameters for ``classCV()`` function.
