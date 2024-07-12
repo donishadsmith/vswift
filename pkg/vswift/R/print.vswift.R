@@ -2,8 +2,8 @@
 #'
 #' @name print
 #' @description Prints parameter information and/or model evaluation metrics (classification accuracy, precision,
-#'              recall, and f-score for each class) from a vswift object. 
-#' 
+#'              recall, and f-score for each class) from a vswift object.
+#'
 #' @param x The vswift object.
 #' @param ... Additional arguments to be passed.
 #' @param parameters A logical value indicating whether to print parameter information from the vswift object.
@@ -20,14 +20,14 @@
 #'                   (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.
 #' @examples
 #' # Load an example dataset
-#' 
+#'
 #' data(iris)
-#' 
+#'
 #' # Perform a train-test split with an 80% training set using LDA
 #'
 #' result <- classCV(data = iris, target = "Species", split = 0.8,
 #' model_type = "lda", stratified = TRUE, random_seed = 123)
-#' 
+#'
 #' #  Print parameter information and performance metrics
 #' print(result)
 #'
@@ -42,7 +42,7 @@
                        "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
                        "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
                        "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes")
-    
+
     # Get models
     if(is.null(model_type)){
       models <- x[["parameters"]][["model_type"]]
@@ -52,7 +52,7 @@
       models <- intersect(model_type, x[["parameters"]][["model_type"]])
       if(length(models) == 0){
         stop("no models specified in model_type")
-      } 
+      }
       # Warning when invalid models specified
       invalid_models <- model_type[which(!model_type %in% models)]
       if(length(invalid_models) > 0){
@@ -60,7 +60,7 @@
                         paste(unlist(invalid_models), collapse = ", ")))
       }
     }
-   
+
     # Calculate string length of classes
     string_length <- sapply(unlist(x["classes"]), function(x) nchar(x))
     max_string_length <- max(string_length)
@@ -68,7 +68,7 @@
     partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
     cat(rep("-",nchar(paste("Class:",rep("", max_string_length),partial_output_names))[1] %/% 1.5),"\n")
     cat("\n\n")
-    
+
     for(model in models){
       if(model %in% names(x[["metrics"]])){
         if(parameters == TRUE){
@@ -96,7 +96,7 @@
           if(!is.null(x[["parameters"]][["impute_method"]])){
             name_vec <- names(x[["parameters"]][["impute_args"]])
             if(!is.null(x[["parameters"]][["impute_args"]])){
-              cat(sprintf("Imputation Arguments: %s\n\n", 
+              cat(sprintf("Imputation Arguments: %s\n\n",
                           paste(name_vec, "=", x[["parameters"]][["impute_args"]], collapse = " , ")))
             }
           }
@@ -138,14 +138,14 @@
           if(parameters == FALSE){
             cat(paste("Model Type:", model_list[[model]]), "\n\n")
           }
-          string_diff <- max_string_length - string_length 
+          string_diff <- max_string_length - string_length
           # Simplify parameter name
           df <- x[["metrics"]][[model]]
           # Print metrics metrics for train test set if the dataframe exists
           if(is.data.frame(df[["split"]])){
             for(set in c("Training", "Test")){
               # Variable for which class string length to print to ensure all values have equal spacing
-              class_position <- 1 
+              class_position <- 1
               # Print name of the set metrics to be printed and add underscores
               cat("\n\n", set, "\n")
               cat(rep("_", nchar(set)), "\n\n")
@@ -160,14 +160,14 @@
                 # Go through column names, split the colnames and class name to see if the column name is the metric for that class
                 for(colname in colnames(df[["split"]])){
                   split_colname <- unlist(strsplit(colname, split = " "))
-                  split_classname <- unlist(strsplit(class, split = " ")) 
+                  split_classname <- unlist(strsplit(class, split = " "))
                   if(all(split_classname %in% split_colname)){
                     # Store colnames for the class is variable
                     class_col <- c(class_col, colname)
                   }
                 }
                 # Print metric corresponding to class
-                class_metrics <- sapply(df[["split"]][which(df[["split"]]$Set == set),class_col], function(x) format(round(x,2), nsmall = 2))  
+                class_metrics <- sapply(df[["split"]][which(df[["split"]]$Set == set),class_col], function(x) format(round(x,2), nsmall = 2))
                 # Add spacing
                 padding <- nchar(paste("Class:", rep("", max_string_length),"Pre"))[1]
                 if(class_metrics[1] == "NaN"){
@@ -182,7 +182,7 @@
           }
           if(is.data.frame(df[["cv"]])){
             # Variable for which class string length to print to ensure all values have equal spacing
-            class_position <- 1 
+            class_position <- 1
             # Get number of folds to select the correct rows for mean and stdev
             n_folds <- x[["parameters"]][["n_folds"]]
             # Print parameters name
@@ -192,7 +192,7 @@
             sd_cv <- round(df[["cv"]][which(df[["cv"]]$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2)
             classification_accuracy_metrics <- c(format(mean_cv, nsmall = 2),
                                                  format(sd_cv, nsmall = 2))
-            
+
             classification_accuracy_metrics <- sprintf("%s (%s)", classification_accuracy_metrics[1],
                                                        classification_accuracy_metrics[2])
             cat("Average Classification Accuracy: ", classification_accuracy_metrics ,"\n\n")
@@ -203,15 +203,15 @@
               class_col <- c()
               for(colname in colnames(df[["cv"]])){
                 split_colname <- unlist(strsplit(colname, split = " "))
-                split_classname <- unlist(strsplit(class, split = " ")) 
+                split_classname <- unlist(strsplit(class, split = " "))
                 if(all(split_classname %in% split_colname)){
                   # Store colnames for the class is variable
                   class_col <- c(class_col, colname)
                 }
               }
               # Print metric corresponding to class
-              mean_class_metrics <- sapply(df[["cv"]][((n_folds+1)), class_col], function(x) format(round(x,2), nsmall = 2))  
-              sd_class_metrics <- sapply(df[["cv"]][((n_folds+2)), class_col], function(x) format(round(x,2), nsmall = 2))  
+              mean_class_metrics <- sapply(df[["cv"]][((n_folds+1)), class_col], function(x) format(round(x,2), nsmall = 2))
+              sd_class_metrics <- sapply(df[["cv"]][((n_folds+2)), class_col], function(x) format(round(x,2), nsmall = 2))
               sd_metric_position <- 1
               class_metrics <- c()
               for(metric in mean_class_metrics){
@@ -237,7 +237,7 @@
         cat("\n\n")
         partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
         cat(rep("-", nchar(paste("Class:", rep("", max_string_length), partial_output_names))[1] %/% 1.5), "\n")
-        cat("\n\n") 
+        cat("\n\n")
       }
     }
   }

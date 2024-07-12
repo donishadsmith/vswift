@@ -1,9 +1,9 @@
 #' Create split datasets and/or folds with optional stratification
-#' 
-#' @name genFolds 
+#'
+#' @name genFolds
 #' @description Standalone function generates train-test split datasets and/or k-fold cross-validation folds, with the
 #'              option to perform stratified sampling based on class distribution.
-#' 
+#'
 #' @param data A data frame.
 #' @param target A numerical index or character name for the target variable. Only needs to be specified if
 #'               \code{stratified = TRUE}. Default = \code{NULL}.
@@ -15,17 +15,17 @@
 #' @param stratified A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.
 #' @param random_seed A numerical value for the random seed to be used. Default = \code{NULL}.
 #' @param create_data A logical value indicating whether to create all training and test/validation data frames.
-#'                    Default = \code{FALSE}. 
+#'                    Default = \code{FALSE}.
 #' @return A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on
 #'         the class distribution in the training, test sets, and folds (if applicable) as well as the generated split
 #'         datasets and folds based on the indices.
 #' @examples
-#' # Load example dataset 
-#' 
+#' # Load example dataset
+#'
 #' data(iris)
-#' 
+#'
 #' # Obtain indices for 80% training/test split and 5-fold CV
-#' 
+#'
 #' output <- genFolds(data = iris, target = "Species", split = 0.8, n_folds = 5)
 #'
 #' @author Donisha Smith

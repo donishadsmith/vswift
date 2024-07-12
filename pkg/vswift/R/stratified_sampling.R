@@ -41,12 +41,12 @@
            if(!is.null(random_seed)){
              set.seed(random_seed)
            }
-           
+
            # Get class indices
            class_indices <- output[["class_indices"]]
            #Initialize sample_indices for cv since it will be three levels
            output[["sample_indices"]][["cv"]] <- list()
-           
+
            # Create folds
            for(i in 1:k){
              # Keep initializing variable

@@ -2,7 +2,7 @@
 #'
 #' @name plot
 #' @description Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each
-#'              class) from a vswift object. 
+#'              class) from a vswift object.
 #'
 #' @param x An vswift object.
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results.
@@ -27,22 +27,22 @@
 #'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
 #'                   (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.
 #' @param ... Additional arguments that can be passed to the \code{png()} function.
-#' 
+#'
 #' @return Plots representing evaluation metrics.
 #' @examples
 #' # Load an example dataset
-#' 
+#'
 #' data(iris)
-#' 
+#'
 #' # Perform a train-test split with an 80% training set and stratified_sampling using QDA
-#' 
+#'
 #' result <- classCV(data = iris, target = "Species", split = 0.8,
 #' model_type = "qda", stratified = TRUE)
-#' 
+#'
 #' # Plot performance metrics for train-test split
-#' 
+#'
 #' plot(result, class_names = "setosa", metrics = "f1")
-#' 
+#'
 #' @author Donisha Smith
 #' @importFrom grDevices dev.new dev.off graphics.off png
 #' @importFrom graphics abline axis
@@ -50,7 +50,7 @@
 
 "plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"),
                           class_names = NULL, save_plots = FALSE, path = NULL, model_type = NULL){
-  
+
   if(inherits(x, "vswift")){
     # Create list
     model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
@@ -58,7 +58,7 @@
                       "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
                       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
                       "knn" = "K-Nearest Neighbors","naivebayes" = "Naive Bayes")
-    
+
     # Lowercase and intersect common names
     metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
     if(length(metrics) == 0){
@@ -71,7 +71,7 @@
         stop(sprintf("no classes specified, available classes: %s", paste(x[["classes"]][[1]], collapse = ", ")))
       }
     }
-    
+
     # Get models
     if(is.null(model_type)){
       models <- x[["parameters"]][["model_type"]]
@@ -81,11 +81,11 @@
       models <- intersect(model_type, x[["parameters"]][["model_type"]])
       if(length(models) == 0){
         stop("no models specified in model_type")
-      } 
+      }
       # Warning when invalid models specified
       invalid_models <- model_type[which(!model_type %in% models)]
       if(length(invalid_models) > 0){
-        warning(sprintf("invalid model in model_type or information for specified model not present in vswift x: %s", 
+        warning(sprintf("invalid model in model_type or information for specified model not present in vswift x: %s",
                         paste(unlist(invalid_models), collapse = ", ")))
       }
     }

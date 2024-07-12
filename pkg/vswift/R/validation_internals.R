@@ -7,20 +7,20 @@
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
   if("Training" %in% split_word){
-    # Assigning data split matrices to new variable 
+    # Assigning data split matrices to new variable
     model_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]],]
     validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
   } else if("Fold" %in% split_word){
     model_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]),]
     validation_data <- preprocessed_data[c(classCV_output[["sample_indices"]][["cv"]][[tolower(i)]]),]
   }
-  
+
   if(all(class(standardize) %in% c("logical", "integer", "numeric", "character"), standardize != FALSE)){
     standardize_output <- .standardize(training_data = model_data, validation_data = validation_data ,target = target, standardize = standardize)
     model_data <- standardize_output[["training_data"]]
     validation_data <- standardize_output[["validation_data"]]
   }
-  
+
   # Variable to select correct dataframe
   method <- ifelse("Fold" %in% split_word, "cv", "split")
 
@@ -43,20 +43,20 @@
     validation_data <- remove_obs_output[["test_data"]]
     classCV_output <- remove_obs_output[["output"]]
   }
-  
+
   # Create prediction data
-  
+
   prediction_data <- list()
-  
+
   if(i == "Training"){
     prediction_data[["Training"]] <- model_data
     prediction_data[["Test"]] <- validation_data
-  } 
+  }
   else {
     prediction_data[[i]] <- validation_data
   }
 
-  
+
   # Create variables used in for loops to calculate precision, recall, and f1
   if(model_name %in% c("logistic","gbm")){
     classes <- as.numeric(unlist(classCV_output[["class_dictionary"]]))
@@ -64,7 +64,7 @@
   } else {
     class_names <- classes <- classCV_output[["classes"]][[target]]
   }
-  
+
   # Save data
   if(save_data == TRUE){
     if(!is.data.frame(classCV_output[["saved_data"]][[method]][[tolower(i)]])){
@@ -76,11 +76,11 @@
       }
     }
   }
-  
+
   # Save model
   if(save_models == TRUE) classCV_output[["saved_models"]][[model_name]][[method]][[tolower(i)]] <- model
-  
-  
+
+
   # Get prediction
   if(i == "Training"){
     prediction_vector <- .prediction(model_type = model_name, model = model, prediction_data = prediction_data,
@@ -92,10 +92,10 @@
                                      predictors = predictors, target = target, threshold = threshold,
                                      class_dict = classCV_output[["class_dictionary"]], var_names = i)
   }
-  
+
   # Variable to select correct dataframe
   col <- ifelse(method == "cv", "Fold", "Set")
-  
+
   for(j in names(prediction_vector)){
     temp_df <- classCV_output[["metrics"]][[model_name]][[method]]
     # Calculate classification accuracy
@@ -122,14 +122,14 @@
       }
     }
   }
-  
+
   # Reset class position
   class_position <- 1
-  
+
   return(classCV_output)
 }
 
-#Helper function for classCV to remove unobserved data 
+#Helper function for classCV to remove unobserved data
 #' @noRd
 #' @export
 .remove_obs <- function(training_data, test_data, target, iter, method, preprocessed_data, output, stratified){
@@ -141,7 +141,7 @@
       check_predictor_levels[[col]] <- names(table(training_data[,col]))[which(as.numeric(table(training_data[,col])) != 0)]
     }
   }
-  
+
   #Check new columns and set certain predictors in NA if the model has not been trained on
   for(col in colnames(test_data)[colnames(test_data) != target]){
     if(is.character(test_data[,col]) | is.factor(test_data[,col])){
@@ -151,13 +151,13 @@
       if(length(observations) > 0){
         warning(sprintf("for predictor `%s` in `%s` has at least one class the model has not trained on\n these
                         observations have been removed: %s", col,iter,paste(observations, collapse = ",")))
-        test_data <- test_data[-delete_rows,] 
+        test_data <- test_data[-delete_rows,]
         output[["sample_indices"]][[method]][[tolower(iter)]] <- as.numeric(row.names(test_data))
         # Update if stratified = TRUE
         if(stratified == TRUE){
           target_indices <- preprocessed_data[,target][output[["sample_indices"]][[method]][[tolower(iter)]]]
-          output[["sample_proportions"]][[method]][[tolower(iter)]] <- table(target_indices)/sum(table(target_indices)) 
-        } 
+          output[["sample_proportions"]][[method]][[tolower(iter)]] <- table(target_indices)/sum(table(target_indices))
+        }
       }
     }
   }
@@ -169,13 +169,13 @@
 # Helper function for classCV to create model
 #' @noRd
 #' @export
-#' @importFrom MASS lda qda 
-#' @importFrom naivebayes naive_bayes 
-#' @importFrom e1071 svm 
+#' @importFrom MASS lda qda
+#' @importFrom naivebayes naive_bayes
+#' @importFrom e1071 svm
 #' @importFrom nnet nnet.formula nnet multinom
 #' @importFrom kknn train.kknn
 #' @importFrom rpart rpart
-#' @importFrom randomForest randomForest 
+#' @importFrom randomForest randomForest
 #' @importFrom xgboost xgb.DMatrix xgb.train
 
 .generate_model <- function(model_type = NULL, formula = NULL, predictors = NULL, target = NULL, model_data = NULL,
@@ -186,10 +186,10 @@
     mod_args[[model_type]][["formula"]] <- formula
     mod_args[[model_type]][["data"]] <- model_data
     if(model_type == "logistic") mod_args[[model_type]][["family"]] <- "binomial"
-  } 
+  }
 
   switch(model_type,
-         "lda" = { 
+         "lda" = {
            # Have to explicitly call the class "formula" methods
            if(!is.null(mod_args[[model_type]])){
              model <- do.call(lda, mod_args[[model_type]])
@@ -258,7 +258,7 @@
   return(model)
 }
 
-# Helper function for classCV to predict 
+# Helper function for classCV to predict
 #' @noRd
 #' @export
 .prediction <- function(model_type, model, prediction_data, threshold, predictors, class_dict, target, var_names){
@@ -318,7 +318,7 @@
   precision <- true_pos/(true_pos + false_pos)
   recall <- true_pos/(true_pos + false_neg)
   f1 <- 2*(precision*recall)/(precision + recall)
-  
+
   calculate_metrics_list <- list("precision" = precision, "recall" = recall,"f1" = f1)
   return(calculate_metrics_list)
 }
@@ -356,7 +356,7 @@
       row <- as.numeric(unlist(strsplit(name, split = " "))[2])
       classCV_output[["metrics"]][[model_name]][["cv"]][row,2:dataframe_length] <- parallel_list[[name]][["metrics"]][[model_name]][["cv"]][row,2:dataframe_length]
     }
-    
+
     if(!is.null(impute_method)){
       if(name == "Fold 1"){
         classCV_output[["imputation"]][["cv"]] <- parallel_list[[name]][["imputation"]][["cv"]]

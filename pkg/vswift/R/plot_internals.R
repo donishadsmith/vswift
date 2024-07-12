@@ -30,14 +30,14 @@
   } else{
     classes <- class_names
   }
-  
+
   if(all(is.data.frame(df[["split"]]), split == TRUE)){
     if("accuracy" %in% metrics){
       # Plot metrics for training and test
       new_window()
       # Plot data
-      plot(x = 1:2, y = df[["split"]][1:2,"Classification Accuracy"], 
-           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", 
+      plot(x = 1:2, y = df[["split"]][1:2,"Classification Accuracy"],
+           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy",
            xaxt = "n", main = converted_model_name_plot)
       # Add axis info
       axis(1, at = 1:2, labels = c("Training","Test"))
@@ -50,7 +50,7 @@
           new_window()
           # Plot data
           plot(x = 1:2, y = df[["split"]][1:2,sprintf("Class: %s %s", class, metric)],
-               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n", 
+               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n",
                main = sprintf("%s - Class: %s", converted_model_name_plot, class))
           # Add axis info
           axis(1, at = 1:2, labels = c("Training","Test"))
@@ -65,13 +65,13 @@
     col_names <- c()
     if("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
     if(any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
-    
+
     for(col_name in col_names){
       # Get values
       num_vector <- df[["cv"]][1:idx, col_name]
       # Create png
       if(col_name == "Classification Accuracy"){
-        # Get ylab and main 
+        # Get ylab and main
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
       } else if(any(names(metrics_list) %in% metrics)){
@@ -80,14 +80,14 @@
           split_metric_name <- split_name[length(split_name)]
           # Get class name
           split_class_name_plot <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = " ")
-          # Get ylab and main 
+          # Get ylab and main
           ylab <- split_metric_name
           main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
       }
       # Plot metrics for training and test
       new_window()
       # Generate plot
-      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds", 
+      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds",
            ylab = ylab, xaxt = "n", main = main)
       # Add axis info
       axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
@@ -136,8 +136,8 @@
       png(filename = paste0(path, sprintf("%s_train_test_classification_accuracy.png",
                                          tolower(converted_model_name_png))), ...)
       # Plot data
-      plot(x = 1:2, y = df[["split"]][1:2,"Classification Accuracy"], 
-           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy", 
+      plot(x = 1:2, y = df[["split"]][1:2,"Classification Accuracy"],
+           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy",
            xaxt = "n", main = converted_model_name_plot)
       # Add axis info
       axis(1, at = 1:2, labels = c("Training","Test"))
@@ -149,12 +149,12 @@
       for(class in classes){
         for(metric in specified_metrics){
           # Create png
-          png(filename = paste0(path, sprintf("%s_train_test_%s_%s.png", 
-                                              tolower(converted_model_name_png), 
+          png(filename = paste0(path, sprintf("%s_train_test_%s_%s.png",
+                                              tolower(converted_model_name_png),
                                               tolower(metric), paste(unlist(strsplit(class, split = " ")), collapse = "_"))), ...)
           # Plot data
           plot(x = 1:2, y = df[["split"]][1:2,sprintf("Class: %s %s", class, metric)],
-               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n", 
+               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n",
                main = sprintf("%s - Class: %s", converted_model_name_plot, class))
           # Add axis info
           axis(1, at = 1:2, labels = c("Training","Test"))
@@ -171,14 +171,14 @@
     col_names <- c()
     if("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
     if(any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
-    
+
     for(col_name in col_names){
       # Get values
       num_vector <- df[["cv"]][1:idx, col_name]
       # Create png
       if(col_name == "Classification Accuracy"){
         png(filename = paste0(path, sprintf("%s_cv_classification_accuracy.png", tolower(converted_model_name_png))),...)
-        # Get ylab and main 
+        # Get ylab and main
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
       } else if(any(names(metrics_list) %in% metrics)){
@@ -191,12 +191,12 @@
           # Create png
           png(filename = paste0(path, sprintf("%s_cv_%s_%s.png", tolower(converted_model_name_png),
                                              tolower(split_metric_name),split_class_name_png)),...)
-          # Get ylab and main 
+          # Get ylab and main
           ylab <- split_metric_name
           main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
       }
       # Generate plot
-      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds", 
+      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds",
            ylab = ylab, xaxt = "n", main = main)
       # Add axis info
       axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
@@ -209,4 +209,3 @@
     }
   }
 }
-      

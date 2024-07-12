@@ -17,6 +17,8 @@ functions used from packages for each classification algorithms:
   - `multinom()` from nnet package for Multinomial Regression
   - `xgb.train()` from xgboost package for Gradient Boosting Machines
 
+This package was initially inspired by topepo's [caret](https://github.com/topepo/caret) package.
+
 **Still in beta but stable.**
 ## Features
 

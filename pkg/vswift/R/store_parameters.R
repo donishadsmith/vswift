@@ -1,9 +1,9 @@
-# Helper function to store all model information that will be contained in the main output of the classCV function. 
+# Helper function to store all model information that will be contained in the main output of the classCV function.
 #' @noRd
 #' @export
 .store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL,
                               target = NULL, model_type = NULL, threshold = NULL, split = NULL, n_folds = NULL,
-                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL, 
+                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL,
                               impute_method = NULL, impute_args = NULL, classCV_output = NULL, ...){
   if(is.null(impute_method)){
     # Initialize output list
@@ -22,13 +22,13 @@
     store_parameters_output[["parameters"]][["sample_size"]] <- nrow(preprocessed_data)
     store_parameters_output[["parameters"]][["parallel"]] <- ifelse(!is.null(parallel), TRUE, FALSE)
     store_parameters_output[["parameters"]][["n_cores"]] <- n_cores
-    
+
     if(!is.null(mod_args)){
       store_parameters_output[["parameters"]][["additional_arguments"]] <- mod_args
     } else {
       store_parameters_output[["parameters"]][["additional_arguments"]] <- list(...)
     }
-    
+
     # Store classes
     store_parameters_output[["classes"]][[target]] <- names(table(factor(preprocessed_data[,target])))
     # Create formula string
@@ -37,7 +37,7 @@
     } else{
       store_parameters_output[["formula"]] <- formula
     }
-    
+
     # Return output
     return(store_parameters_output)
   } else{
