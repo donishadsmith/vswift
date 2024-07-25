@@ -196,6 +196,8 @@ virginica            0.96 (0.05)       0.98 (0.04)       0.97 (0.03)
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+```
+
 ```R
 # Plot model evaluation metrics
 plot(results, split = TRUE, cv = TRUE, save_plots = TRUE)

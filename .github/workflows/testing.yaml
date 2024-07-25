@@ -3,6 +3,9 @@ name: test build and check
 on:
   push:
     branches: [main, master, test]
+  # Run weekly on Monday
+  schedule:
+    - cron: 0 0 * * 1
 
 jobs:
   test-build:
