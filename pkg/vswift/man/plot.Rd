@@ -44,7 +44,7 @@ will be saved to the current working directory. Default = \code{NULL}.}
 
 \item{model_type}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
 be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
-(Quadratic Discriminant Analysis), code{"logistic"} (Logistic Regression), \code{"svm"}
+(Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression), \code{"svm"}
 (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
 (Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
 (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}

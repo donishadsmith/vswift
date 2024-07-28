@@ -10,7 +10,11 @@ test_that("testing plot function", {
                                     n_folds = 5, mod_args = args, save_data = T, save_models = T, remove_obs = T, stratified = T))
   
   expect_no_error(
-    plot(result, model_type = "knn", split = T, cv = F, class_names = "setosa", metrics = "f1")
+    plot(result, model_type = "knn", split = T, cv = T, class_names = "setosa")
   )
-}
+  
+  expect_no_error(
+    plot(result, model_type = "knn", split = T, cv = T, class_names = "setosa", save_plots=TRUE)
+  )
+  }
 )

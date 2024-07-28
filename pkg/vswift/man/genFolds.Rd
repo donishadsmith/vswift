@@ -44,7 +44,7 @@ Standalone function generates train-test split datasets and/or k-fold cross-vali
              option to perform stratified sampling based on class distribution.
 }
 \examples{
-# Load example dataset 
+# Load example dataset
 
 data(iris)
 

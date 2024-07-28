@@ -93,5 +93,23 @@ test_that("running multiple models", {
   
   expect_no_error(result <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm", "randomforest"), 
                                    n_folds = 5, save_data = T, mod_args = args, save_models = T, remove_obs = T,
-                                   stratified = T, random_seed = 123))
+                                   stratified = T, random_seed = 123, standardize = TRUE))
+})
+
+test_that("n_cores", {
+  data <- iris 
+  
+  args <- list("knn" = list(ks = 3), "gbm" = list(params = list(objective = "multi:softprob",num_class = 3,eta = 0.3,
+                                                                max_depth = 6), nrounds = 10))
+  
+  expect_warning(result1 <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm", "randomforest"), 
+                                   n_folds = 5, save_data = T, mod_args = args, save_models = T, remove_obs = T,
+                                   stratified = T, random_seed = 123, n_cores = 2))
+  
+  expect_warning(result2 <- classCV(data = data, target = 5, split = 0.8, model_type = c("knn", "svm", "gbm", "randomforest"), 
+                                    n_folds = 5, save_data = T, mod_args = args, save_models = T, remove_obs = T,
+                                    stratified = T, random_seed = 123))
+  
+  expect_equal(result1$metrics$knn$folds,result2$metrics$knn$folds)
+  
 })
