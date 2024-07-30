@@ -14,13 +14,18 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.1.3] - 2024-07-29
+### 🐛 Fixes
+- Fix issue with `classCV` output list not storing information about the missing data in each column
+for both the training and validation set used for "split" and for each cv fold.
+
 ## [0.1.2] - 2024-06-20
 ### 🐛 Fixes
 - kknn's `contr.dummy` not being found as a function.
 
 ## [0.1.1] - 2024-06-19
 ### ♻ Changed
-- Changed order of parameters for ``classCV()`` function.
+- Changed order of parameters for `classCV` function.
 
 ### 🐛 Fixes
 - Standardizes validation data using the mean and standard deviation of the training set.

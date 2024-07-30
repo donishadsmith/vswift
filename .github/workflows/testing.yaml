@@ -58,6 +58,13 @@ jobs:
       - name: Run MacOS and get coverage
         if: ${{ matrix.os == 'macos-latest' && matrix.r == '4.4.0' }}
         run: |
-          Rscript -e 'covr::codecov(token = "${{ secrets.CODECOV_TOKEN }}", quiet = TRUE)'
+          Rscript -e 'install.packages("xml2");cov <- covr::package_coverage(); covr::to_cobertura(cov, filename = "coverage.xml")'
         shell: bash
         working-directory: pkg/vswift
+      
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.os == 'macos-latest' && matrix.r == '4.4.0' }}
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./pkg/vswift/coverage.xml

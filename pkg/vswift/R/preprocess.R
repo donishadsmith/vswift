@@ -301,7 +301,7 @@
   miss <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
   # Warn users the total number of rows with at least one column of missing data
   if(length(miss) > 0){
-    warning(sprintf("%s observations have at least one column of missing data", length(miss)))
+    warning(sprintf("%s observations have at least one instance of missing data", length(miss)))
     override_imputation <- FALSE
   }else{
     warning("no observations have missing data; no imputation will be performed")
@@ -429,16 +429,14 @@
     # Create imputation_information list to store information
     imputation_information <- .get_missing_info(training_data = training_data, validation_data = validation_data,
                                                 iteration = iteration, imputation_method = imputation_method)
-
+    
     if(iteration == "Training"){
       imputation_information[["split"]][["prep"]] <- prep
     } else {
       imputation_information[["cv"]][[tolower(iteration)]][["prep"]] <- prep
     }
 
-    if(is.null(classCV_output[["imputation"]])){
-      classCV_output[["imputation"]] <- imputation_information
-    }
+    if(is.null(classCV_output[["imputation"]])) classCV_output[["imputation"]] <- imputation_information
 
     if(parallel == FALSE){
       if(iteration != "Training"){
@@ -486,6 +484,11 @@
 
     prep <- prep(rec, data = preprocessed_data, new_data = NULL)
     processed_data <- data.frame(bake(prep, new_data = NULL))
+    
+    imputation_information[["final model"]][["prep"]] <- prep
+    # Remove method if in list already
+    if(!is.null(classCV_output[["imputation"]][["method"]])) imputation_information$method <- NULL
+    classCV_output[["imputation"]] <- c(classCV_output[["imputation"]], imputation_information)
 
     # Create full data
     if(ncol(processed_data) != ncol(preprocessed_data)){
@@ -510,23 +513,26 @@
   imputation_information <- list()
 
   imputation_information[["method"]] <- imputation_method
-
   # Create iteration vector
-  if(is.null(preprocessed_data)){
-    iter_vec <- preprocessed_data
+  if(!is.null(preprocessed_data)){
+    iter_list <- list("preprocessed_data" = preprocessed_data)
   } else{
-    iter_vec <- c(training_data, validation_data)
+    iter_list <- list("training_data" = training_data, "validation_data" = validation_data)
   }
 
   # Store information
-  for(data in iter_vec){
-    missing_cols <- colnames(data)[unique(as.vector(which(is.na(data),arr.ind = TRUE)[,"col"]))]
-    missing_numbers <- lapply(missing_cols, function(x) length(which(is.na(data[,x]))))
-    names(missing_numbers) <- missing_cols
+  for(data_id in names(iter_list)){
+    missing_cols <- colnames(iter_list[[data_id]])[unique(as.vector(which(is.na(iter_list[[data_id]]),arr.ind = TRUE)[,"col"]))]
+    n_missing <- lapply(missing_cols, function(x) length(which(is.na(iter_list[[data_id]][,x]))))
+    names(n_missing) <- missing_cols
     if(is.null(preprocessed_data)){
-      imputation_information[[iteration]][[deparse(substitute(data))]][["missing_data"]] <- missing_numbers
+      if(iteration == "Training"){
+        imputation_information[["split"]][["missing_data"]][[data_id]] <- n_missing
+      } else{
+        imputation_information[["cv"]][[tolower(iteration)]][["missing_data"]][[data_id]] <- n_missing
+      }
     } else{
-      imputation_information[["Final Model"]][["missing_data"]] <- missing_numbers
+      imputation_information[["final model"]][["missing_data"]] <- n_missing
     }
   }
 

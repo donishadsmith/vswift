@@ -4,7 +4,7 @@ library(testthat)
 # Test that each model works with train-test splitting alone
 test_that("test train-test split and no stratified sampling", {
   data <- iris
-  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "lda"))
+  expect_no_error(result <- classCV(data = data, target = "Species", split = 0.8, model_type = "lda", standardize = TRUE))
 })
 
 test_that("test new formula method", {
@@ -48,18 +48,18 @@ test_that("test imputation and missing data", {
   }
   
   # knn
-  expect_warning(expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3,
+  expect_warning(expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 4,
                                                   impute_method = "knn_impute", impute_args = list(neighbors = 5),
-                                                  model_type = "qda", stratified = TRUE)))
+                                                  model_type = "qda", stratified = TRUE, final_model = TRUE)))
   
   # bag
-  expect_warning(expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3,
+  expect_warning(expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 4,
                                                   impute_method = "bag_impute", impute_args = list(trees = 5),
-                                                  model_type = "multinom", stratified = TRUE)))
+                                                  model_type = "multinom", stratified = FALSE, final_model = TRUE)))
   
   # complete cases only
-  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 3,
-                                   model_type = "decisiontree", stratified = TRUE))
+  expect_warning(result <- classCV(data = data, target = "Species", split = 0.8, n_folds = 4,
+                                   model_type = "decisiontree", stratified = TRUE, final_model = TRUE))
 })
 
 test_that("test random seed", {
