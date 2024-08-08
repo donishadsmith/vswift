@@ -134,8 +134,8 @@
 #' 
 #' @author Donisha Smith
 #' 
-#' @importFrom doParallel registerDoParallel stopImplicitCluster
-#' @importFrom foreach foreach %dopar%
+#' @importFrom future plan multisession
+#' @importFrom future.apply future_lapply
 #' @importFrom stats as.formula complete.cases glm predict sd
 #' @export
 classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, model_type, threshold = 0.5, mod_args = NULL, 
@@ -156,9 +156,7 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
   model_type <- unique(model_type)
   
   # Set seed
-  if(!is.null(random_seed)){
-    set.seed(random_seed)
-  }
+  if(!is.null(random_seed)) set.seed(random_seed)
   
   # Get feature variable and predictor variables
   get_features_target_output <- .get_features_target(formula = formula, target = target, predictors = predictors,
@@ -186,7 +184,8 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
     classCV_output <- .store_parameters(formula = formula, data = data, preprocessed_data = preprocessed_data,
                                         predictor_vec = predictor_vec, target = target, model_type = model_type,
                                         threshold = threshold, split = split, n_folds = n_folds,
-                                        stratified = stratified, random_seed = random_seed, mod_args = mod_args, ...)
+                                        stratified = stratified, random_seed = random_seed, mod_args = mod_args,
+                                        n_cores=n_cores, ...)
     override_imputation <- NULL
     
   } else {
@@ -201,7 +200,7 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
                                         predictor_vec = predictor_vec, target = target, model_type = model_type,
                                         threshold = threshold, split = split, n_folds = n_folds,
                                         stratified = stratified, random_seed = random_seed, mod_args = mod_args,
-                                        parallel = n_cores, n_cores = n_cores, ...)
+                                        n_cores = n_cores, ...)
   }
   
   # Get formula
@@ -337,10 +336,14 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
             new_iterator_vector <- iterator_vector
           }
           for(i in new_iterator_vector){
-            processed_data_list[[i]][,target] <- sapply(processed_data_list[[i]][,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+            processed_data_list[[i]][,target] <- sapply(
+              processed_data_list[[i]][,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]]
+              )
           }
         } else{
-          preprocessed_data[,target] <- sapply(preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]])
+          preprocessed_data[,target] <- sapply(
+            preprocessed_data[,target], function(x) classCV_output[["class_dictionary"]][[as.character(x)]]
+            )
         }
       model_eval_tracker <- model_eval_tracker + 1
     }
@@ -361,13 +364,14 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
                                            target = target, predictors = predictors, split = split, n_folds = n_folds,
                                            mod_args = mod_args, remove_obs = remove_obs, save_data = save_data, 
                                            save_models = save_models, classCV_output = classCV_output,
-                                           threshold = threshold, standardize = standardize, parallel = FALSE, ...)
+                                           threshold = threshold, standardize = standardize, parallel = FALSE,
+                                           random_seed = random_seed, ...)
           
           classCV_output <- validation_output
         }
       } else {
-        registerDoParallel(n_cores)
-        parallel_output <- foreach(i = iterator_vector, .combine = "c") %dopar% {
+        plan(multisession,workers = n_cores)
+        parallel_output <- future_lapply(iterator_vector, function(i){
           
           if(all(!is.null(impute_method), override_imputation == FALSE)){
             processed_data <- processed_data_list[[i]]
@@ -382,21 +386,15 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
                       data_levels = data_levels, formula = formula, target = target, predictors = predictors,
                       split = split, n_folds = n_folds, mod_args = mod_args, remove_obs = remove_obs,
                       save_data = save_data, save_models = save_models, classCV_output = classCV_output,
-                      threshold = threshold, standardize = standardize, parallel = TRUE,  ...)
+                      threshold = threshold, standardize = standardize, parallel = TRUE, random_seed = random_seed, ...)
           
-        }
-        if(!is.null(n_cores)){
-          # Stop cluster
-          stopImplicitCluster()
-          # Separate lists
-          list_length <- length(parallel_output)/length(iterator_vector)
-          parallel_output  <- split(parallel_output, rep(1:length(iterator_vector), each = list_length))
-          # Change names of sublist to names in iterator vector
-          names(parallel_output) <- iterator_vector
-          classCV_output <- .merge_list(save_data = save_data, save_models = save_models, model_name = model_name,
-                                        parallel_list = parallel_output, processed_data = processed_data,
-                                        impute_method = impute_method)
-        }
+        },future.seed=if(!is.null(random_seed)) random_seed else TRUE)
+        
+        # Merge results
+        names(parallel_output) <- iterator_vector
+        classCV_output <- .merge_list(save_data = save_data, save_models = save_models, model_name = model_name,
+                                      parallel_list = parallel_output, processed_data = processed_data,
+                                      impute_method = impute_method)
       }
       # Calculate mean, standard deviation, and standard error for cross validation
       if(!is.null(n_folds)){
@@ -427,7 +425,9 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
       classCV_output[["final model"]][[model_name]]  <- .generate_model(model_type = model_name, formula = formula,
                                                                         predictors = predictors, target = target,
                                                                         model_data = processed_data_list[["final model"]],
-                                                                        mod_args = mod_args, ...)
+                                                                        mod_args = mod_args,
+                                                                        random_seed = random_seed,
+                                                                        ...)
     }
   }
   

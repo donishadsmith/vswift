@@ -2,7 +2,7 @@ name: Run Tests
 
 on:
   push:
-    branches: [main, experimental]
+    branches: [main, development]
   # Run weekly on Monday
   schedule:
     - cron: 0 0 * * 1
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         r: [4.2.0, 4.3.0, 4.4.0]
-        os: ['macos-latest', 'windows-latest'] # Don't run Ubuntu takes too long to run tests, 'ubuntu-latest'
+        os: ['macos-latest', 'windows-latest','ubuntu-latest']
 
     name: R version ${{ matrix.r }} check on ${{ matrix.os }}
     steps:
@@ -43,7 +43,7 @@ jobs:
         if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
           R CMD build .
-          R CMD check --as-cran vswift_0.1.2.tar.gz
+          R CMD check --as-cran *vswift*.tar.gz
         shell: bash
         working-directory: pkg/vswift
 
@@ -51,7 +51,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           R CMD build --no-build-vignettes .
-          R CMD check --no-manual --as-cran vswift_0.1.2.tar.gz
+          R CMD check --no-manual --as-cran *vswift*.tar.gz
         shell: cmd
         working-directory: pkg/vswift
 

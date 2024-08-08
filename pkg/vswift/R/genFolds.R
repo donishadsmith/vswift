@@ -37,9 +37,7 @@ genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratif
   .error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified,
                   random_seed = random_seed, call = "stratified_split")
   # Set seed
-  if(!is.null(random_seed)){
-    set.seed(random_seed)
-  }
+  if(!is.null(random_seed)) set.seed(random_seed)
   # Initialize stratified list for out
   output <- list()
   # Stratified splitting

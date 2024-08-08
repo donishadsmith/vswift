@@ -3,7 +3,7 @@
 #' @export
 .store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL,
                               target = NULL, model_type = NULL, threshold = NULL, split = NULL, n_folds = NULL,
-                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL, parallel = NULL,
+                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL,
                               impute_method = NULL, impute_args = NULL, classCV_output = NULL, ...){
   if(is.null(impute_method)){
     # Initialize output list
@@ -20,7 +20,7 @@
     store_parameters_output[["parameters"]][["random_seed"]]  <- random_seed
     store_parameters_output[["parameters"]][["missing_data"]]  <- nrow(data) - nrow(preprocessed_data)
     store_parameters_output[["parameters"]][["sample_size"]] <- nrow(preprocessed_data)
-    store_parameters_output[["parameters"]][["parallel"]] <- ifelse(!is.null(parallel), TRUE, FALSE)
+    store_parameters_output[["parameters"]][["parallel"]] <- if(!is.null(n_cores)) TRUE else FALSE
     store_parameters_output[["parameters"]][["n_cores"]] <- n_cores
 
     if(!is.null(mod_args)){

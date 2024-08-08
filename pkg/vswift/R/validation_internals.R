@@ -3,7 +3,7 @@
 #' @export
 .validation <- function(i, model_name, preprocessed_data, data_levels, formula, target, predictors, split, n_folds,
                         mod_args, remove_obs, save_data, save_models, classCV_output , threshold, parallel,
-                        standardize, stratified, ...){
+                        standardize, stratified, random_seed, ...){
   #Create split word
   split_word <- unlist(strsplit(i, split = " "))
   if("Training" %in% split_word){
@@ -32,7 +32,7 @@
   # Generate model depending on chosen model_type
   if(any("Training" %in% split_word, "Fold" %in% split_word)){
     model <- .generate_model(model_type = model_name, formula = formula, predictors = predictors, target = target,
-                             model_data = model_data, mod_args = mod_args, ...)
+                             model_data = model_data, mod_args = mod_args, random_seed=random_seed, ...)
   }
 
   # Create dataframe for validation testing
@@ -179,7 +179,10 @@
 #' @importFrom xgboost xgb.DMatrix xgb.train
 
 .generate_model <- function(model_type = NULL, formula = NULL, predictors = NULL, target = NULL, model_data = NULL,
-                            mod_args = mod_args, ...){
+                            mod_args, random_seed, ...){
+  
+  # Set seed
+  if(!is.null(random_seed)) set.seed(random_seed)
 
   # Turn to call
   if(!is.null(mod_args) & model_type != "gbm"){

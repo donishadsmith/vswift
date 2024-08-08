@@ -1,5 +1,5 @@
 #Helper function for classCV and genFolds to check if inputs are valid
-#' @importFrom parallel detectCores
+#' @importFrom future availableCores
 #' @noRd
 #' @export
 .error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL,
@@ -172,9 +172,9 @@
     if(!is.numeric(n_cores)){
       stop("number of cores must be a numeric value")
     }
-    if(n_cores > detectCores()){
+    if(n_cores > as.vector(availableCores())){
       stop(sprintf("more cores specified than available; only %s cores available but %s cores specified",
-                   detectCores(), n_cores))
+                   as.vector(availableCores()), n_cores))
     }
   }
 }

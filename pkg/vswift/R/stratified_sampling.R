@@ -5,9 +5,7 @@
   switch(type,
          "split" = {
            # Set seed
-           if(!is.null(random_seed)){
-             set.seed(random_seed)
-           }
+           if(!is.null(random_seed)) set.seed(random_seed)
            # Get class indices
            class_indices <- output[["class_indices"]]
            # Split sizes
@@ -21,18 +19,34 @@
              # Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
              # Store indices for training set
-             output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]], sample(class_indices[[class]], size = round(training_n*output[["class_proportions"]][[class]], 0), replace = F))
+             output[["sample_indices"]][["split"]][["training"]] <- c(
+               output[["sample_indices"]][["split"]][["training"]],
+               sample(
+                 class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]], 0), replace = F
+                 )
+               )
              # Remove indices to not add to test set
-             class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
+             class_indices[[class]] <- class_indices[[class]][
+               !(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])
+               ]
              # Check if sampling possible
              .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
              # Add indices for test set
-             output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]], sample(class_indices[[class]], size = round(test_n*output[["class_proportions"]][[class]], 0), replace = F))
+             output[["sample_indices"]][["split"]][["test"]] <- c(
+               output[["sample_indices"]][["split"]][["test"]],
+               sample(class_indices[[class]], size = round(test_n*output[["class_proportions"]][[class]], 0),
+                      replace = F
+                      )
+               )
            }
            # Store proportions of data in training set
-           output[["sample_proportions"]][["split"]][["training"]] <- table(data[,target][output[["sample_indices"]][["split"]][["training"]]])/sum(table(data[,target][output[["sample_indices"]][["split"]][["training"]]]))
+           training_subgroups_n <- table(data[,target][output[["sample_indices"]][["split"]][["training"]]])
+           training_n <- sum(table(data[,target][output[["sample_indices"]][["split"]][["training"]]]))
+           output[["sample_proportions"]][["split"]][["training"]] <- training_subgroups_n/training_n
            # Store proportions of data  in test set
-           output[["sample_proportions"]][["split"]][["test"]] <- table(data[,target][output[["sample_indices"]][["split"]][["test"]]])/sum(table(data[,target][output[["sample_indices"]][["split"]][["test"]]]))
+           test_subgroups_n <- table(data[,target][output[["sample_indices"]][["split"]][["test"]]])
+           test_n <- sum(table(data[,target][output[["sample_indices"]][["split"]][["test"]]]))
+           output[["sample_proportions"]][["split"]][["test"]] <- test_subgroups_n/test_n
            # Output
            stratified_sampling_output <- list("output" = output)
          },
@@ -58,14 +72,18 @@
                # Check if sampling possible
                .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
                # Check if sampling possible
-               fold_idx <- c(fold_idx, sample(class_indices[[class]], size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
+               fold_idx <- c(fold_idx,
+                             sample(class_indices[[class]],
+                                    size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
                # Remove already selected indices
                class_indices[[class]] <- class_indices[[class]][-which(class_indices[[class]] %in% fold_idx)]
              }
              # Add indices to list
              output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
              # Update proportions
-             output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])/sum(table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
+             subgroups_n <- table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])
+             n <- sum(table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
+             output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- subgroups_n/n
            }
            # Deal with excess indices
            excess <- nrow(data) - length(as.numeric(unlist(output[["sample_indices"]][["cv"]])))
@@ -76,9 +94,13 @@
                  leftover <- rep(1:k,length(fold_idx))[1:length(fold_idx)]
                  for(i in 1:length(leftover)){
                    # Add indices to list
-                   output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- c(fold_idx[i],output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]])
+                   fold <- sprintf("fold %s",leftover[i])
+                   output[["sample_indices"]][["cv"]][[fold]] <- c(fold_idx[i],
+                                                                   output[["sample_indices"]][["cv"]][[fold]])
                    # Update class proportions
-                   output[["sample_proportions"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]])/sum(table(data[,target][output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]]))
+                   subgroup_n <- table(data[,target][output[["sample_indices"]][["cv"]][[fold]]])
+                   n <- sum(table(data[,target][output[["sample_indices"]][["cv"]][[fold]]]))
+                   output[["sample_proportions"]][["cv"]][[fold]] <- subgroup_n/n
                  }
                }
              }

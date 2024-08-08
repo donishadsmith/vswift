@@ -1,8 +1,9 @@
 # vswift
-[![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4-blue)](https://github.com/donishadsmith/vswift)
+![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4-blue)
 [![Test Status](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml)
 [![codecov](https://codecov.io/gh/donishadsmith/vswift/graph/badge.svg?token=7DYAPU2M0G)](https://codecov.io/gh/donishadsmith/vswift)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+![Platform Support](https://img.shields.io/badge/OS-Ubuntu%20|%20macOS%20|%20Windows-blue)
 
 This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation for classification data using various classification algorithms from popular R packages. The 
 functions used from packages for each classification algorithms:
@@ -21,21 +22,20 @@ functions used from packages for each classification algorithms:
 
 This package was initially inspired by topepo's [caret](https://github.com/topepo/caret) package.
 
-**Still in beta but stable.**
 ## Features
 
 - **Versatile Data Splitting**: Perform train-test splits or k-fold cross-validation on your classification data.
 - **Support for Popular Algorithms**: Choose from a wide range of classification algorithms such as Linear Discriminant Analysis, Quadratic Discriminant Analysis, Logistic Regression, Support Vector Machines, Naive Bayes, Artificial Neural Networks, K-Nearest Neighbors, Decision Trees, Random Forest, Multinomial Logistic Regression, and Gradient Boosting Machines. Additionally, multiple algorithms can be specified in a single function call.
-- **Stratified Sampling Option**: Ensure representative class distribution using stratified sampling based on class proportions. This package uses [custom code](https://github.com/donishadsmith/vswift/blob/3572dc7eb4fadb22ea83d6d3eb5dc6fa9de1bf1c/pkg/vswift/R/stratified_sampling.R#L1C1-L102) to accomplish this.
-- **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set with categories not seen during model training. This is particularly helpful for specific algorithms that might throw errors in such cases. [Link to code.](https://github.com/donishadsmith/vswift/blob/3572dc7eb4fadb22ea83d6d3eb5dc6fa9de1bf1c/pkg/vswift/R/validation_internals.R#L107-L138)
+- **Stratified Sampling Option**: Ensure representative class distribution using stratified sampling based on class proportions.
+- **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set with categories not seen during model training. This is particularly helpful for specific algorithms that might throw errors in such cases.
 - **Model Saving Capabilities**: Save all models utilized for training and testing.
 - **Dataset Saving Options**: Preserve split datasets and folds.
 - **Model Creation**: Easily create and save final models.
-- **Missing Data Imputation**: Choose from two imputation methods - Bagged Tree Imputation and KNN Imputation. These two methods use the `step_bag_impute()` and `step_knn_impute()` functions from the recipes package, respectively. The recipes package is used to create an imputation model using the training data to predict missing data in the training data and the validation data. This is done to prevent data leakage. Rows with missing target variables are removed. If predictors are specified using the `predictors =` parameter in the `classCV` function, only those predictors are imputed. Link to relevant code [here](https://github.com/donishadsmith/vswift/blob/d69606afc391a011a8e2bd9664a13b072c12a509/pkg/vswift/R/preprocess.R#L220-L406) and [here](https://github.com/donishadsmith/vswift/blob/d69606afc391a011a8e2bd9664a13b072c12a509/pkg/vswift/R/classCV.R#L265-L281).
+- **Missing Data Imputation**: Choose from two imputation methods - Bagged Tree Imputation and KNN Imputation. These two methods use the `step_bag_impute()` and `step_knn_impute()` functions from the recipes package, respectively. The recipes package is used to create an imputation model using the training data to predict missing data in the training data and the validation data. This is done to prevent data leakage. Rows with missing target variables are removed. If predictors are specified using the `predictors =` parameter in the `classCV` function, only those predictors are imputed.
 - **Model Creation**: Easily create and save final models.
-- **Performance Metrics**: View performance metrics in the console and generate/save plots for key metrics, including overall classification accuracy, as well as f-score, precision, and recall for each class in the target variable across train-test split and k-fold cross-validation. Link to relevant code are [here](https://github.com/donishadsmith/vswift/blob/83b482b18609799a3a31754a826f9579223db26b/pkg/vswift/R/validation_internals.R#L141-L275), [here](https://github.com/donishadsmith/vswift/blob/2d729dfaab55f3649369b202a393521bd42164b1/pkg/vswift/R/classCV.R#L300-L318), and [here](https://github.com/donishadsmith/vswift/blob/83b482b18609799a3a31754a826f9579223db26b/pkg/vswift/R/classCV.R#L319-L331) to show how the metrics are calculated.
+- **Performance Metrics**: View performance metrics in the console and generate/save plots for key metrics, including overall classification accuracy, as well as f-score, precision, and recall for each class in the target variable across train-test split and k-fold cross-validation.
 - **Automatic Numerical Encoding**: Classes within the target variable are automatically numerically encoded for algorithms such as Logistic Regression and Gradient Boosted Models that require numerical inputs for the target variable.
-- **Parallel Processing**: Use the `n_cores` parameter to specify the number of cores for parallel processing to process multiple folds simultaneously. Only available when cross validation is specified.  Link to relevant code are [here](https://github.com/donishadsmith/vswift/blob/83b482b18609799a3a31754a826f9579223db26b/pkg/vswift/R/classCV.R#L289C9-L317) and [here](https://github.com/donishadsmith/vswift/blob/83b482b18609799a3a31754a826f9579223db26b/pkg/vswift/R/validation_internals.R#L277-L318)
+- **Parallel Processing**: Use the `n_cores` parameter to specify the number of cores for parallel processing to process multiple folds simultaneously. Only available when cross validation is specified.
 - **Minimal Code Requirement**: Access desired information quickly and efficiently with just a few lines of code.
 
 ## Installation
@@ -47,7 +47,7 @@ To install and use vswift:
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.1.3/vswift_0.1.3.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.1.4/vswift_0.1.4.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
