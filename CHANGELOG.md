@@ -14,7 +14,7 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.1.3] - 2024-08-08
+## [0.1.4] - 2024-08-08
 ### ♻ Changed
 - Framework for parallel processing changed from doParallel to future, specifically, futures multisession is used.
 ### 🐛 Fixes
