@@ -21,7 +21,7 @@ Imports:
     randomForest,
     xgboost,
     recipes,
-    future,
+    future (>= 1.9.0),
     future.apply,
     kknn
 Suggests:

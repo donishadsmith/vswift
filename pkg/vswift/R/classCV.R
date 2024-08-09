@@ -134,7 +134,7 @@
 #' 
 #' @author Donisha Smith
 #' 
-#' @importFrom future plan multisession
+#' @importFrom future plan multisession sequential
 #' @importFrom future.apply future_lapply
 #' @importFrom stats as.formula complete.cases glm predict sd
 #' @export
@@ -370,7 +370,7 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
           classCV_output <- validation_output
         }
       } else {
-        plan(multisession,workers = n_cores)
+        plan(multisession, workers = n_cores)
         parallel_output <- future_lapply(iterator_vector, function(i){
           
           if(all(!is.null(impute_method), override_imputation == FALSE)){
@@ -390,6 +390,8 @@ classCV <- function(data, formula = NULL, target = NULL, predictors = NULL, mode
           
         },future.seed=if(!is.null(random_seed)) random_seed else TRUE)
         
+        # Close the background workers
+        plan(sequential)
         # Merge results
         names(parallel_output) <- iterator_vector
         classCV_output <- .merge_list(save_data = save_data, save_models = save_models, model_name = model_name,

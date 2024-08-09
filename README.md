@@ -40,8 +40,20 @@ This package was initially inspired by topepo's [caret](https://github.com/topep
 
 ## Installation
 
-To install and use vswift:
+### From the "main" branch:
 
+```R
+# Install 'remotes' to install packages from Github
+install.packages("remotes")
+
+# Install 'vswift' package
+remotes::install_github("donishadsmith/vswift/pkg/vswift", ref="main")
+ 
+# Display documentation for the 'vswift' package
+help(package = "vswift")
+```
+
+### Github release:
 ```R
 # Install 'remotes' to install packages from Github
 install.packages("remotes")
@@ -622,6 +634,10 @@ end <- proc.time() - start
 print(end)
 
 print("Parallel Processing:")
+
+# Adjust maximum object size that can be passed to workers during parallel processing; ~1.2 gb
+options(future.globals.maxSize = 1200 * 1024^2)
+
 # Obtain start time
 start_par <- proc.time()
 
