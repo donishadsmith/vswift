@@ -1,49 +1,40 @@
 # Helper function to store all model information that will be contained in the main output of the classCV function.
 #' @noRd
 #' @export
-.store_parameters <- function(formula = NULL, data = NULL, preprocessed_data = NULL, predictor_vec = NULL,
-                              target = NULL, model_type = NULL, threshold = NULL, split = NULL, n_folds = NULL,
-                              stratified = NULL, random_seed = NULL, mod_args = NULL, n_cores = NULL,
-                              impute_method = NULL, impute_args = NULL, classCV_output = NULL, ...){
-  if(is.null(impute_method)){
+#' @importFrom stats as.formula
+.store_parameters <- function(formula = NULL,
+                              missing_n,
+                              preprocessed_data,
+                              vars,
+                              models,
+                              model_params,
+                              train_params,
+                              impute_params,
+                              save,
+                              parallel_configs
+                              ){
+
+  
     # Initialize output list
-    store_parameters_output <- list()
-    store_parameters_output[["analysis_type"]] <- "classification"
-    store_parameters_output[["parameters"]] <- list()
-    store_parameters_output[["parameters"]][["predictors"]] <- predictor_vec
-    store_parameters_output[["parameters"]][["target"]]  <- target
-    store_parameters_output[["parameters"]][["model_type"]] <- model_type
-    if("logistic" %in% model_type) store_parameters_output[["parameters"]][["threshold"]] <- threshold
-    store_parameters_output[["parameters"]][["split"]]  <- split
-    store_parameters_output[["parameters"]][["n_folds"]]  <- n_folds
-    store_parameters_output[["parameters"]][["stratified"]]  <- stratified
-    store_parameters_output[["parameters"]][["random_seed"]]  <- random_seed
-    store_parameters_output[["parameters"]][["missing_data"]]  <- nrow(data) - nrow(preprocessed_data)
-    store_parameters_output[["parameters"]][["sample_size"]] <- nrow(preprocessed_data)
-    store_parameters_output[["parameters"]][["parallel"]] <- if(!is.null(n_cores)) TRUE else FALSE
-    store_parameters_output[["parameters"]][["n_cores"]] <- n_cores
-
-    if(!is.null(mod_args)){
-      store_parameters_output[["parameters"]][["additional_arguments"]] <- mod_args
+    info_dict <- list()
+    info_dict$configs <- list()
+    if (!is.null(formula)) {
+      info_dict$configs$formula <- formula
     } else {
-      store_parameters_output[["parameters"]][["additional_arguments"]] <- list(...)
+      info_dict$configs$formula <- as.formula(paste(vars$target, "~", paste(vars$predictors, collapse = " + ")))
     }
-
-    # Store classes
-    store_parameters_output[["classes"]][[target]] <- names(table(factor(preprocessed_data[,target])))
-    # Create formula string
-    if(is.null(formula)){
-      store_parameters_output[["formula"]] <- as.formula(paste(target, "~", paste(predictor_vec, collapse = " + ")))
-    } else{
-      store_parameters_output[["formula"]] <- formula
-    }
-
+    info_dict$configs$n_features <- length(vars$predictors) 
+    info_dict$configs$models <- models
+    info_dict$configs$model_params <- model_params
+    info_dict$configs$train_params <- train_params
+    info_dict$configs$missing_data  <- missing_n
+    info_dict$configs$effective_sample_size <- nrow(preprocessed_data)
+    info_dict$configs$impute_params <- impute_params
+    info_dict$configs$parallel_configs <- parallel_configs
+    info_dict$configs$save <- save
+    
+    # Create sublist for class_summary and data_partitions
+    info_dict <- c(info_dict, .append_output(preprocessed_data[,vars$target], train_params$stratified))
     # Return output
-    return(store_parameters_output)
-  } else{
-    classCV_output[["parameters"]][["impute_method"]] <- impute_method
-    classCV_output[["parameters"]][["impute_args"]] <- impute_args
-    # Return output
-    return(classCV_output)
-  }
+    return(info_dict)
 }

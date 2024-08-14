@@ -9,114 +9,146 @@ classCV(
   formula = NULL,
   target = NULL,
   predictors = NULL,
-  model_type,
-  threshold = 0.5,
-  mod_args = NULL,
-  final_model = FALSE,
-  split = NULL,
-  n_folds = NULL,
-  stratified = FALSE,
-  random_seed = NULL,
-  impute_method = NULL,
-  impute_args = NULL,
-  save_models = FALSE,
-  save_data = FALSE,
-  n_cores = NULL,
-  remove_obs = FALSE,
-  standardize = NULL,
+  models,
+  model_params = list(map_args = NULL, logistic_threshold = 0.5, final_model = FALSE),
+  train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed =
+    NULL, standardize = FALSE, remove_obs = FALSE),
+  impute_params = list(method = NULL, args = NULL),
+  save = list(models = FALSE, data = FALSE),
+  parallel_configs = list(n_cores = NULL, future.seed = NULL),
   ...
 )
 }
 \arguments{
 \item{data}{A data frame containing the dataset. Default = \code{NULL}}
 
-\item{formula}{A formula specifying the model to use. Default = \code{NULL}}
+\item{formula}{A formula specifying the model to use. Cannot be used when \code{target} or \code{target} is
+specified. Default = \code{NULL}}
 
-\item{target}{The target variable's numerical index or name in the data frame. Default = \code{NULL}.}
+\item{target}{The target variable's numerical column index or name in the data frame. Cannot be used when
+\code{formula} is specified. Default = \code{NULL}.}
 
-\item{predictors}{A vector of numerical indices or names for the predictors in the data frame. Default = \code{NULL}.
-If not specified, all variables except the response variable will be used as predictors.
+\item{predictors}{A vector of numerical indices or names for the predictors in the data frame. Used along with
+\code{target}. If not specified when \code{target} is specified, all variables except the response
+variable will be used a predictors. Cannot be used when \code{formula} is specified.
 Default = \code{NULL}.}
 
-\item{model_type}{A character string or list indicating the classification algorithm to use. Available options:
-\code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis), 
+\item{models}{A character character or character vector indicating the classification algorithm to use. Available
+options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis), 
 \code{"logistic"} (Logistic Regression), \code{"svm"} (Support Vector Machines),
 \code{"naivebayes"} (Naive Bayes), \code{"ann"} (Artificial Neural Network), \code{"knn"}
 (K-Nearest Neighbors), \code{"decisiontree"} (Decision Tree), \code{"randomforest"} (Random Forest),
 \code{"multinom"} (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine).
-\itemize{
+ \itemize{
  \item For \code{"knn"}, the optimal k will be used unless specified with \code{ks}.
  \item For \code{"ann"}, \code{size} must be specified as an additional argument.
+ }}
+
+\item{model_params}{A list that can contain the following parameters:
+\itemize{
+\item \code{"map_args"}: A list of named sub-lists to use if more than one model is specified in
+\code{models}. Each sub-list corresponds to a model specified in the \code{models}
+parameter, and contains the parameters to be passed to the respective model.
+Default = \code{NULL}. Please refer to "Additional Model Parameters" section for accepted
+arguments.
+\item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
+decision boundary for logistic regression. This parameter determines if an observation is
+assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
+the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}.
+Default = \code{0.5}.
+\item \code{"final_model"}: A logical value to use all complete observations in the input data
+for model training. Default = \code{FALSE}.
 }}
 
-\item{threshold}{A number from 0.3 to 0.7 indicating representing the decision boundary for logistic regression.
-Default = \code{0.5}}
+\item{train_params}{A list that can contain the following parameters:
+\itemize{
+\item \code{"split"}: A number from 0 to 1 for the proportion of data to use for the
+training set, leaving the rest for the test set. If not specified, train-test splitting will not
+be done. Note, this parameter is used to perform train-test splitting, which is separate
+from cross-validation. Can be set to NULL, to not perform train-test splitting.
+Default = \code{NULL}.
+\item \code{"n_folds"}: An integer greater than 2 that indicates the number of folds to use for
+k-fold cross validation (CV). Note, k-fold CV is performed separately from train-test splitting.
+Can be set to NULL, to not perform k-fold CV. Default = \code{NULL}
+\item \code{"stratified"}: A logical value indicating if stratified sampling should be used.
+Default = \code{FALSE}.
+\item \code{"random_seed"} A numerical value for the random seed to ensure random splitting and
+any stochastic model results are reproducible. Default = \code{NULL}.
+\item \code{"standardize"}: A logical value or numerical vector. If \code{TRUE}, all columns
+except the target, that are numeric, will be standardized. Standardization is done by
+calculating the column means and standard deviation for the training subset of the train-test
+split or each fold. Then each column of the training and test/validation set are standardized
+using the same mean and standard deviation. This is done to prevent data leakage. To specify the
+columns to be standardized, create a numerical or character vector consisting of the column
+indices or names to be standardized.
+\item \code{"remove_obs"}: A logical value to remove observations with categorical predictors
+from the test/validation set that have not been observed during model training. Some algorithms
+may produce an error if this occurs; thus, this parameter is intended to prevent this error.
+Default = \code{FALSE}.
+}}
 
-\item{mod_args}{list of named sub-lists. Each sub-list corresponds to a model specified in the \code{model_type}}
+\item{impute_params}{A list that can contain the following parameters to perform imputation on missing
+predictors/features. During imputation, the targets are not included in the training or
+test/validation set. Prior to imputation, train-test splitting, or k-fold CV generation,
+any rows with missing data for the targets are dropped completely. Additionally, imputation
+models are generated for each training data (one model for the training subset of the train-test
+split, as well as one model for the training subset of each k-fold; so the imputation model for
+fold 1 is not the same model used for fold 2) and the same model is used for both the training
+and test/validation data. This is done to minimize data leakage. Also, standardization of
+numerical columns will be done automatically regardless if train_params$standardize is set to
+False. The recipe package is used for imputation and the following parameters can be used:
+\itemize{
+\item \code{"method"}: A character indicating the imputation method to use. Options include
+\code{"bag_impute"} (Bagged Trees Imputation) and \code{"knn_impute"} (KNN Imputation).
+\item \code{"args"}: A list specifying an additional argument for the imputation method.
+Below are the additional arguments available for each imputation option.
+\itemize{
+\item \code{"bag_impute"}: \code{"neighbors"}
+\item \code{"knn_impute"}: \code{"trees", "seed_val"}
+}
+For specific information about each parameter, please refer to the recipes documentation.
+Default = \code{NULL}.
+}}
 
-\item{final_model}{A logical value to use all complete observations in the input data for model training.
-Default = \code{FALSE}.}
+\item{save}{A list that can contain the following parameters:
+\itemize{
+\item \code{"models"}: A logical value to save training models (includes imputation models) used for
+train_test splitting or k-fold CV
+validation. Default = \code{FALSE}.
+\item \code{"data"}: A logical value to save all training and test/validation sets during train-test
+splitting and/or k-fold CV. Default = \code{FALSE}.
+}}
 
-\item{split}{A number from 0.5 and 0.9 for the proportion of data to use for the training set,
-leaving the rest for the test set. If not specified, train-test splitting will not be done.
-Default = \code{NULL}.}
+\item{parallel_configs}{A list that can contain the following parameters:
+\itemize{
+\item \code{"n_cores"}: A numerical value specifying the number of cores to use for parallel
+processing. Default = \code{NULL}.
+\item \code{"future.seed"}: A numerical value indicating the seed to use when calling future
+for parallel processing.
+}}
 
-\item{n_folds}{An integer from 3 and 30 for the number of folds to use. If not specified,
-k-fold cross validation will not be performed. Default = \code{NULL}.}
-
-\item{stratified}{A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.}
-
-\item{random_seed}{A numerical value for the random seed to ensure random splitting is reproducible.
-Default = \code{NULL}.}
-
-\item{impute_method}{A character indicating the imputation method to use. Options include \code{"bag_impute"}
-(Bagged Trees Imputation) and \code{"knn_impute"} (KNN Imputation).}
-
-\item{impute_args}{A list specifying an additional argument for the imputation method. Below are the additional
-  arguments available for each imputation option.
-  \itemize{
-    \item \code{"bag_impute"}: \code{trees}
-    \item \code{"knn_impute"}: \code{neighbors}
-  }
-  For specific information about each parameter, please refer to the recipes documentation.
-  Default = \code{NULL}.
-parameter, and contains the parameters to be passed to the respective model. Default = \code{NULL}.}
-
-\item{save_models}{A logical value to save models during train-test splitting and/or k-fold cross validation.
-Default = \code{FALSE}.}
-
-\item{save_data}{A logical value to save all training and test/validation sets during train-test splitting
-and/or k-fold cross validation. Default = \code{FALSE}.}
-
-\item{n_cores}{A numerical value specifying the number of cores to use for parallel processing.
-Default = \code{NULL}.}
-
-\item{remove_obs}{A logical value to remove observations with categorical predictors from the test/validation set
-that have not been observed during model training. Some algorithms may produce an error if this
-occurs. Default = \code{FALSE}.}
-
-\item{standardize}{A logical value or numerical vector. If \code{TRUE}, all columns except the target, that are
-numeric, will be standardized. To specify the columns to be standardized, create a numerical
-or character vector consisting of the column indices or names to be standardized.}
-
-\item{...}{Additional arguments specific to the chosen classification algorithm.
-Please refer to the corresponding algorithm's documentation for additional arguments and their
+\item{...}{Additional arguments specific to the chosen classification algorithm. To be used as an alternate to
+specifying model specific parameters using \code{"map_args"} in \code{model_params} when only a single
+model is specified in \code{models}. If multiple models are specified, then \code{"map_args"} must be
+used. Please refer to the corresponding algorithm's documentation for additional arguments and their
 descriptions.}
 }
 \value{
 A list containing the results of train-test splitting and/or k-fold cross-validation (if specified),
-        performance metrics, information on the class distribution in the training, test sets, and folds
-        (if applicable), saved models (if specified), and saved datasets (if specified), and a final model
+        performance metrics, information on the class distribution in the training, test sets, folds
+        (if applicable), saved models (if specified), saved datasets (if specified), a final model
         (if specified).
 }
 \description{
-performs a train-test split and/or k-fold cross validation
-on classification data using various classification algorithms.
+performs a train-test split and/or k-fold cross validation on classification data using various
+classification algorithms.
 }
-\section{Model-specific additional arguments}{
+\section{Additional Model Parameters}{
 
-  Each option of \code{model_type} accepts additional arguments specific to the classification algorithm. The
-  available arguments for each \code{model_type} are:
+  Each option of \code{models} accepts additional arguments specific to the classification algorithm.
+  For additional information about these arguments, refer to the documentation in the original packages. Information
+  on the external package functions used for each models can be found in the "Package Dependencies" section.
+  The available arguments for each \code{models} are:
   \itemize{
    \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}
    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
@@ -133,8 +165,9 @@ on classification data using various classification algorithms.
   }
 }
 
-\section{Functions used from packages for each option for \code{model_type}}{
+\section{Package Dependencies}{
 
+  Each option of \code{models} uses the following function from the specified packages:
   \itemize{
    \item \code{"lda"}: \code{lda()} from MASS package
    \item \code{"qda"}: \code{qda()} from MASS package
@@ -155,29 +188,43 @@ on classification data using various classification algorithms.
 data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
-result <- classCV(data = iris, target = "Species", 
-                  split = 0.8, model_type = "lda")
+result <- classCV(data = iris,
+                  target = "Species",
+                  models = "lda",
+                  train_params = list(split = 0.8)
+                  )
 
 # Print parameters and metrics
 result
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
-result <- classCV(data = iris, formula = Species~., n_folds = 5, 
-                  model_type = "gbm",
+# w/ additional parameters: params & nrounds
+result <- classCV(data = iris,
+                  formula = Species ~ .,
+                  models = "gbm",
+                  train_params = list(n_folds = 5, random_seed = 50),
                   params = list(objective = "multi:softprob",
-                                num_class = 3,eta = 0.3,max_depth = 6), 
-                                nrounds = 10)
+                                num_class = 3,
+                                eta = 0.3,
+                                max_depth = 6),
+                  nrounds = 10
+                  )
 
 # Print parameters and metrics
 result
 
 
 # Perform 5-fold cross-validation a train-test split w/multiple models
-
 args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
-result <- classCV(data = iris, target = 5, split = 0.8, 
-                  model_type = c("decisiontree","knn", "ann","svm"), 
-                  n_folds = 3,mod_args = args, stratified = TRUE)
+result <- classCV(data = iris,
+                  target = 5,
+                  predictors = c(1:3),
+                  models = c("decisiontree","knn", "ann","svm"),
+                  model_params = list(map_args = args),
+                  train_params = list(n_folds = 5,
+                                         stratified = TRUE,
+                                         random_seed = 50)
+                  )
 
 # Print parameters and metrics
 result

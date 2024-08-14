@@ -1,16 +1,20 @@
 # Create dictionary for target variable if needed for certain algos
 #' @noRd
 #' @export
-.create_dictionary <- function(preprocessed_data = NULL, target = NULL, classCV_output = NULL){
+.create_dictionary <- function(target_vector){
   counter <- 0
   new_classes <- c()
-  for(class in names(table(preprocessed_data[,target]))){
+  class_dict <- list()
+  
+  for (class in names(table(target_vector))) {
     new_classes <- c(new_classes, paste(class, "=", counter, collapse = " "))
-    classCV_output[["class_dictionary"]][[class]] <- counter
+    class_dict[[class]] <- counter
     counter <- counter + 1
   }
-  if(!all(names(classCV_output[["class_dictionary"]]) == as.character(classCV_output[["class_dictionary"]]))){
-    warning(sprintf("classes are now encoded: %s", paste(new_classes, collapse = ", ")))
-  }
-  return(classCV_output)
+  
+  warning(sprintf(
+    "creating keys for target variable due to 'logistic' or 'gbm' being specified;\n  classes are now encoded: %s",
+    paste(new_classes, collapse = ", ")))
+  
+  return(class_dict)
 }

@@ -14,7 +14,7 @@
   class_names = NULL,
   save_plots = FALSE,
   path = NULL,
-  model_type = NULL
+  models = NULL
 )
 }
 \arguments{
@@ -42,7 +42,7 @@ Default = \code{FALSE}.}
 \item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots
 will be saved to the current working directory. Default = \code{NULL}.}
 
-\item{model_type}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
+\item{models}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
 be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
 (Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression), \code{"svm"}
 (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
@@ -64,8 +64,12 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set and stratified_sampling using QDA
 
-result <- classCV(data = iris, target = "Species", split = 0.8,
-model_type = "qda", stratified = TRUE)
+result <- classCV(data = iris,
+                  target = "Species",
+                  models = "qda",
+                  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+                  )
+
 
 # Plot performance metrics for train-test split
 
