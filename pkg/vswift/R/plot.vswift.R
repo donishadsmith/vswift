@@ -19,7 +19,7 @@
 #'                   Default = \code{FALSE}.
 #' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots
 #'             will be saved to the current working directory. Default = \code{NULL}.
-#' @param model_type A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
+#' @param models A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
 #'                   be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
 #'                   (Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression), \code{"svm"}
 #'                   (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
@@ -36,8 +36,12 @@
 #'
 #' # Perform a train-test split with an 80% training set and stratified_sampling using QDA
 #'
-#' result <- classCV(data = iris, target = "Species", split = 0.8,
-#' model_type = "qda", stratified = TRUE)
+#' result <- classCV(data = iris,
+#'                   target = "Species",
+#'                   models = "qda",
+#'                   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+#'                   )
+#'
 #'
 #' # Plot performance metrics for train-test split
 #'
@@ -49,9 +53,9 @@
 #' @export
 
 "plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"),
-                          class_names = NULL, save_plots = FALSE, path = NULL, model_type = NULL){
+                          class_names = NULL, save_plots = FALSE, path = NULL, models = NULL){
 
-  if(inherits(x, "vswift")){
+  if (inherits(x, "vswift")) {
     # Create list
     model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
                       "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
@@ -61,37 +65,37 @@
 
     # Lowercase and intersect common names
     metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
-    if(length(metrics) == 0){
+    if (length(metrics) == 0) {
       stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy","precision","recall","f1"), collapse = ", ")))
     }
     # intersect common names
-    if(!is.null(class_names)){
-      class_names <- intersect(class_names, x[["classes"]][[1]])
-      if(length(class_names) == 0){
-        stop(sprintf("no classes specified, available classes: %s", paste(x[["classes"]][[1]], collapse = ", ")))
+    if (!is.null(class_names)) {
+      class_names <- intersect(class_names, x$class_summary$classes)
+      if (length(class_names) == 0) {
+        stop(sprintf("no classes specified, available classes: %s", paste(x$class_summary$classes, collapse = ", ")))
       }
     }
 
     # Get models
-    if(is.null(model_type)){
-      models <- x[["parameters"]][["model_type"]]
+    if (is.null(models)) {
+      models <- x$configs$models
     } else {
       # Make lowercase
-      model_type <- sapply(model_type, function(x) tolower(x))
-      models <- intersect(model_type, x[["parameters"]][["model_type"]])
-      if(length(models) == 0){
-        stop("no models specified in model_type")
-      }
+      models <- sapply(models, function(x) tolower(x))
+      models <- intersect(models, x$configs$models)
+      if (length(models) == 0) stop("no models specified in models")
+
       # Warning when invalid models specified
-      invalid_models <- model_type[which(!model_type %in% models)]
-      if(length(invalid_models) > 0){
-        warning(sprintf("invalid model in model_type or information for specified model not present in vswift x: %s",
+      invalid_models <- models[which(!models %in% models)]
+      if (length(invalid_models) > 0) {
+        warning(sprintf("invalid model in models or information for specified model not present in vswift x: %s",
                         paste(unlist(invalid_models), collapse = ", ")))
       }
     }
+
     # Iterate over models
-    for(model in models){
-      if(save_plots == FALSE){
+    for (model in models) {
+      if (save_plots == FALSE) {
         .visible_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
                        model_list = model_list)
       } else {
@@ -99,7 +103,5 @@
                     model_name = model, model_list = model_list,...)
       }
     }
-  } else {
-    stop("x must be of class 'vswift'")
   }
 }

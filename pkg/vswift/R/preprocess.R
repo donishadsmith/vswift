@@ -2,224 +2,146 @@
 #' @importFrom future availableCores
 #' @noRd
 #' @export
-.error_handling <- function(formula = NULL, data = NULL, target = NULL, predictors = NULL, split = NULL, n_folds = NULL,
-                            model_type = NULL, threshold = NULL, stratified = NULL,  random_seed = NULL,
-                            impute_method = NULL, impute_args = NULL, mod_args = NULL, n_cores = NULL,
-                            standardize = NULL, call = NULL, ...){
-
+.error_handling <- function(data, formula = NULL, target = NULL, predictors = NULL, models = NULL,
+                            model_params = NULL, train_params = NULL, impute_params = NULL, save = NULL,
+                            parallel_configs = NULL, create_data = NULL, call = NULL) {
   # List of valid inputs
-  valid_inputs <- list(valid_models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
-                                        "randomforest", "multinom", "gbm"),
-                       valid_imputes = c("knn_impute","bag_impute"))
-
-
-  # Check standardize
-  if(!is.null(standardize)){
-    if(!inherits(standardize, c("logical", "numeric", "integer", "character"))){
-      stop("`standardize` must either be TRUE, FALSE, a numeric vector, or a character vector")
+  valid_inputs <- list(models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
+                                  "randomforest", "multinom", "gbm"),
+                       imputes = c("knn_impute","bag_impute"))
+  
+  # Create list of parameters
+  if (call == "classCV") {
+    params_list = list(data = data, formula = formula, target = target, predictors = predictors, models = models,
+                       model_params = model_params, train_params = train_params, impute_params = impute_params,
+                       save = save)
+  } else {
+    params_list = list(data = data, train_params = train_params, create_data = create_data)
+    return(0)
+  }
+  
+  # Check types
+  for (param in names(params_list)) .param_checker(param, params_list[[param]])
+  
+  # Check formula and target
+  if (inherits(c(formula, target), "NULL")) stop(sprintf("either `formula` or `target` must be specified"))
+  
+  if (!is.null(formula) & any(!is.null(target), !is.null(predictors))) {
+    stop(sprintf("`formula` cannot be used when `target` or `predictors` are specified"))
+  }
+  
+  # Check models
+  if (!is.null(models) & !all(models %in% valid_inputs$models)) {
+    stop(
+      sprintf("invalid model specified in `models`, the following is a list of valid models: %s",
+              paste(valid_inputs$models, sep = ", ")
+      )
+    )
+  }
+  
+  # Check vars
+  .check_vars(formula, target, predictors, data) 
+  
+  # Check map_args
+  if (!is.null(model_params$map_args)) .check_args(model_params = model_params, call = "model")
+  
+  # Check logistic threshold
+  if ("logistic" %in% models) {
+    # Check if binary and threshold valid
+    binary_target <- length(levels(factor(data[,target], exclude = NA))) == 2
+    valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
+    
+    if (!binary_target) {
+      stop("logistic regression requires a binary target")
+    } else if (!valid_threshold) {
+      stop("`threshold` must a numeric value from 0 to 1")
     }
   }
-  # Check if impute method is valid
-  if(!is.null(impute_method)){
-    if(!impute_method %in% valid_inputs[["valid_imputes"]]){
-      stop("invalid impute method")
-    }
-    # Check if impute_method is list
-    if(!length(impute_method) == 1){
-      stop("`impute_method` must be a character not list")
-    }
-    # Check if impute method is valid
-    if(!is.null(impute_args)){
-      if(all(impute_method == "knn_impute" | impute_method == "bag_impute", !inherits(impute_args, "list"))){
-        stop("`impute_args` must be a list")
-      }
-      # Check if additional arguments are valid
-      else if(impute_method == "knn_impute"| impute_method == "bag_impute"){
-        .check_additional_arguments(impute_method = impute_method, impute_args = impute_args, call = "imputation")
-      }
-    }
-
+  
+  # Check split and n_folds
+  if (all(is.null(train_params$split), is.null(train_params$n_folds))) {
+    warning("neither `train_params$split` or `train_params$n_folds` specified; disregard message if
+            only interested in model_params$final_model")
   }
-
-  if(all(length(model_type) > 1, length(list(...)) > 0)){
-    stop("use `mod_args` parameter to specify model-specific arguments when calling multiple models")
+  
+  if (!is.null(train_params$n_folds) && train_params$n_folds <= 2) stop("`train_params$n_folds` must greater than 2")
+  
+  if (!is.null(train_params$split) && c(train_params$split < 0 || train_params$split > 1)) {
+    stop("`train_params$split` must a numeric value from 0 to 1")
   }
-
-  if(!is.null(mod_args)){
-    if(!inherits(mod_args, "list")){
-      stop("`mod_args` must be a list")
+  
+  # Check if impute method and args is valid
+  if (!is.null(impute_params$method)) {
+    if (!impute_params$method %in% valid_inputs$imputes) {
+      stop(
+        sprintf("invalid method specified in `impute_params$method`, the following is a list of valid methods: %s",
+                paste(valid_inputs$methods, sep = ", ")
+        )
+      )
     }
-    if(length(model_type) == 1){
-      stop("`mod_args`` used only when multiple models are specified")
-    }
-    if(!all(names(mod_args) %in% valid_inputs[["valid_models"]])){
-      stop("invalid model in `mod_args`")
-    }
+    
+    if (!is.null(impute_params$args)) .check_args(impute_params = impute_params, call = "imputation")
   }
-
-  if(!is.null(mod_args)){
-    .check_additional_arguments(model_type = model_type, mod_args = mod_args, call = "multiple")
-  }
-
-  if(length(list(...)) > 0){
-    .check_additional_arguments(model_type = model_type, call = "single", ...)
-  }
-
-  if (all(is.null(split), is.null(n_folds))){
-    stop("Both `split` and `n_folds` cannot be null.")
-  }
-
-  # Ensure fold size is valid
-  if(any(n_folds %in% c(0,1), n_folds < 0, n_folds > 30,is.character(n_folds), n_folds != as.integer(n_folds))){
-    stop("`n_folds` must be a non-negative integer from 3-30")
-  }
-
-  # Ensure split is between 0.5 to 0.9
-  if(any(is.character(split), split < 0.5, split > 0.9)){
-    stop("`split` must be a numeric value from between 0.5 and 0.9")
-  }
-
-  # Get target and predictors if formula specified
-  if(!is.null(formula)){
-    if(any(!is.null(formula) & !is.null(target) || !is.null(predictors))){
-      warning("`formula` specified with `target` and/or `predictors`, `formula` will overwrite the specified `target`
-              and `predictors`")
-    }
-    get_features_target <- .get_features_target(formula = formula, data = data)
-    target <- get_features_target[["target"]]
-    predictors <- get_features_target[["predictor_vec"]]
-  }
-
-  # Ensure valid target variable
-  if(call == "classCV" || call == "genFolds" & stratified == TRUE){
-    # Ensure target is also not in predictors
-    if(target %in% predictors){
-      stop("`target` cannot also be a `predictor`")
-    }
-
-    # Ensure there is only one target variable
-    if(length(target) != 1){
-      stop("length of `target` must be 1")
-    }
-
-    # Check if target is in dataframe
-    if(is.numeric(target)){
-      if(!(target %in% c(1:ncol(data)))){
-        stop("`target` not in dataframe")
-      }
-    } else if (is.character(target)){
-      if(!(target %in% colnames(data))){
-        stop("`target` not in dataframe")
-      }
-    } else {
-      stop("`target` must be an integer or character")
-    }
-  }
-
-  # Check if predictors are in data frame
-  if(!is.null(predictors)){
-    if(all(is.numeric(predictors))){
-      check_x <- 1:dim(data)[1]
-    } else if (all(is.character(predictors))){
-      check_x <- colnames(data)[colnames(data) != target]
-    } else {
-      stop("`predictors` must be a character vector or integer vector")
-    }
-    if(!(all(predictors %in% check_x))){
-      stop("at least one predictor is not in dataframe")
-    }
-  }
-
-  # Warning for knn
-
-  if(all("knn" %in% model_type, !is.null(n_folds))){
-    if(all(length(model_type) > 1, !is.null(mod_args))){
-      if("knn" %in% names(mod_args)){
-        check_ks <- ifelse("ks" %in% names(mod_args[["knn"]]), TRUE, FALSE)
-      } else{
-        check_ks <- FALSE
-      }
-    }
-    else{
-      check_ks <- ifelse("ks" %in% names(list(...)), TRUE, FALSE)
-    }
-    if(check_ks == FALSE){
-      warning("if `ks` not specified, knn may select a different optimal k for each fold")
-    }
-  }
-
-  #Ensure model_type has been assigned
-  if(call == "classCV"){
-    if(!inherits(model_type, "character")){
-      stop("`model_type` must be a character or a vector containing characters")
-    }
-    if(!all(model_type %in% valid_inputs[["valid_models"]])){
-      stop("invalid model in `model_type`")
-    }
-    if("logistic" %in% model_type & any(length(levels(factor(data[,target], exclude = NA))) != 2, !is.numeric(threshold), threshold < 0.30 || threshold > 0.70)){
-      if(length(levels(factor(data[,target], exclude = NA))) != 2){
-        stop("logistic regression requires a binary variable")
-      } else {
-        stop("`threshold` must a numeric value from 0.30 to 0.70")
-      }
-    }
-  }
-  # Check cores
-  if(!is.null(n_cores)){
-    if(all(!is.null(n_cores), is.null(n_folds))){
-      stop("parallel processing only available if cross validation is specified")
-    }
-    if(!is.numeric(n_cores)){
-      stop("number of cores must be a numeric value")
-    }
-    if(n_cores > as.vector(availableCores())){
+  
+  # Check n_cores
+  if (!is.null(parallel_configs$n_cores)) {
+    if (is.null(train_params$n_folds)) stop("parallel processing is only available when `n_folds` is not NULL")
+    if (parallel_configs$n_cores > as.vector(availableCores())) {
       stop(sprintf("more cores specified than available; only %s cores available but %s cores specified",
-                   as.vector(availableCores()), n_cores))
+                   as.vector(availableCores()), parallel_configs$n_cores))
     }
   }
 }
 
-
-# Helper function to turn character data into factors
+# Helper function for to check if target and predictors are in dataframe
 #' @noRd
 #' @export
-.create_factor <- function(data = NULL, target = NULL, model_type = NULL){
+.check_vars <- function(formula, target, predictors, data){
+  if (!is.null(formula)) {
+    vars <- .get_var_names(formula = formula, data = data)
+  } else {
+    vars <- list()
+    vars$target <- target
+    vars$predictors <- predictors
+  }
+  
+  # Check target
+  if (inherits(vars$target, c("numeric", "integer"))) {
+    miss_target <- !vars$target %in% 1:ncol(data)
+  } else {
+    miss_target <- !vars$target %in% colnames(data)
+  }
+  
+  if (miss_target) stop("specified target is not in the dataframe")
+  
+  # Check predictors
+  if (!is.null(vars$predictors)) {
+    if (inherits(vars$predictors, c("numeric", "integer"))) {
+      pred_diff <- setdiff(vars$predictors, 1:ncol(data))
+    } else {
+      pred_diff <- setdiff(vars$predictors, colnames(data)[!colnames(data) == vars$target])
+    }
 
-  # Make target factor, could be factor, numeric, or character
-  data[,target] <- factor(data[,target])
-  # Check for columns that are characters and factors
-  columns <- colnames(data)[as.vector(sapply(data,function(x) is.character(x)))]
-  columns <- c(columns, colnames(data)[as.vector(sapply(data,function(x) is.factor(x)))])
-  # Create list to store levels for svm model
-  data_levels <- list()
-  # Turn character columns into factor
-  for(col in columns){
-    data[,col] <- factor(data[,col])
-    if("svm" %in% model_type){
-      data_levels[[col]] <- levels(data[,col])
+    miss_pred <- ifelse(length(pred_diff) > 0, TRUE, FALSE)
+    if (miss_pred) {
+      stop(sprintf("the following predictor indices or names were not found in the dataframe: '%s'",
+                   paste(pred_diff, collapse = "', '")))
     }
   }
-
-  # Return output
-  return(create_factor_output <- list("data" = data, "data_levels" = data_levels))
 }
-
 
 # Helper function for classCV to check if additional arguments are valid
 #' @noRd
 #' @export
-.check_additional_arguments <- function(model_type = NULL, impute_method = NULL, impute_args = NULL, mod_args = NULL,
-                                        call = NULL, ...){
-
+.check_args <- function(model_params = NULL, impute_params = NULL, call){
   # Helper function to generate error message
   error_message <- function(method_name, invalid_args) {
     sprintf("The following arguments are invalid for %s or are incompatible with classCV: %s",
             method_name, paste(invalid_args, collapse = ","))
   }
 
-  sub_list <- ifelse(call == "imputation", "imputation", "model")
   # List of valid arguments for each model type
-  valid_args_list <- list(
+  valid_args <- list(
     "model" = list("lda" = c("prior", "method", "nu"),
                    "qda" = c("prior", "method", "nu"),
                    "logistic" = c("weights","singular.ok", "maxit"),
@@ -230,67 +152,57 @@
                    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
                    "randomforest" = c("weights", "ntree", "mtry", "nodesize", "importance"),
                    "multinom" = c("weights", "Hess"),
-                   "gbm" = c("params", "nrounds")),
-    "imputation" = list("knn_impute" = c("formula","neighbors"),
-                        "bag_impute" = c("formula","trees"))
-  )
+                   "gbm" = c("params", "nrounds", "print_every_n", "feval", "verbose",
+                             "early_stopping_rounds", "obj", "save_period", "save_name")),
+    "imputation" = list("knn_impute" = c("neighbors"),
+                        "bag_impute" = c("trees", "seed_val"))
+    )
 
   # Obtain user-specified models based on the number of models called
-  if(call == "single" | call == "multiple"){
-    methods <- model_type
-  }  else {
-    methods <- impute_method
-  }
+  methods <- ifelse(call == "model", names(model_params$map_args), impute_params$method)
 
   # Obtain user-specified model arguments based on the number of models called
-  for(method in methods){
-    if(call == "single"){
-      additional_args <- names(list(...))
-    } else if(call == "multiple"){
-      additional_args <- names(mod_args[[method]])
-    } else {
-      additional_args <- names(impute_args)
+  for (method in methods) {
+    user_args <- ifelse(call == "model", names(model_params$map_args[[method]]), names(impute_params$args))
+    invalid_args <- user_args[which(!user_args %in% valid_args[[call]][[method]])]
+    
+    # Special case
+    if (method == "knn" & !"ks" %in% user_args) {
+      warning("if `ks` not specified, knn may select a different optimal k for each fold")
     }
 
-    valid_args <- valid_args_list[[sub_list]][[method]]
-    invalid_args <- additional_args[which(!additional_args %in% valid_args)]
-
-    if(length(invalid_args) > 0) {
-      stop(error_message(method, invalid_args))
-    }
+    if (length(invalid_args) > 0) stop(error_message(method, invalid_args))
   }
 }
 
 # Function to get name of target and features.
 #' @noRd
 #' @export
-.get_features_target <- function(formula = NULL, target = NULL, predictors = NULL, data){
-  if(!is.null(formula)){
+.get_var_names <- function(formula = NULL, target = NULL, predictors = NULL, data){
+  # Get target and predictor if formula used
+  if (!is.null(formula)) {
     vars <- all.vars(formula)
     target <- vars[1]
-    predictor_vec <- vars[2:length(vars)]
 
-    if("." %in% predictor_vec) predictor_vec <- colnames(data)[colnames(data) != target]
+    if ("." %in% vars[2:length(vars)]) {
+      predictor_vec <- colnames(data)[colnames(data) != target]
+      } else {
+      predictor_vec <- vars[2:length(vars)]
+      }
 
-  } else{
+    } else {
     # Creating response variable
     target <- ifelse(is.character(target), target, colnames(data)[target])
-
+    
     # Creating feature vector
-    if(is.null(predictors)){
+    if (is.null(predictors)) {
       predictor_vec <- colnames(data)[colnames(data) != target]
-    } else {
-      if(all(is.character(predictors))){
-        predictor_vec <- predictors
       } else {
-        predictor_vec <- colnames(data)[predictors]
+      predictor_vec <- ifelse(all(is.character(predictors)), predictors, colnames(data)[predictors])
       }
     }
-  }
 
-  get_features_target_output <- list("target" = target, "predictor_vec" = predictor_vec)
-
-  return(get_features_target_output)
+  return(list("predictors" = predictor_vec, "target" = target))
 }
 
 # Check if data is missing
@@ -298,296 +210,239 @@
 #' @export
 .check_if_missing <- function(data){
   # Get rows of missing data
-  miss <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
+  miss_obs <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
+  missing_data <- if (length(miss_obs) > 0) TRUE else FALSE
+  
   # Warn users the total number of rows with at least one column of missing data
-  if(length(miss) > 0){
-    warning(sprintf("%s observations have at least one instance of missing data", length(miss)))
-    override_imputation <- FALSE
-  }else{
-    warning("no observations have missing data; no imputation will be performed")
-    override_imputation <- TRUE
+  if (missing_data) {
+    msg <- sprintf("%s observations have at least one instance of missing data", length(miss_obs))
+  } else {
+    msg <- "no observations have missing data; no imputation will be performed"
   }
-  return(override_imputation)
+  
+  warning(msg)
+
+  return(missing_data)
 }
 
 # Helper function to remove missing data
 #' @noRd
 #' @export
+#' @importFrom stats complete.cases
 .remove_missing_data <- function(data){
-
   # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
   miss <- nrow(data) - nrow(data[complete.cases(data),])
-  if(miss  > 0){
-    data <- data[complete.cases(data),]
+  if (miss > 0) {
+    complete_data <- data[complete.cases(data),]
     warning(sprintf("dataset contains %s observations with incomplete data only complete observations will be used"
                     ,paste(miss, collapse = ", ")))
+    return(complete_data)
+  } else {
+    return(data)
+
   }
-
-  remove_missing_data_output <- data
-  # Return output
-  return(remove_missing_data_output)
 }
-
 
 # Helper function to remove observations with missing target variable prior to imputation
 #' @noRd
 #' @export
 .remove_missing_target <- function(data, target){
   missing_targets <- which(is.na(data[,target]))
-  if(length(missing_targets) > 0){
-    data <- data[-missing_targets,]
+  if (length(missing_targets) > 0) {
+    cleaned_data <- data[-missing_targets,]
     warning(sprintf("the following observations have been removed due to missing target variable: %s"
                     ,paste(sort(missing_targets), collapse = ", ")))
+    return(cleaned_data)
+  } else {
+    return(data)
   }
-  return(data)
+}
+
+# Helper function to turn character data into factors
+#' @noRd
+#' @export
+.convert_to_factor <- function(preprocessed_data, target, models, train_params){
+  # Make target factor, could be factor, numeric, or character
+  preprocessed_data[,target] <- factor(preprocessed_data[,target])
+  # Check for columns that are characters and factors
+  columns <- colnames(preprocessed_data)[as.vector(sapply(preprocessed_data,
+                                                          function(x) is.character(x) | is.factor(x)))]
+  columns <- columns[!columns == target]
+  # Create list to store levels for svm model
+  col_levels <- list()
+  
+  # Turn character columns into factor
+  for (col in columns) {
+    preprocessed_data[,col] <- factor(preprocessed_data[,col])
+    if ("svm" %in% models || train_params$remove_obs == TRUE) col_levels[[col]] <- levels(preprocessed_data[,col])
+  }
+  
+  # Return output
+  return(list("data" = preprocessed_data, "col_levels" = if (length(col_levels) > 0) col_levels else NULL))
+}
+
+# Function to retrieve columns that will be standardized features
+#' @noRd
+#' @export
+.get_cols <- function(df, standardize, target){
+  # Get predictor names
+  predictors <- colnames(df)[colnames(df) != target]
+  
+  if (inherits(standardize, "logical")) {
+    col_names <- predictors
+  } else if (inherits(standardize, c("numeric","integer"))) {
+    # Remove any index value outside the range of the number of columns
+    col_names <- predictors[intersect(1:ncol(df), standardize)]
+    unused <- setdiff(standardize, 1:ncol(df))
+    if (length(unused) > 0) {
+      warning(sprintf("some indices are outside possible range and will be ignored: %s", paste(unused)))
+    }
+  } else {
+    # Remove any column names not in dataframe
+    unused <- intersect(standardize, predictors)
+    col_names <- setdiff(standardize, predictors)
+    if (length(unused) > 0) {
+      warning(sprintf("some column names not in dataframe and will be ignored: %s", paste(unused)))
+    }
+  }
+  return(col_names)
+}
+
+#' Generate class specific information and initialize space for data partitions
+#' @noRd
+#' @export
+.append_output <- function(target_vector, stratified = FALSE){
+  info_dict <- list()
+  info_dict$class_summary <- list()
+  info_dict$class_summary$classes <- names(table(factor(target_vector)))
+  info_dict$data_partitions <- list("proportions" = NULL, "indices" = NULL, "dataframes" = NULL)
+  
+  if (stratified) info_dict$class_summary <- c(info_dict$class_summary, .get_class_info(target_vector))
+  
+  return(info_dict)
+}
+
+# Generate the iterations needed
+#' @noRd
+#' @export
+.gen_iterations <- function(train_params, model_params) {
+  
+  iters <- c()
+  if (!is.null(train_params$split)) iters <- "split"
+  
+  if (!is.null(train_params$n_folds)) iters <- c(iters, paste0("fold", 1:train_params$n_folds))
+  
+  if (model_params$final_model == TRUE) iters <- c(iters, "final")
+
+  return(iters)
+}
+
+# Function to determine standardization and imputation
+#' @noRd
+#' @export
+.prep_data <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, train_params, impute_params) {
+  if (is.null(preprocessed_data)) {
+    if (!is.null(impute_params$method)) {
+      out <- .imputation(train = train, test = test, vars = vars, impute_params = impute_params)
+    } else {
+      out <- .standardize_train(train, test, train_params$standardize, vars$target)
+    }
+  } else {
+    if (!is.null(impute_params$method)) {
+      out <- .imputation(preprocessed_data = preprocessed_data, vars = vars, impute_params = impute_params)
+    } else {
+      out <- .standardize(preprocessed_data = preprocessed_data, train_params$standardize, vars$target)
+    }
+  }
+  
+  return(out)
+}
+
+# Function to standardize features for train data
+#' @noRd
+#' @export
+#' @importFrom stats sd
+.standardize_train <- function(train, test, standardize = TRUE, target){
+  col_names <- .get_cols(train, standardize, target)
+
+  if (length(col_names) > 0) {
+    for (col in col_names) {
+      if (any(is.numeric(train[,col]), is.integer(train[,col]))) {
+        # Get mean and sample sd of the train data
+        train_col_mean <- mean(as.numeric(train[,col]), na.rm = TRUE)
+        train_col_sd <- sd(as.numeric(train[,col]), na.rm = TRUE)
+        # Scale train and test data using the train mean and sample sd
+        scaled_train_col <- (train[,col] - train_col_mean)/train_col_sd
+        train[,col] <- as.vector(scaled_train_col)
+        scaled_validation_col <- (test[,col] - train_col_mean)/train_col_sd
+        test[,col] <- as.vector(scaled_validation_col)
+      }
+    }
+  } else {
+    warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
+    being of class 'numeric'")
+  }
+  return(list("train" = train, "test" = test))
+}
+
+# Function to standardize features for preprocessed data
+#' @noRd
+#' @export
+#' @importFrom stats sd
+.standardize <- function(preprocessed_data, standardize = TRUE, target){
+  col_names <- .get_cols(preprocessed_data, standardize, target)
+  
+  if (length(col_names) > 0) {
+    preprocessed_data[, col_names] <- sapply(preprocessed_data[, col_names],
+                                             function(x) scale(x, center = TRUE, scale = TRUE))
+  } else {
+    warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
+    being of class 'numeric'")
+  }
+  
+  return(list("preprocessed_data" = preprocessed_data))
 }
 
 # Imputation function
-#' @importFrom recipes step_impute_knn recipe all_predictors step_impute_bag prep bake
+#' @importFrom recipes step_impute_knn recipe step_impute_bag prep bake
 #' @noRd
 #' @export
-.imputation <- function(preprocessed_data, target, predictors, formula, imputation_method ,impute_args, classCV_output,
-                        iteration, parallel = TRUE, final = FALSE, random_seed = NULL){
-  # Set seed
-  if(!is.null(random_seed)){
-    set.seed(random_seed)
+.imputation <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, impute_params){
+  # Get data id
+  use_data <- ifelse(!is.null(preprocessed_data), "preprocessed", "train")
+  # Standardize
+  if (use_data == "preprocessed") {
+    data <- .standardize(preprocessed_data, target = vars$target)$preprocessed_data
+  } else {
+    df_list <- .standardize_train(train, test, target = vars$target)
+    data <- df_list$train
+    test <- df_list$test
+    rm(df_list); gc()
   }
-  # Get column names
-  col_names <- colnames(preprocessed_data)
-
-  if(final == FALSE){
-    # Get training and validation data
-    if(iteration == "Training"){
-      training_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["training"]],]
-      validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["split"]][["test"]],]
+  
+  # Create args list
+  step_args <- list(recipe = recipe(~ ., data = data[,vars$predictors]))
+  
+  if (!is.null(impute_params$args)) {
+    step_args <- c(step_args, impute_params$args, list(c(vars$predictors)))
     } else {
-      training_data <- preprocessed_data[-c(classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]]),]
-      validation_data <- preprocessed_data[classCV_output[["sample_indices"]][["cv"]][[tolower(iteration)]],]
+      step_args <- c(step_args, list(c(vars$predictors)))
     }
-
-    # Get names of rows
-    training_rows <- rownames(training_data)
-    validation_rows <- rownames(validation_data)
-
-    if(imputation_method == "knn_impute"){
-      if(!is.null(impute_args)){
-        if(!is.null(impute_args[["formula"]])){
-          formula <- impute_args[["formula"]]
-        } else {
-          formula <- formula
-        }
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data),
-                               neighbors = impute_args[["neighbors"]], all_predictors())
-      } else {
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = training_data),all_predictors())
-      }
-    } else if(imputation_method == "bag_impute") {
-      if(!is.null(impute_args)){
-        if(!is.null(impute_args[["formula"]])){
-          formula <- impute_args[["formula"]]
-        } else {
-          formula <- formula
-        }
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data),
-                               trees = impute_args[["trees"]], all_predictors())
-      } else {
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = training_data), all_predictors())
-      }
-    }
-
-    prep <- prep(rec, training = training_data)
-    # Apply the prepped recipe to the training data
-    training_data_processed <- data.frame(bake(prep, new_data = training_data))
-
-    # Create full data
-    if(ncol(training_data_processed) != ncol(training_data)){
-      training_data_processed <- cbind(training_data_processed,
-                                       subset(training_data,
-                                              select = col_names[!col_names %in% colnames(training_data_processed)]))[,col_names]
-    }
-
-
-    # Apply the prepped recipe to the test data
-    validation_data_processed <- data.frame(bake(prep, new_data = validation_data))
-
-    # Create full data
-    if(ncol(validation_data_processed) != ncol(validation_data)){
-      validation_data_processed <- cbind(validation_data_processed,
-                                         subset(validation_data,
-                                                select = col_names[!col_names %in% colnames(validation_data_processed)]))[,col_names]
-    }
-
-    # Update row names of the new processed data
-    rownames(training_data_processed) <- training_rows
-    rownames(validation_data_processed) <- validation_rows
-
-    # Combine dataset and sort
-    processed_data <- rbind(training_data_processed, validation_data_processed)
-    sorted_rows <- as.character(sort(as.numeric(row.names(processed_data))))
-    processed_data <- processed_data[sorted_rows,]
-
-    # Create imputation_information list to store information
-    imputation_information <- .get_missing_info(training_data = training_data, validation_data = validation_data,
-                                                iteration = iteration, imputation_method = imputation_method)
-    
-    if(iteration == "Training"){
-      imputation_information[["split"]][["prep"]] <- prep
-    } else {
-      imputation_information[["cv"]][[tolower(iteration)]][["prep"]] <- prep
-    }
-
-    if(is.null(classCV_output[["imputation"]])) classCV_output[["imputation"]] <- imputation_information
-
-    if(parallel == FALSE){
-      if(iteration != "Training"){
-        if(is.null(classCV_output[["imputation"]][["cv"]])){
-          classCV_output[["imputation"]][["cv"]] <- imputation_information[["cv"]]
-        } else {
-          classCV_output[["imputation"]][["cv"]][[tolower(iteration)]] <- imputation_information[["cv"]][[tolower(iteration)]]
-        }
-      }
-    }
-
-    imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
-    return(imputation_output)
-
-  } else{
-    # Get missing information
-    imputation_information <- .get_missing_info(preprocessed_data = preprocessed_data,
-                                                imputation_method = imputation_method)
-    # Impute data
-    if(imputation_method == "knn_impute"){
-      if(!is.null(impute_args)){
-        if(!is.null(impute_args[["formula"]])){
-          formula <- impute_args[["formula"]]
-        } else {
-          formula <- formula
-        }
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data),
-                               neighbors = impute_args[["neighbors"]], all_predictors())
-      } else {
-        rec <- step_impute_knn(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())
-      }
-    } else if(imputation_method == "bag_impute") {
-      if(!is.null(impute_args)){
-        if(!is.null(impute_args[["formula"]])){
-          formula <- impute_args[["formula"]]
-        } else {
-          formula <- formula
-        }
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data),
-                               trees = impute_args[["trees"]], all_predictors())
-      } else {
-        rec <- step_impute_bag(recipe = recipe(formula = formula, data = preprocessed_data), all_predictors())
-      }
-    }
-
-    prep <- prep(rec, data = preprocessed_data, new_data = NULL)
-    processed_data <- data.frame(bake(prep, new_data = NULL))
-    
-    imputation_information[["final model"]][["prep"]] <- prep
-    # Remove method if in list already
-    if(!is.null(classCV_output[["imputation"]][["method"]])) imputation_information$method <- NULL
-    classCV_output[["imputation"]] <- c(classCV_output[["imputation"]], imputation_information)
-
-    # Create full data
-    if(ncol(processed_data) != ncol(preprocessed_data)){
-      processed_data <- cbind(processed_data,
-                              subset(preprocessed_data,
-                                     select = col_names[!col_names %in% colnames(processed_data)]))[,col_names]
-    }
-
-    imputation_output <- list("processed_data" = processed_data, "classCV_output" = classCV_output)
-    return(imputation_output)
+  
+  # Prepare models & impute
+  if (impute_params$method == "knn_impute") {
+    step <- do.call(step_impute_knn, step_args)
+  } else {
+    step <- do.call(step_impute_bag, step_args)
   }
+  
+  prep <- prep(x = step, training = data[,vars$predictors])
+  data <- cbind(data.frame(bake(prep, new_data = data[,vars$predictors])), subset(data, select = vars$target))
 
-}
-
-
-# Assist function for .imputation to get number of missing data for each column
-#' @noRd
-#' @export
-.get_missing_info <- function(preprocessed_data = NULL, training_data = NULL, validation_data = NULL,
-                              iteration, imputation_method){
-  # Create imputation list
-  imputation_information <- list()
-
-  imputation_information[["method"]] <- imputation_method
-  # Create iteration vector
-  if(!is.null(preprocessed_data)){
-    iter_list <- list("preprocessed_data" = preprocessed_data)
-  } else{
-    iter_list <- list("training_data" = training_data, "validation_data" = validation_data)
+  if (use_data == "preprocessed") {
+    return(list("preprocessed_data" = data, "prep" = prep))
+  } else {
+    test <- cbind(data.frame(bake(prep, new_data = test[,vars$predictors])),  subset(test, select = vars$target))
+    return(list("train" = data, "test" = test, "prep" = prep))
   }
-
-  # Store information
-  for(data_id in names(iter_list)){
-    missing_cols <- colnames(iter_list[[data_id]])[unique(as.vector(which(is.na(iter_list[[data_id]]),arr.ind = TRUE)[,"col"]))]
-    n_missing <- lapply(missing_cols, function(x) length(which(is.na(iter_list[[data_id]][,x]))))
-    names(n_missing) <- missing_cols
-    if(is.null(preprocessed_data)){
-      if(iteration == "Training"){
-        imputation_information[["split"]][["missing_data"]][[data_id]] <- n_missing
-      } else{
-        imputation_information[["cv"]][[tolower(iteration)]][["missing_data"]][[data_id]] <- n_missing
-      }
-    } else{
-      imputation_information[["final model"]][["missing_data"]] <- n_missing
-    }
-  }
-
-  return(imputation_information)
-}
-
-# Function to standardize data
-#' @noRd
-#' @export
-.standardize <- function(training_data, validation_data, standardize, target){
-  # Get predictor names
-  predictors <- colnames(training_data)
-
-  if(inherits(standardize, "logical")){
-    col_names <- predictors
-  } else if(inherits(standardize, c("numeric","integer"))){
-    # Remove any index value outside the range of the number of columns
-    n_cols <- 1:ncol(training_data)
-    standardize <- standardize[which(standardize %in% n_cols)]
-    unused <- standardize[which(!standardize %in% n_cols)]
-    col_names <- predictors[standardize]
-    if(length(unused) > 0){
-      warning(sprintf("some indices are outside possible range and will be ignored: %s",paste(unused)))
-    }
-  } else{
-    # Remove any column names not in dataframe
-    unused <- standardize[which(!standardize %in% predictors)]
-    col_names <- predictors[which(standardize %in% predictors)]
-    if(length(unused) > 0){
-      warning(sprintf("some column names not in dataframe and will be ignored: %s",paste(unused)))
-    }
-
-  }
-
-  # Remove target
-  col_names <- col_names[col_names != target]
-
-  if(length(col_names) > 0){
-    for(col in col_names){
-      if(any(is.numeric(training_data[,col]), is.integer(training_data[,col]))){
-        # Get mean and sample sd of the training data
-        training_col_mean <- mean(as.numeric(training_data[,col]))
-        training_col_sd <- sd(as.numeric(training_data[,col]))
-        # Scale training and test data using the training mean and sample sd
-        scaled_training_col <- (training_data[,col] - training_col_mean)/training_col_sd
-        training_data[,col] <- as.vector(scaled_training_col)
-        scaled_validation_col <- (validation_data[,col] - training_col_mean)/training_col_sd
-        validation_data[,col] <- as.vector(scaled_validation_col)
-      }
-    }
-  } else{
-    warning("no standardization has been done; standardization specified but column indices are outside possible range
-            or column names don't exist")
-  }
-
-  standardize_list <- list("training_data" = training_data, "validation_data" = validation_data)
-  return(standardize_list)
 }

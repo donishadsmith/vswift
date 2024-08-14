@@ -1,24 +1,33 @@
 # Function to expand the dataframe containing the performance metrics
 #' @noRd
 #' @export
-.expand_dataframe <- function(classCV_output, split, n_folds, model_type){
-  if(any(!is.null(split), !is.null(n_folds))){
-    target <- classCV_output[["parameters"]][["target"]]
-    column_names <- c("Classification Accuracy",lapply(classCV_output[["classes"]][[target]], function(x) paste(paste("Class:", x), c("Precision", "Recall", "F-Score"))))
-    if(!is.null(split)){
-      split_df <- data.frame(sapply(unlist(column_names), function(x) assign(x, rep(NA,2))))
-      colnames(split_df) <- unlist(column_names)
-      for(model_name in model_type){
-        classCV_output[["metrics"]][[model_name]][["split"]] <- cbind(data.frame("Set" = c("Training", "Test")), split_df)
-      }
+#' 
+.expand_dataframe <- function(train_params, models, classes){
+  # Create df_list
+  df_list <- list()
+  # Create base column names
+  col_names <- c("Classification Accuracy",
+                 sapply(classes, function(x) paste(paste("Class:", x),c("Precision", "Recall", "F-Score"))))
+  
+  # Create split df
+  if (!is.null(train_params$split)) {
+    # Create dataframe by using assign combined with rep and sapply to dynamically create columns, each element is NA
+    split_df <- data.frame(sapply(col_names, function(x) assign(x, rep(NA, 2))))
+    # Fix names
+    colnames(split_df) <- col_names
+    for (model in models) {
+      df_list[[model]]$split <- cbind(data.frame("Set" = c("Training", "Test")), split_df)
     }
-    if(!is.null(n_folds)){
-      cv_df <- data.frame(sapply(unlist(column_names), function(x) assign(x, rep(NA,n_folds))))
-      colnames(cv_df) <- unlist(column_names)
-      for(model_name in model_type){
-        classCV_output[["metrics"]][[model_name]][["cv"]] <- cbind(data.frame("Fold" = paste("Fold", 1:n_folds)),cv_df)
-      }
-    }
-    return(classCV_output)
   }
+  
+  # Create cv df
+  if (!is.null(train_params$n_folds)) {
+    cv_df <- data.frame(sapply(unlist(col_names), function(x) assign(x, rep(NA, train_params$n_folds))))
+    colnames(cv_df) <- col_names
+    for (model in models) {
+      df_list[[model]]$cv <- cbind(data.frame("Fold" = paste("Fold", 1:train_params$n_folds)),cv_df)
+    }
+  }
+    
+  return(df_list)
 }

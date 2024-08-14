@@ -7,13 +7,21 @@
 #' @param data A data frame.
 #' @param target A numerical index or character name for the target variable. Only needs to be specified if
 #'               \code{stratified = TRUE}. Default = \code{NULL}.
-#' @param split A numerical value between 0.5 to 0.9 indicating the proportion of data to use for the training set,
-#'              leaving the rest for the test set. If not specified, train-test splitting will not be done.
-#'              Default = \code{NULL}.
-#' @param n_folds A numerical value between 3-30 indicating the number of k-folds. If left empty, k-fold cross
-#'                validation will not be performed. Default = \code{NULL}.
-#' @param stratified A logical value indicating if stratified sampling should be used. Default = \code{FALSE}.
-#' @param random_seed A numerical value for the random seed to be used. Default = \code{NULL}.
+#' @param train_params A list that can contain the following parameters:
+#'                     \itemize{
+#'                     \item \code{"split"}: A number from 0 to 1 for the proportion of data to use for the
+#'                     training set, leaving the rest for the test set. If not specified, train-test splitting will not
+#'                     be done. Note, this parameter is used to perform train-test splitting, which is separate
+#'                     from cross-validation. Can be set to NULL, to not perform train-test splitting.
+#'                     Default = \code{NULL}.
+#'                     \item \code{"n_folds"}: An integer greater than 2 that indicates the number of folds to use for
+#'                     k-fold cross validation (CV). Note, k-fold CV is performed separately from train-test splitting.
+#'                     Can be set to NULL, to not perform k-fold CV. Default = \code{NULL}
+#'                     \item \code{"stratified"}: A logical value indicating if stratified sampling should be used.
+#'                     Default = \code{FALSE}.
+#'                     \item \code{"random_seed"} A numerical value for the random seed to ensure random splitting
+#'                     are reproducible. Default = \code{NULL}.
+#'                     }
 #' @param create_data A logical value indicating whether to create all training and test/validation data frames.
 #'                    Default = \code{FALSE}.
 #' @return A list containing the indices for train-test splitting and/or k-fold cross-validation, with information on
@@ -26,156 +34,81 @@
 #'
 #' # Obtain indices for 80% training/test split and 5-fold CV
 #'
-#' output <- genFolds(data = iris, target = "Species", split = 0.8, n_folds = 5)
+#' output <- genFolds(data = iris, target = "Species", train_params = list(split = 0.8, n_folds = 5))
 #'
 #' @author Donisha Smith
 #' @export
-
-genFolds <- function(data, target = NULL,  split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL,
+genFolds <- function(data,
+                     target,
+                     train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL),
                      create_data = FALSE){
-  # Check input
-  .error_handling(data = data, target = target, n_folds = n_folds, split = split, stratified = stratified,
-                  random_seed = random_seed, call = "stratified_split")
-  # Set seed
-  if(!is.null(random_seed)) set.seed(random_seed)
-  # Initialize stratified list for out
-  output <- list()
-  # Stratified splitting
-  if(stratified == TRUE){
-    # Get column name
-    if(is.numeric(target)){
-      target <- colnames(data)[target]
+  
+  # Append train_params
+  train_params <- .append_keys("train_params", train_params, call = "genFolds")
+  # Check validity of inputs
+  .error_handling(data = data, target = target, train_params = train_params, create_data = create_data, call = "genFolds")
+  
+  # Initialize final output list
+  final_output <- list("configs" = train_params)
+  final_output <- c(final_output, .append_output(data[,target], train_params$stratified))
+  final_output$data_partitions <- list()
+  
+  # Perform sampling
+  final_output <- .sampling(data, train_params, target, final_output)
+  
+  # Get data partitions
+  if (create_data == TRUE) final_output$data_partitions$dataframes <- .partition(data, final_output$data_partitions$indices)
+  
+  return(final_output)
+}
+
+# Sampling function used by classCV and genFolds
+#' @noRd
+#' @export
+.sampling <- function(data, train_params, target, final_output){
+  # Base args
+  base_args <- list(N = nrow(data), random_seed = train_params$random_seed)
+  
+  if (train_params$stratified == TRUE) {
+    # Create args list
+    strat_args <- list(classes = final_output$class_summary$classes,
+                       class_indxs = final_output$class_summary$indices,
+                       class_props = final_output$class_summary$proportions)
+    
+    strat_args <- c(base_args, strat_args)
+    # Get stratified indices
+    if (!is.null(train_params$split)) {
+      strat_args$split <- train_params$split
+      final_output$data_partitions$indices$split <- do.call(.stratified_split, strat_args)
+      # Get proportions of classes in the stratified indices
+      final_output$data_partitions$proportions$split <- .get_proportions(data[,target],
+                                                                         final_output$data_partitions$indices$split)
     }
-    # Isolate stratified variable
-    stratify_var <- factor(data[,target])
-    # Get classes
-    output[["classes"]][[target]] <- names(table(data[,target]))
-    # Get proportions
-    output[["class_proportions"]] <- table(data[,target])/sum(table(data[,target]))
-    # Get indices of classes
-    for(class in as.character(output[["classes"]][[target]])){
-      output[["class_indices"]][[class]] <- which(stratify_var == class)
+    
+    if (!is.null(train_params$n_folds)) {
+      # Remove split arg
+      strat_args <- strat_args[!names(strat_args) == "split"] 
+      strat_args$n_folds <- train_params$n_folds
+      final_output$data_partitions$indices$cv <- do.call(.stratified_cv, strat_args)
+      # Get proportions of classes in the stratified indices
+      final_output$data_partitions$proportions$cv <- .get_proportions(data[,target],
+                                                                      final_output$data_partitions$indices$cv)
     }
-    if(!is.null(split)){
-      # Create separate class indices variable to delete selected indices
-      class_indices <- output[["class_indices"]]
-      # Split sizes
-      training_n <- round(nrow(data)*split,0)
-      test_n <- nrow(data) - training_n
-      # Initialize list
-      output[["sample_indices"]][["split"]] <- list()
-      output[["sample_proportions"]][["split"]] <- list()
-      for(class in as.character(output[["classes"]][[target]])){
-        # Check if sampling possible
-        .stratified_check(class = class, class_indices = class_indices, output = output, n = training_n)
-        # Store indices for training set
-        output[["sample_indices"]][["split"]][["training"]] <- c(output[["sample_indices"]][["split"]][["training"]] ,sample(class_indices[[class]],size = round(training_n*output[["class_proportions"]][[class]],0), replace = F))
-        # Remove indices to not add to test set
-        class_indices[[class]] <- class_indices[[class]][!(class_indices[[class]] %in% output[["sample_indices"]][["split"]][["training"]])]
-        # Check if sampling possible
-        .stratified_check(class = class, class_indices = class_indices, output = output, n = test_n)
-        # Add indices for test set
-        output[["sample_indices"]][["split"]][["test"]] <- c(output[["sample_indices"]][["split"]][["test"]] ,sample(class_indices[[class]],size = round(test_n*output[["class_proportions"]][[class]],0), replace = F))
-      }
-      # Get proportions
-      output[["sample_proportions"]][["split"]][["training"]] <- table(stratify_var[output[["sample_indices"]][["split"]][["training"]]])/sum(table(stratify_var[output[["sample_indices"]][["split"]][["training"]]]))
-      output[["sample_proportions"]][["split"]][["test"]] <- table(stratify_var[output[["sample_indices"]][["split"]][["test"]]])/sum(table(stratify_var[output[["sample_indices"]][["split"]][["test"]]]))
-      if(create_data == TRUE){
-        output[["data"]][["split"]] <- list()
-        # Split data
-        output[["data"]][["split"]][["training"]] <- data[output[["sample_indices"]][["split"]][["training"]],]
-        output[["data"]][["split"]][["test"]] <- data[output[["sample_indices"]][["split"]][["test"]],]
-      }
-    }
-    if(!is.null(n_folds)){
-      # Create class indices variable
-      class_indices <- output[["class_indices"]]
-      # Initialize list to store indices, proportions, and data
-      output[["sample_indices"]][["cv"]] <- list()
-      output[["sample_proportions"]][["cv"]] <- list()
-      if(create_data == TRUE){
-        output[["data"]][["cv"]] <- list()
-      }
-      for(i in 1:n_folds){
-        # Keep initializing variable
-        fold_idx <- c()
-        # fold size; try to undershoot for excess
-        fold_size <- floor(nrow(data)/n_folds)
-        for(class in as.character(output[["classes"]][[target]])){
-          # Check if sampling possible
-          .stratified_check(class = class, class_indices = class_indices, output = output, n = fold_size)
-          # Check if sampling possible
-          fold_idx <- c(fold_idx, sample(class_indices[[class]],size = floor(fold_size*output[["class_proportions"]][[class]]), replace = F))
-          # Remove already selected indices
-          class_indices[[class]] <- class_indices[[class]][-which(class_indices[[class]] %in% fold_idx)]
-        }
-        # Add indices to list
-        output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
-        # Update proportions
-        output[["sample_proportions"]][["cv"]][[sprintf("fold %s",i)]] <- table(stratify_var[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]])/sum(table(stratify_var[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]]]))
-      }
-      # Deal with excess indices
-      excess <- nrow(data) - length(as.numeric(unlist(output[["sample_indices"]][["cv"]])))
-      if(excess > 0){
-        for(class in names(output[["class_proportions"]])){
-          fold_idx <- class_indices[[class]]
-          if(length(fold_idx) > 0){
-            leftover <- rep(1:n_folds,length(fold_idx))[1:length(fold_idx)]
-            for(i in 1:length(leftover)){
-              # Add indices to list
-              output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- c(fold_idx[i],output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]])
-              # Update class proportions
-              output[["sample_proportions"]][["cv"]][[sprintf("fold %s",leftover[i])]] <- table(stratify_var[output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]])/sum(table(stratify_var[output[["sample_indices"]][["cv"]][[sprintf("fold %s",leftover[i])]]]))
-            }
-          }
-        }
-      }
-      if(create_data == TRUE){
-        # Split data
-        for(i in 1:n_folds){
-          output[["data"]][["cv"]][[sprintf("fold %s",i)]] <- data[output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]],]
-        }
-      }
-    }
+    
   } else {
-    if(!is.null(split)){
-      # Initialize list
-      output[["sample_indices"]][["split"]] <- list()
-      # Create test and training set
-      output[["sample_indices"]][["split"]][["training"]] <- sample(1:nrow(data),size = round(nrow(data)*split,0),replace = F)
-      output[["sample_indices"]][["split"]][["test"]] <- c(1:nrow(data))[-output[["sample_indices"]][["split"]][["training"]]]
-      if(create_data == TRUE){
-        output[["data"]][["split"]] <- list()
-        output[["data"]][["split"]][["training"]] <- data[output[["sample_indices"]][["split"]][["training"]],]
-        output[["data"]][["split"]][["test"]] <- data[output[["sample_indices"]][["split"]][["test"]],]
-      }
+    # Non-stratified sampling
+    if (!is.null(train_params$split)) {
+      base_args$split <- train_params$split
+      final_output$data_partitions$indices$split <- do.call(.split, base_args)
     }
-    if(!is.null(n_folds)){
-      # Create folds; start with randomly shuffling indices
-      indices <- sample(1:nrow(data))
-      # Get floor
-      fold_size_vector <- rep(floor(nrow(data)/n_folds),n_folds)
-      excess <- nrow(data) - sum(fold_size_vector)
-      if(excess > 0){
-        folds_vector <- rep(1:n_folds,excess)[1:excess]
-        for(num in folds_vector){
-          fold_size_vector[num] <- fold_size_vector[num] + 1
-        }
-      }
-      # random shuffle
-      fold_size_vector <- sample(fold_size_vector, size = length(fold_size_vector), replace = FALSE)
-      for(i in 1:n_folds){
-        # Create fold with stratified or non stratified sampling
-        fold_idx <- indices[1:fold_size_vector[i]]
-        # Remove rows from vectors to prevent overlapping,last fold may be smaller or larger than other folds
-        indices <- indices[-c(1:fold_size_vector[i])]
-        # Add indices to list
-        output[["sample_indices"]][["cv"]][[sprintf("fold %s",i)]] <- fold_idx
-        if(create_data == TRUE){
-          output[["data"]][["cv"]][[sprintf("fold %s",i)]] <- data[fold_idx,]
-        }
-      }
+    
+    if (!is.null(train_params$n_folds)) {
+      # Remove split arg
+      base_args <- base_args[!names(base_args) == "split"] 
+      base_args$n_folds <- train_params$n_folds
+      final_output$data_partitions$indices$cv <- do.call(.cv, base_args)
     }
   }
-  return(output)
+  
+  return(final_output)
 }

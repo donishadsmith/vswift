@@ -5,21 +5,21 @@
 \alias{print.vswift}
 \title{Print parameter information and/or model evaluation metrics}
 \usage{
-\method{print}{vswift}(x, ..., parameters = TRUE, metrics = TRUE, model_type = NULL)
+\method{print}{vswift}(x, ..., configs = TRUE, metrics = TRUE, models = NULL)
 }
 \arguments{
 \item{x}{The vswift object.}
 
 \item{...}{Additional arguments to be passed.}
 
-\item{parameters}{A logical value indicating whether to print parameter information from the vswift object.
+\item{configs}{A logical value indicating whether to print model configeration information from the vswift object.
 Default = \code{TRUE}.}
 
 \item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will
 display the precision, recall, and f-score for each class, along with the means of each metric (if
 k-fold validation was used). Default = \code{TRUE}.}
 
-\item{model_type}{A character or vector of the model information to be printed. If \code{NULL}, all model
+\item{models}{A character or vector of the model information to be printed. If \code{NULL}, all model
 information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
 \code{"qda"} (Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression),
 \code{"svm"} (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
@@ -28,8 +28,8 @@ information will be printed. Available options: \code{"lda"} (Linear Discriminan
 (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.}
 }
 \description{
-Prints parameter information and/or model evaluation metrics (classification accuracy, precision,
-             recall, and f-score for each class) from a vswift object.
+Prints model configuration information and/or model evaluation metrics (classification accuracy,
+precision, recall, and f-score for each class) from a vswift object.
 }
 \examples{
 # Load an example dataset
@@ -38,8 +38,11 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
 
-result <- classCV(data = iris, target = "Species", split = 0.8,
-model_type = "lda", stratified = TRUE, random_seed = 123)
+result <- classCV(data = iris,
+                  target = "Species",
+                  models = "lda",
+                  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+                  )
 
 #  Print parameter information and performance metrics
 print(result)
