@@ -6,6 +6,9 @@ test_that("test train-test split and no stratified sampling", {
   data <- iris
   expect_no_error(result <- classCV(data = data, target = "Species", models = "lda",
                                     train_params = list(split = 0.8, standardize = TRUE)))
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  split_df <- result$metrics$lda$split
+  expect_true(all(split_df[,2:ncol(split_df)] >= 0 & split_df[,2:ncol(split_df)] <= 1))
 })
 
 test_that("test new formula method", {
@@ -14,11 +17,17 @@ test_that("test new formula method", {
   expect_no_error(result2 <- classCV(formula = Species ~ ., data = data, models = "qda",
                                      train_params = list(split = 0.8, random_seed = 50)))
   expect_equal(result1$metrics$lda$split,result2$metrics$lda$split)
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  split_df <- result1$metrics$qda$split
+  expect_true(all(split_df[,2:ncol(split_df)] >= 0 & split_df[,2:ncol(split_df)] <= 1))
 })
 
 test_that("k-fold CV no stratified sampling", {
   data <- iris
   expect_no_error(result <- classCV(data = data, target = "Species", models = "svm", train_params = list(n_folds = 3)))
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  cv_df <- result$metrics$svm$cv
+  expect_true(all(cv_df[,2:ncol(cv_df)] >= 0 & cv_df[,2:ncol(cv_df)] <= 1))
 })
 
 
@@ -65,6 +74,12 @@ test_that("train-test split and k-fold CV with stratified", {
     expect_true(all(test_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$test)))
 
   }
+  
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  split_df <- result$metrics$naivebayes$split
+  cv_df <- result$metrics$naivebayes$cv
+  expect_true(all(split_df[,2:ncol(split_df)] >= 0 & split_df[,2:ncol(split_df)] <= 1))
+  expect_true(all(cv_df[,2:ncol(cv_df)] >= 0 & cv_df[,2:ncol(cv_df)] <= 1))
 })
 
 
@@ -88,7 +103,7 @@ test_that("train-test split and k-fold CV without stratified sampling", {
   folds <- paste0("fold", 1:3)
   
   # Check that data partition indices between folds are independent
-  for(i in folds) {
+  for (i in folds) {
     for (j in folds) {
       if (i != j)
         expect_false(any(result$data_partitions$indices$cv[[i]] %in% result$data_partitions$indices$cv[[j]]))
@@ -102,8 +117,13 @@ test_that("train-test split and k-fold CV without stratified sampling", {
     
     expect_true(all(train_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$train)))
     expect_true(all(test_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$test)))
-    
   }
+  
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  split_df <- result$metrics$multinom$split
+  cv_df <- result$metrics$multinom$cv
+  expect_true(all(split_df[,2:ncol(split_df)] >= 0 & split_df[,2:ncol(split_df)] <= 1))
+  expect_true(all(cv_df[,2:ncol(cv_df)] >= 0 & cv_df[,2:ncol(cv_df)] <= 1))
 })
 
 
@@ -201,15 +221,26 @@ test_that("running multiple models", {
   
   data$Species <- ifelse(data$Species == 1, 0, 1)
   
-  args <- list("knn" = list(ks = 3), "gbm" = list(params = list(booster = "gbtree", objective = "multi:softmax",
-                                                                lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
-                                                                max_depth = 6), nrounds = 10),
+  args <- list("knn" = list(ks = 3),
+               "gbm" = list(params = list(booster = "gbtree", objective = "multi:softmax",
+                                          lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
+                                          max_depth = 6), nrounds = 10),
                "logistic" = list(maxit = 10000))
   
-  expect_warning(expect_warning(result <- classCV(data = data, target = 5, models = c("knn", "svm", "logistic", "gbm", "randomforest"), 
+  models = c("knn", "svm", "logistic", "gbm", "randomforest")
+  expect_warning(expect_warning(result <- classCV(data = data, target = 5, models = models, 
                                     train_params = list(split = 0.8, n_folds = 3, standardize = TRUE,
                                                         stratified = TRUE, random_seed = 50, remove_obs = TRUE),
                                     save = list(models = TRUE), model_params = list(map_args = args))))
+  
+  
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  for (model in models) {
+    split_df <- result$metrics[[model]]$split
+    cv_df <- result$metrics[[model]]$cv
+    expect_true(all(split_df[,2:ncol(split_df)] >= 0 & split_df[,2:ncol(split_df)] <= 1))
+    expect_true(all(cv_df[,2:ncol(cv_df)] >= 0 & cv_df[,2:ncol(cv_df)] <= 1))
+  }
 })
 
 test_that("n_cores", {

@@ -558,9 +558,10 @@ ad_data <- read.csv("ad.data")
 library(vswift)
 
 # Create arguments variable to tune parameters for multiple models
-args <- list("knn" = list(ks = 5), "gbm" = list(params = list(booster = "gbtree", objective = "multi:softmax",
-                                                              lambda = 0.0003, alpha = 0.0003, num_class = 2, eta = 0.8,
-                                                              max_depth = 6), nrounds = 10))
+args <- list("knn" = list(ks = 5), 
+             "gbm" = list(params = list(booster = "gbtree", objective = "multi:softmax",
+                                        lambda = 0.0003, alpha = 0.0003, num_class = 2, eta = 0.8,
+                                        max_depth = 6), nrounds = 10))
 
 print("Without Parallel Processing:")
 

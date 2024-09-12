@@ -18,7 +18,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 ## [0.2.0.9000] - 2024-09-09 [Development Version; RE-UPLOAD]
 ### ♻ Changed
 - Refactored package internally to make code more reusable and maintainable. Version is in still in development but has
-passed previous testthat tests and all functions can be used.
+passed previous testthat tests and all functions can be used. Commit [here](https://github.com/donishadsmith/vswift/commit/5c06e40eadf57ef610dc5648d87db78160f211e2).
 - Some parameters for `classCV` and `genFolds` have been grouped together. For instance, `split`, `n_folds`, `standardize`,
 `remove_obs`, `random_seed`, `stratified`, etc are no longer separate input parameters. They are now apart of the new
 `train_params` parameter as elements (e.g `train_params = list(split = 0.8, n_folds = 5, standardize = TRUE))`. Additionally,
