@@ -14,6 +14,14 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.0] - 2024-09-15
+- Non-Development version of 0.2.0.
+- Minor internal code changes.
+- Additional testthat tests to assess outputs.
+- Removes explicit roxygen2 export of internal private functions.
+- Documents the `contr.dummy` function from the `kknn` package since `train.kknn` requires this function to be in the
+current namespace to work.
+- Allows additional arguments for multiple algorithms to be used.
 
 ## [0.2.0.9000] - 2024-09-09 [Development Version; RE-UPLOAD]
 ### ♻ Changed

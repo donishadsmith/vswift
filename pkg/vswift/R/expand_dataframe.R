@@ -1,8 +1,5 @@
 # Function to expand the dataframe containing the performance metrics
-#' @noRd
-#' @export
-#' 
-.expand_dataframe <- function(train_params, models, classes){
+.expand_dataframe <- function(train_params, models, classes) {
   # Create df_list
   df_list <- list()
   # Create base column names

@@ -1,9 +1,5 @@
-# Code for appending missing keys to parameters that are lists
-#' @noRd
-#' @export
-
-.append_keys <- function(param, struct, models = NULL, call = "classCV", ...){
-  
+# Function for appending missing keys to parameters that are lists
+.append_keys <- function(param, struct, models = NULL, call = "classCV", ...) {
   if (call != "classCV") {
     train_keys <- list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE, "random_seed" = NULL)
   } else {

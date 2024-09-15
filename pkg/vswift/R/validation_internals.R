@@ -1,6 +1,4 @@
 # Function to perform validation of split and folds
-#' @noRd
-#' @export
 .train <- function(iters, df_list, model, formula, model_params, vars, train_params, col_levels, class_summary,
                    save_mods, met_df) {
 
@@ -38,8 +36,6 @@
 # Function to perform validation of split and folds using parallel processing while combining outputs
 #' @importFrom future plan multisession sequential
 #' @importFrom future.apply future_lapply
-#' @noRd
-#' @export
 .train_par <- function(kwargs, parallel_configs, iters) {
   plan(multisession, workers = parallel_configs$n_cores)
   par_out <- future_lapply(iters, function(i){
@@ -55,9 +51,7 @@
 }
 
 # Unnest parallel list
-#' @noRd
-#' @export
-.unnest <- function(par_list, iters, saved_mods = NULL){
+.unnest <- function(par_list, iters, saved_mods = NULL) {
   targets <- c("metrics")
   metrics <- list()
 
@@ -93,10 +87,8 @@
   
 }
 # Helper function for classCV that performs validation
-#' @noRd
-#' @export
 .validation <- function(id, train, test, model, formula, model_params, vars, remove_obs, col_levels, classes, keys,
-                        met_df, random_seed, save){
+                        met_df, random_seed, save) {
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(col_levels)) {
     train[,names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(train[,col], levels = col_levels[[col]])))
@@ -140,8 +132,6 @@
 }
 
 # Helper function to convert keys
-#' @noRd
-#' @export
 .convert_keys <- function(target_vector, keys, direction) {
   if (direction == "encode") {
     labels <- sapply(target_vector, function(x) keys[[x]])
@@ -154,9 +144,7 @@
 }
 
 #Helper function for to remove observations in test set with factors in predictors not observed during train
-#' @noRd
-#' @export
-.remove_obs <- function(train, test, col_levels, id){
+.remove_obs <- function(train, test, col_levels, id) {
   # Iterate over columns and check for the factors that exist in test set but not the train set
   for (col in names(col_levels)) {
     delete_rows <- which(!test[,col] %in% train[,col])
@@ -171,20 +159,16 @@
 }
 
 # Helper function for classCV to create model
-#' @noRd
-#' @export
 #' @importFrom MASS lda qda
 #' @importFrom stats glm
 #' @importFrom naivebayes naive_bayes
 #' @importFrom e1071 svm
 #' @importFrom nnet nnet.formula nnet multinom
 #' @importFrom kknn train.kknn
-#' @importFrom kknn contr.dummy
-#' @export contr.dummy
 #' @importFrom rpart rpart
 #' @importFrom randomForest randomForest
 #' @importFrom xgboost xgb.DMatrix xgb.train
-.generate_model <- function(model, formula, vars = NULL, data = NULL, add_args = NULL, random_seed = NULL){
+.generate_model <- function(model, formula, vars = NULL, data = NULL, add_args = NULL, random_seed = NULL) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
   
@@ -216,10 +200,8 @@
 }
 
 # Helper function for classCV to predict
-#' @noRd
-#' @export
 #' @importFrom stats predict
-.prediction <- function(id, mod, train_mod, vars, df_list, threshold = NULL){
+.prediction <- function(id, mod, train_mod, vars, df_list, threshold = NULL) {
   # vec to store ground truth and predicted data
   vec <- list("ground" = list(), "pred" = list())
   # Only get predictions for training set if train-test split
@@ -259,9 +241,7 @@
 }
 
 # Helper function to calculate metrics
-#' @noRd
-#' @export
-.calculate_metrics <- function(class, ground, pred){
+.calculate_metrics <- function(class, ground, pred) {
   # Sum of true positives
   true_pos <- sum(ground[which(ground == class)] == pred[which(ground == class)])
   # Sum of false negatives
@@ -278,9 +258,7 @@
 }
 
 # Helper function to populate metrics dataframes
-#' @noRd
-#' @export
-.populate_metrics_df <- function(id, classes, vec, met_df){
+.populate_metrics_df <- function(id, classes, vec, met_df) {
   # Create variables used in for loops to calculate precision, recall, and f1
   
   # Variable to select correct dataframe
@@ -315,9 +293,7 @@
 }
 
 # Helper function to merge cv dfs
-#' @noRd
-#' @export
-.merge_df <- function(iters, metrics, cv_df){
+.merge_df <- function(iters, metrics, cv_df) {
   for (i in seq_along(iters)) {
     cv_df[i,colnames(cv_df)] <- metrics[[iters[[i]]]][1,]
   }
@@ -326,10 +302,8 @@
 }
 
 # Calculate mean, standard deviation, and standard error for cross validation
-#' @noRd
-#' @export
 #' @importFrom stats sd
-.get_desc <- function(cv_df, n_folds){
+.get_desc <- function(cv_df, n_folds) {
   indx <- nrow(cv_df)
   desc <- c("Mean CV:","Standard Deviation CV:","Standard Error CV:")
   cv_df[(indx + 1):(indx + 3),"Fold"] <- desc

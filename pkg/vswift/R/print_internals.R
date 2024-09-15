@@ -1,8 +1,6 @@
 # Function to print configs to console
-#' @noRd
-#' @export
 #' @importFrom utils capture.output
-.print_configs <- function(x, model){
+.print_configs <- function(x, model) {
   # Print parameter information
   if (x$configs$n_features > 20) {
     cat(sprintf("Target: %s\n\n", all.vars(x$configs$formula)[1]))
@@ -40,9 +38,7 @@
 }
 
 # Function to print train-test split metrics to console
-#' @noRd
-#' @export 
-.print_metrics_split <- function(x, df, max_str_len, str_diff){
+.print_metrics_split <- function(x, df, max_str_len, str_diff) {
   for (set in c("Training", "Test")) {
     # Variable for which class string length to print to ensure all values have equal spacing
     class_pos <- 1
@@ -87,9 +83,7 @@
 }
 
 # Function to print cross validation metrics to console
-#' @noRd
-#' @export
-.print_metrics_cv <- function(x, df, max_str_len, str_diff){
+.print_metrics_cv <- function(x, df, max_str_len, str_diff) {
   # Variable for which class string length to print to ensure all values have equal spacing
   class_pos <- 1
   # Get number of folds to select the correct rows for mean and stdev
@@ -146,8 +140,6 @@
 }
 
 # Calculate string length of classes to create a border of dashed lines
-#' @noRd
-#' @export    
 .dashed_lines <- function(classes, return_str = FALSE){
   str_len <- sapply(classes, function(x) nchar(x))
   max_str_len <- max(str_len)

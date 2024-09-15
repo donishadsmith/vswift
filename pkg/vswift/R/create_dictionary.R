@@ -1,7 +1,5 @@
 # Create dictionary for target variable if needed for certain algos
-#' @noRd
-#' @export
-.create_dictionary <- function(target_vector){
+.create_dictionary <- function(target_vector) {
   counter <- 0
   new_classes <- c()
   class_dict <- list()

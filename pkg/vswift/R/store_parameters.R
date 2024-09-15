@@ -1,6 +1,4 @@
 # Helper function to store all model information that will be contained in the main output of the classCV function.
-#' @noRd
-#' @export
 #' @importFrom stats as.formula
 .store_parameters <- function(formula = NULL,
                               missing_n,
@@ -12,7 +10,7 @@
                               impute_params,
                               save,
                               parallel_configs
-                              ){
+                              ) {
 
   
     # Initialize output list

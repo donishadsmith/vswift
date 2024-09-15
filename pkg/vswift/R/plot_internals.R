@@ -1,6 +1,4 @@
 # Helper function for regular plotting
-#' @noRd
-#' @export
 #' @importFrom stats sd
 .visible_plots <- function(x, split, cv, metrics, class_names, model_name, model_list){
   # Simplify parameters
@@ -86,8 +84,6 @@
 }
 
 # Detect current environment for proper plotting
-#' @noRd
-#' @export
 .dev_off_and_new <- function(){
   # Don't display plot if save_plot is TRUE
   if (Sys.getenv("RStudio") == "1") {
@@ -98,8 +94,6 @@
 }
 
 # Function for plot saving
-#' @noRd
-#' @export
 #' @importFrom stats sd
 .save_plots <- function(x, path, split, cv, metrics, class_names, model_name, model_list, ...){
   # Simplify parameters

@@ -41,7 +41,7 @@
 genFolds <- function(data,
                      target,
                      train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL),
-                     create_data = FALSE){
+                     create_data = FALSE) {
   
   # Append train_params
   train_params <- .append_keys("train_params", train_params, call = "genFolds")
@@ -63,8 +63,6 @@ genFolds <- function(data,
 }
 
 # Sampling function used by classCV and genFolds
-#' @noRd
-#' @export
 .sampling <- function(data, train_params, target, final_output){
   # Base args
   base_args <- list(N = nrow(data), random_seed = train_params$random_seed)

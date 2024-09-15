@@ -1,7 +1,5 @@
 # Function to perform train-test split with no stratification
-#' @noRd
-#' @export
-.split <- function(N, split, random_seed){
+.split <- function(N, split, random_seed) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
   
@@ -16,9 +14,7 @@
 }
 
 # Function to perform train-test split with no stratification 
-#' @noRd
-#' @export 
-.cv <- function(N, n_folds, random_seed){
+.cv <- function(N, n_folds, random_seed) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
   
@@ -47,9 +43,7 @@
 }
 
 # Function to partition data
-#' @noRd
-#' @export  
-.partition <- function(data, subsets){
+.partition <- function(data, subsets) {
   df_list <- list()
   # Get data for train-test split
   if ("split" %in% names(subsets)) {

@@ -40,26 +40,26 @@
 #'                     }
 #' @param train_params A list that can contain the following parameters:
 #'                     \itemize{
-#'                     \item \code{"split"}: A number from 0 to 1 for the proportion of data to use for the
+#'                     \item \code{split}: A number from 0 to 1 for the proportion of data to use for the
 #'                     training set, leaving the rest for the test set. If not specified, train-test splitting will not
 #'                     be done. Note, this parameter is used to perform train-test splitting, which is separate
 #'                     from cross-validation. Can be set to NULL, to not perform train-test splitting.
 #'                     Default = \code{NULL}.
-#'                     \item \code{"n_folds"}: An integer greater than 2 that indicates the number of folds to use for
+#'                     \item \code{n_folds}: An integer greater than 2 that indicates the number of folds to use for
 #'                     k-fold cross validation (CV). Note, k-fold CV is performed separately from train-test splitting.
 #'                     Can be set to NULL, to not perform k-fold CV. Default = \code{NULL}
-#'                     \item \code{"stratified"}: A logical value indicating if stratified sampling should be used.
+#'                     \item \code{stratified}: A logical value indicating if stratified sampling should be used.
 #'                     Default = \code{FALSE}.
-#'                     \item \code{"random_seed"} A numerical value for the random seed to ensure random splitting and
+#'                     \item \code{random_seed} A numerical value for the random seed to ensure random splitting and
 #'                     any stochastic model results are reproducible. Default = \code{NULL}.
-#'                     \item \code{"standardize"}: A logical value or numerical vector. If \code{TRUE}, all columns
+#'                     \item \code{standardize}: A logical value or numerical vector. If \code{TRUE}, all columns
 #'                     except the target, that are numeric, will be standardized. Standardization is done by
 #'                     calculating the column means and standard deviation for the training subset of the train-test
 #'                     split or each fold. Then each column of the training and test/validation set are standardized
 #'                     using the same mean and standard deviation. This is done to prevent data leakage. To specify the
 #'                     columns to be standardized, create a numerical or character vector consisting of the column
 #'                     indices or names to be standardized.
-#'                     \item \code{"remove_obs"}: A logical value to remove observations with categorical predictors
+#'                     \item \code{remove_obs}: A logical value to remove observations with categorical predictors
 #'                     from the test/validation set that have not been observed during model training. Some algorithms
 #'                     may produce an error if this occurs; thus, this parameter is intended to prevent this error.
 #'                     Default = \code{FALSE}.
@@ -72,38 +72,39 @@
 #'                      split, as well as one model for the training subset of each k-fold; so the imputation model for
 #'                      fold 1 is not the same model used for fold 2) and the same model is used for both the training
 #'                      and test/validation data. This is done to minimize data leakage. Also, standardization of
-#'                      numerical columns will be done automatically regardless if train_params$standardize is set to
-#'                      False. The recipe package is used for imputation and the following parameters can be used:
+#'                      numerical columns will be done automatically regardless if \code{train_params$standardize} is
+#'                      set to \code{False}. The recipe package is used for imputation and the following parameters can
+#'                      be used:
 #'                      \itemize{
-#'                      \item \code{"method"}: A character indicating the imputation method to use. Options include
+#'                      \item \code{method}: A character indicating the imputation method to use. Options include
 #'                      \code{"bag_impute"} (Bagged Trees Imputation) and \code{"knn_impute"} (KNN Imputation).
-#'                      \item \code{"args"}: A list specifying an additional argument for the imputation method.
+#'                      \item \code{args}: A list specifying an additional argument for the imputation method.
 #'                      Below are the additional arguments available for each imputation option.
 #'                      \itemize{
-#'                      \item \code{"bag_impute"}: \code{"neighbors"}
-#'                      \item \code{"knn_impute"}: \code{"trees", "seed_val"}
+#'                      \item \code{"bag_impute"}: \code{neighbors}
+#'                      \item \code{"knn_impute"}: \code{trees}, \code{seed_val}
 #'                      }
 #'                      For specific information about each parameter, please refer to the recipes documentation.
 #'                      Default = \code{NULL}.
 #'                      }
 #' @param save A list that can contain the following parameters:
 #'             \itemize{
-#'             \item \code{"models"}: A logical value to save training models (includes imputation models) used for
+#'             \item \code{models}: A logical value to save training models (includes imputation models) used for
 #'             train_test splitting or k-fold CV
 #'             validation. Default = \code{FALSE}.
-#'             \item \code{"data"}: A logical value to save all training and test/validation sets during train-test
+#'             \item \code{data}: A logical value to save all training and test/validation sets during train-test
 #'             splitting and/or k-fold CV. Default = \code{FALSE}.
 #'             }
 #' @param parallel_configs A list that can contain the following parameters:
 #'                         \itemize{
-#'                         \item \code{"n_cores"}: A numerical value specifying the number of cores to use for parallel
+#'                         \item \code{n_cores}: A numerical value specifying the number of cores to use for parallel
 #'                         processing. Default = \code{NULL}.
-#'                         \item \code{"future.seed"}: A numerical value indicating the seed to use when calling future
+#'                         \item \code{future.seed}: A numerical value indicating the seed to use when calling future
 #'                         for parallel processing.
 #'                         }
 #' @param ... Additional arguments specific to the chosen classification algorithm. To be used as an alternate to
-#'            specifying model specific parameters using \code{"map_args"} in \code{model_params} when only a single
-#'            model is specified in \code{models}. If multiple models are specified, then \code{"map_args"} must be
+#'            specifying model specific parameters using \code{map_args} in \code{model_params} when only a single
+#'            model is specified in \code{models}. If multiple models are specified, then \code{map_args} must be
 #'            used. Please refer to the corresponding algorithm's documentation for additional arguments and their
 #'            descriptions.
 #' 
@@ -113,18 +114,24 @@
 #'   on the external package functions used for each models can be found in the "Package Dependencies" section.
 #'   The available arguments for each \code{models} are:
 #'   \itemize{
-#'    \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}
+#'    \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}, \code{tol}
 #'    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
 #'    \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
-#'    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}
-#'    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}
+#'    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights}, 
+#'                        \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
+#'    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
+#'                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
+#'                               \code{to}, \code{cut}
 #'    \item \code{"ann"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
-#'                        \code{entropy}, \code{abstol}, \code{reltol}
+#'                        \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}
 #'    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
 #'    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
-#'    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance}
+#'    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
+#'                                 \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest}, 
+#'                                 \code{norm.votes}
 #'    \item \code{"multinom"}: \code{weights}, \code{Hess}
-#'    \item \code{"gbm"}: \code{params}, \code{nrounds}
+#'    \item \code{"gbm"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
+#'                        \code{early_stopping_rounds}, \code{obj}, \code{save_period}, \code{save_name}
 #'   }
 #'
 #' @section Package Dependencies:
@@ -210,7 +217,7 @@ classCV <- function(data,
                     impute_params = list("method" = NULL, "args" = NULL),
                     save = list("models" = FALSE, "data" = FALSE),
                     parallel_configs = list("n_cores" = NULL, "future.seed" = NULL),
-                    ...){
+                    ...) {
   
   # Ensure model type is lowercase
   if (!is.null(models)) models <- tolower(models)

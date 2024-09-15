@@ -59,7 +59,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.2.0.9000/vswift_0.2.0.9000.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.2.0/vswift_0.2.0.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")

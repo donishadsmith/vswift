@@ -1,14 +1,12 @@
 #Helper function for classCV and genFolds to check if inputs are valid
 #' @importFrom future availableCores
-#' @noRd
-#' @export
 .error_handling <- function(data, formula = NULL, target = NULL, predictors = NULL, models = NULL,
                             model_params = NULL, train_params = NULL, impute_params = NULL, save = NULL,
                             parallel_configs = NULL, create_data = NULL, call = NULL) {
-  # List of valid inputs
-  valid_inputs <- list(models = c("lda","qda","logistic","svm","naivebayes","ann","knn","decisiontree",
+  # List of valid inputs 
+  valid_inputs <- list(models = c("lda", "qda", "logistic", "svm", "naivebayes", "ann", "knn", "decisiontree",
                                   "randomforest", "multinom", "gbm"),
-                       imputes = c("knn_impute","bag_impute"))
+                       imputes = c("knn_impute", "bag_impute"))
   
   # Create list of parameters
   if (call == "classCV") {
@@ -33,8 +31,8 @@
   # Check models
   if (!is.null(models) & !all(models %in% valid_inputs$models)) {
     stop(
-      sprintf("invalid model specified in `models`, the following is a list of valid models: %s",
-              paste(valid_inputs$models, sep = ", ")
+      sprintf("invalid model specified in `models`, the following is a list of valid models: '%s'",
+              paste(valid_inputs$models, collapse = "', '")
       )
     )
   }
@@ -74,8 +72,8 @@
   if (!is.null(impute_params$method)) {
     if (!impute_params$method %in% valid_inputs$imputes) {
       stop(
-        sprintf("invalid method specified in `impute_params$method`, the following is a list of valid methods: %s",
-                paste(valid_inputs$methods, sep = ", ")
+        sprintf("invalid method specified in `impute_params$method`, the following is a list of valid methods: '%s'",
+                paste(valid_inputs$models, collapse = "', '")
         )
       )
     }
@@ -94,8 +92,6 @@
 }
 
 # Helper function for to check if target and predictors are in dataframe
-#' @noRd
-#' @export
 .check_vars <- function(formula, target, predictors, data){
   if (!is.null(formula)) {
     vars <- .get_var_names(formula = formula, data = data)
@@ -131,26 +127,27 @@
 }
 
 # Helper function for classCV to check if additional arguments are valid
-#' @noRd
-#' @export
 .check_args <- function(model_params = NULL, impute_params = NULL, call){
   # Helper function to generate error message
   error_message <- function(method_name, invalid_args) {
     sprintf("The following arguments are invalid for %s or are incompatible with classCV: %s",
-            method_name, paste(invalid_args, collapse = ","))
+            method_name, paste(invalid_args, collapse = ", "))
   }
 
   # List of valid arguments for each model type
   valid_args <- list(
-    "model" = list("lda" = c("prior", "method", "nu"),
+    "model" = list("lda" = c("prior", "method", "nu", "tol"),
                    "qda" = c("prior", "method", "nu"),
-                   "logistic" = c("weights","singular.ok", "maxit"),
-                   "svm" = c("kernel", "degree", "gamma", "cost", "nu"),
-                   "naivebayes" = c("prior", "laplace", "usekernel"),
-                   "ann" = c("size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol"),
+                   "logistic" = c("weights", "singular.ok", "maxit"),
+                   "svm" = c("kernel", "degree", "gamma", "cost", "nu", "class.weights", "shrinking",
+                             "epsilon", "tolerance", "cachesize"),
+                   "naivebayes" = c("prior", "laplace", "usekernel", "bw", "kernal", "adjust", "weights",
+                                    "give.Rkern", "subdensity", "from", "to", "cut"),
+                   "ann" = c("size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol", "Hess"),
                    "knn" = c("kmax", "ks", "distance", "kernel"),
                    "decisiontree" = c("weights", "method", "parms", "control", "cost"),
-                   "randomforest" = c("weights", "ntree", "mtry", "nodesize", "importance"),
+                   "randomforest" = c("weights", "classwt", "ntree", "mtry", "nodesize", "importance", "localImp",
+                                      "nPerm", "proximity", "keep.forest", "norm.votes"),
                    "multinom" = c("weights", "Hess"),
                    "gbm" = c("params", "nrounds", "print_every_n", "feval", "verbose",
                              "early_stopping_rounds", "obj", "save_period", "save_name")),
@@ -176,8 +173,6 @@
 }
 
 # Function to get name of target and features.
-#' @noRd
-#' @export
 .get_var_names <- function(formula = NULL, target = NULL, predictors = NULL, data){
   # Get target and predictor if formula used
   if (!is.null(formula)) {
@@ -206,8 +201,6 @@
 }
 
 # Check if data is missing
-#' @noRd
-#' @export
 .check_if_missing <- function(data){
   # Get rows of missing data
   miss_obs <- sort(unique(which(is.na(data), arr.ind = TRUE)[,"row"]))
@@ -226,8 +219,6 @@
 }
 
 # Helper function to remove missing data
-#' @noRd
-#' @export
 #' @importFrom stats complete.cases
 .remove_missing_data <- function(data){
   # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
@@ -244,8 +235,6 @@
 }
 
 # Helper function to remove observations with missing target variable prior to imputation
-#' @noRd
-#' @export
 .remove_missing_target <- function(data, target){
   missing_targets <- which(is.na(data[,target]))
   if (length(missing_targets) > 0) {
@@ -259,8 +248,6 @@
 }
 
 # Helper function to turn character data into factors
-#' @noRd
-#' @export
 .convert_to_factor <- function(preprocessed_data, target, models, train_params){
   # Make target factor, could be factor, numeric, or character
   preprocessed_data[,target] <- factor(preprocessed_data[,target])
@@ -282,8 +269,6 @@
 }
 
 # Function to retrieve columns that will be standardized features
-#' @noRd
-#' @export
 .get_cols <- function(df, standardize, target){
   # Get predictor names
   predictors <- colnames(df)[colnames(df) != target]
@@ -308,9 +293,7 @@
   return(col_names)
 }
 
-#' Generate class specific information and initialize space for data partitions
-#' @noRd
-#' @export
+# Generate class specific information and initialize space for data partitions
 .append_output <- function(target_vector, stratified = FALSE){
   info_dict <- list()
   info_dict$class_summary <- list()
@@ -323,8 +306,6 @@
 }
 
 # Generate the iterations needed
-#' @noRd
-#' @export
 .gen_iterations <- function(train_params, model_params) {
   
   iters <- c()
@@ -338,8 +319,6 @@
 }
 
 # Function to determine standardization and imputation
-#' @noRd
-#' @export
 .prep_data <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, train_params, impute_params) {
   if (is.null(preprocessed_data)) {
     if (!is.null(impute_params$method)) {
@@ -359,8 +338,6 @@
 }
 
 # Function to standardize features for train data
-#' @noRd
-#' @export
 #' @importFrom stats sd
 .standardize_train <- function(train, test, standardize = TRUE, target){
   col_names <- .get_cols(train, standardize, target)
@@ -386,8 +363,6 @@
 }
 
 # Function to standardize features for preprocessed data
-#' @noRd
-#' @export
 #' @importFrom stats sd
 .standardize <- function(preprocessed_data, standardize = TRUE, target){
   col_names <- .get_cols(preprocessed_data, standardize, target)
@@ -405,8 +380,6 @@
 
 # Imputation function
 #' @importFrom recipes step_impute_knn recipe step_impute_bag prep bake
-#' @noRd
-#' @export
 .imputation <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, impute_params){
   # Get data id
   use_data <- ifelse(!is.null(preprocessed_data), "preprocessed", "train")
