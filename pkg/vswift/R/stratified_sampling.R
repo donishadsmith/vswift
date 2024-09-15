@@ -1,6 +1,4 @@
 #Helper function to obtain class specific information
-#' @noRd
-#' @export
 .get_class_info <- function(target_vector){
   # Get proportions and indices
   prop_dict <- table(target_vector)/sum(table(target_vector))
@@ -14,8 +12,6 @@
 }
 
 #Helper function to get class proportions in data partitions
-#' @noRd
-#' @export
 .get_proportions <- function(target_vector, indxs){
   prop_dict <- list()
   for (id in names(indxs)) {
@@ -26,8 +22,6 @@
 }
 
 # Function for stratified train-test split
-#' @noRd
-#' @export
 .stratified_split <- function(classes, class_indxs, class_props, N, split, random_seed){
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
@@ -54,8 +48,6 @@
 }
 
 # Function for stratified cv
-#' @noRd
-#' @export
 .stratified_cv <- function(classes, class_indxs, class_props, N, n_folds, random_seed){
   if (!is.null(random_seed)) set.seed(random_seed)
   # Initialize list
@@ -87,8 +79,6 @@
 }
 
 # Function to deal with excess indices
-#' @noRd
-#' @export
 .excess_stratified <- function(cv_indxs, leftover, classes, n_folds){
   for (class in classes) {
     # Get the remaining indices for class
@@ -110,8 +100,6 @@
 }
 
 # Helper function for .stratified_sampling to error check
-#' @noRd
-#' @export
 .stratified_check <- function(class, class_indx, class_prop, N){
   # Check if there are enough indices in class for proper assignment
   if (round(N*class_prop, 0) > length(class_indx)) {

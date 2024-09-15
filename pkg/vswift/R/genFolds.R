@@ -63,8 +63,6 @@ genFolds <- function(data,
 }
 
 # Sampling function used by classCV and genFolds
-#' @noRd
-#' @export
 .sampling <- function(data, train_params, target, final_output){
   # Base args
   base_args <- list(N = nrow(data), random_seed = train_params$random_seed)
