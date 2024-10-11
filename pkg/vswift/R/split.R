@@ -2,22 +2,22 @@
 .split <- function(N, split, random_seed) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
-  
+
   split_indxs <- list("train" = NULL, "test" = NULL)
   # Create test and train set
   train_indxs <- sample(1:N ,size = round(N*split, 0),replace = F)
   # Store indices in list
   split_indxs$train <- c(1:N)[train_indxs]
   split_indxs$test <- c(1:N)[-train_indxs]
-  
+
   return(split_indxs)
 }
 
-# Function to perform train-test split with no stratification 
+# Function to perform train-test split with no stratification
 .cv <- function(N, n_folds, random_seed) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
-  
+
   # Initialize list
   cv_indxs <- list()
   # Create folds; start with randomly shuffling indices
@@ -50,7 +50,7 @@
     df_list$split$train <- data[subsets$split$train,]
     df_list$split$test  <- data[subsets$split$test,]
   }
-  
+
   # Get train and test partitions for cv
   if ("cv" %in% names(subsets)) {
     for (fold in names(subsets$cv)) {
@@ -58,6 +58,6 @@
       df_list$cv[[fold]]$test <- data[subsets$cv[[fold]],]
     }
   }
-  
+
   return(df_list)
 }

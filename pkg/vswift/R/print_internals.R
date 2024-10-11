@@ -16,21 +16,27 @@
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Training Parameters: %s\n\n", str))
   info <- x$configs$model_params
+
   if (model != "logistic") info <- info[!names(info) == "logistic_threshold"]
+
   info$map_args <- info$map_args[!names(info$map_args) != model]
+
   if (length(info$map_args) == 0) {
     info$map_args <- NULL
     info <- c(list(map_args = NULL), info)
   }
+
   str <- capture.output(dput(info))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Model Parameters: %s\n\n", str))
+
   # Print sample size and missing data for user transparency
   cat(sprintf("Missing Data: %s\n\n", x$configs$missing_data))
   cat(sprintf("Effective Sample Size: %s\n\n", x$configs$effective_sample_size))
   str <- capture.output(dput(x$configs$impute_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Imputation Parameters: %s\n\n", str))
+
   # Print information for parallel processing
   str <- capture.output(dput(x$configs$parallel_configs))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
@@ -50,11 +56,11 @@
     # Print name of metrics
     cat("Class:",rep("", max_str_len),"Precision:  Recall:  F-Score:\n\n")
     # For loop to obtain vector of values for each class
-    
+
     for (class in x$class_summary$classes) {
       # Empty class_col or initialize variable
       class_col <- c()
-      
+
       # Go through column names, split the colnames and class name to see if the column name is the metric for that class
       for (colname in colnames(df)) {
         split_colname <- unlist(strsplit(colname, split = " "))
@@ -64,18 +70,18 @@
           class_col <- c(class_col, colname)
         }
       }
-      
+
       # Print metric corresponding to class
       class_met <- sapply(df[which(df$Set == set), class_col], function(x) format(round(x, 2), nsmall = 2))
       # Add spacing
       padding <- nchar(paste("Class:", rep("", max_str_len),"Pre"))[1]
-      
+
       if (class_met[1] == "NaN") {
         class_met <- c(class_met[1], rep("", 5), class_met[2],rep("", 5), class_met[3])
       } else {
         class_met <- c(class_met[1], rep("", 4), class_met[2], rep("", 5), class_met[3])
       }
-      
+
       cat(class,rep("", (padding + str_diff[class_pos])), paste(class_met, collapse = " "), "\n")
       class_pos <- class_pos + 1
     }
@@ -94,16 +100,16 @@
   mean_cv <- round(df[which(df$Fold == "Mean CV:"),"Classification Accuracy"],2)
   sd_cv <- round(df[which(df$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2)
   acc_met <- c(format(mean_cv, nsmall = 2), format(sd_cv, nsmall = 2))
-  
+
   acc_met <- sprintf("%s (%s)", acc_met[1], acc_met[2])
   cat("Average Classification Accuracy: ", acc_met ,"\n\n")
   cat("Class:", rep("", max_str_len),"Average Precision:  Average Recall:  Average F-score:\n\n")
-  
+
   # Go through column names, split the colnames and class name to see if the column name is the metric for that class
   for (class in x$class_summary$classes) {
     # Empty class_col or initialize variable
     class_col <- c()
-    
+
     for (colname in colnames(df)) {
       split_colname <- unlist(strsplit(colname, split = " "))
       split_classname <- unlist(strsplit(class, split = " "))
@@ -112,7 +118,7 @@
         class_col <- c(class_col, colname)
       }
     }
-    
+
     # Print metric corresponding to class
     mean_met <- sapply(df[((n_folds + 1)), class_col], function(x) format(round(x,2), nsmall = 2))
     sd_met <- sapply(df[((n_folds + 2)), class_col], function(x) format(round(x,2), nsmall = 2))
@@ -123,30 +129,30 @@
       class_met <- c(class_met, sprintf("%s (%s)", metric, sd_met[sd_met_pos]))
       sd_met_pos <- sd_met_pos + 1
     }
-    
+
     if (class_met[1] == "NaN (NA)") {
       class_met <- c(rep("", 3), class_met[1], rep("", 6), class_met[2], rep("", 6), class_met[3])
     } else {
       class_met <- c(class_met[1], rep("", 6), class_met[2], rep("", 6), class_met[3])
     }
-    
+
     # Add spacing
     padding <- nchar(paste("Class:", rep("", max_str_len),"Av"))[1]
     cat(class,rep("",(padding + str_diff[class_pos])),paste(class_met),"\n")
-    
+
     # Update variable
     class_pos <- class_pos + 1
   }
 }
 
 # Calculate string length of classes to create a border of dashed lines
-.dashed_lines <- function(classes, return_str = FALSE){
+.dashed_lines <- function(classes, return_str = FALSE) {
   str_len <- sapply(classes, function(x) nchar(x))
   max_str_len <- max(str_len)
   cat("\n")
   partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
   cat(rep("-",nchar(paste("Class:",rep("", max_str_len),partial_output_names))[1] %/% 1.5),"\n")
   cat("\n\n")
-  
+
   if (return_str) return(list("max" = max_str_len, "diff" = max_str_len - str_len))
 }

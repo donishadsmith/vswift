@@ -42,23 +42,23 @@ genFolds <- function(data,
                      target,
                      train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL),
                      create_data = FALSE) {
-  
+
   # Append train_params
   train_params <- .append_keys("train_params", train_params, call = "genFolds")
   # Check validity of inputs
   .error_handling(data = data, target = target, train_params = train_params, create_data = create_data, call = "genFolds")
-  
+
   # Initialize final output list
   final_output <- list("configs" = train_params)
   final_output <- c(final_output, .append_output(data[,target], train_params$stratified))
   final_output$data_partitions <- list()
-  
+
   # Perform sampling
   final_output <- .sampling(data, train_params, target, final_output)
-  
+
   # Get data partitions
   if (create_data == TRUE) final_output$data_partitions$dataframes <- .partition(data, final_output$data_partitions$indices)
-  
+
   return(final_output)
 }
 
@@ -66,13 +66,13 @@ genFolds <- function(data,
 .sampling <- function(data, train_params, target, final_output){
   # Base args
   base_args <- list(N = nrow(data), random_seed = train_params$random_seed)
-  
+
   if (train_params$stratified == TRUE) {
     # Create args list
     strat_args <- list(classes = final_output$class_summary$classes,
                        class_indxs = final_output$class_summary$indices,
                        class_props = final_output$class_summary$proportions)
-    
+
     strat_args <- c(base_args, strat_args)
     # Get stratified indices
     if (!is.null(train_params$split)) {
@@ -82,31 +82,31 @@ genFolds <- function(data,
       final_output$data_partitions$proportions$split <- .get_proportions(data[,target],
                                                                          final_output$data_partitions$indices$split)
     }
-    
+
     if (!is.null(train_params$n_folds)) {
       # Remove split arg
-      strat_args <- strat_args[!names(strat_args) == "split"] 
+      strat_args <- strat_args[!names(strat_args) == "split"]
       strat_args$n_folds <- train_params$n_folds
       final_output$data_partitions$indices$cv <- do.call(.stratified_cv, strat_args)
       # Get proportions of classes in the stratified indices
       final_output$data_partitions$proportions$cv <- .get_proportions(data[,target],
                                                                       final_output$data_partitions$indices$cv)
     }
-    
+
   } else {
     # Non-stratified sampling
     if (!is.null(train_params$split)) {
       base_args$split <- train_params$split
       final_output$data_partitions$indices$split <- do.call(.split, base_args)
     }
-    
+
     if (!is.null(train_params$n_folds)) {
       # Remove split arg
-      base_args <- base_args[!names(base_args) == "split"] 
+      base_args <- base_args[!names(base_args) == "split"]
       base_args$n_folds <- train_params$n_folds
       final_output$data_partitions$indices$cv <- do.call(.cv, base_args)
     }
   }
-  
+
   return(final_output)
 }

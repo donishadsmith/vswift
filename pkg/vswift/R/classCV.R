@@ -1,6 +1,6 @@
 #' Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data
 #'
-#' @name classCV 
+#' @name classCV
 #' @description performs a train-test split and/or k-fold cross validation on classification data using various
 #' classification algorithms.
 #'
@@ -14,7 +14,7 @@
 #'                   variable will be used a predictors. Cannot be used when \code{formula} is specified.
 #'                   Default = \code{NULL}.
 #' @param models A character character or character vector indicating the classification algorithm to use. Available
-#'               options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis), 
+#'               options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis),
 #'               \code{"logistic"} (Logistic Regression), \code{"svm"} (Support Vector Machines),
 #'               \code{"naivebayes"} (Naive Bayes), \code{"ann"} (Artificial Neural Network), \code{"knn"}
 #'               (K-Nearest Neighbors), \code{"decisiontree"} (Decision Tree), \code{"randomforest"} (Random Forest),
@@ -107,7 +107,7 @@
 #'            model is specified in \code{models}. If multiple models are specified, then \code{map_args} must be
 #'            used. Please refer to the corresponding algorithm's documentation for additional arguments and their
 #'            descriptions.
-#' 
+#'
 #' @section Additional Model Parameters:
 #'   Each option of \code{models} accepts additional arguments specific to the classification algorithm.
 #'   For additional information about these arguments, refer to the documentation in the original packages. Information
@@ -117,7 +117,7 @@
 #'    \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}, \code{tol}
 #'    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
 #'    \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
-#'    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights}, 
+#'    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights},
 #'                        \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
 #'    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
 #'                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
@@ -127,7 +127,7 @@
 #'    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
 #'    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
 #'    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
-#'                                 \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest}, 
+#'                                 \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest},
 #'                                 \code{norm.votes}
 #'    \item \code{"multinom"}: \code{weights}, \code{Hess}
 #'    \item \code{"gbm"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
@@ -145,18 +145,18 @@
 #'    \item \code{"ann"}: \code{nnet()} from nnet package
 #'    \item \code{"knn"}: \code{train.kknn()} from kknn package
 #'    \item \code{"decisiontree"}: \code{rpart()} from rpart package
-#'    \item \code{"randomforest"}: \code{randomForest()} from randomForest package 
+#'    \item \code{"randomforest"}: \code{randomForest()} from randomForest package
 #'    \item \code{"multinom"}: \code{multinom()} from nnet package
 #'    \item \code{"gbm"}: \code{xgb.train()} from xgboost package
 #'   }
-#'               
+#'
 #' @return A list containing the results of train-test splitting and/or k-fold cross-validation (if specified),
 #'         performance metrics, information on the class distribution in the training, test sets, folds
 #'         (if applicable), saved models (if specified), saved datasets (if specified), a final model
 #'         (if specified).
-#' 
+#'
 #' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
-#' 
+#'
 #' @examples
 #' # Load an example dataset
 #' data(iris)
@@ -167,7 +167,7 @@
 #'                   models = "lda",
 #'                   train_params = list(split = 0.8)
 #'                   )
-#' 
+#'
 #' # Print parameters and metrics
 #' result
 #'
@@ -183,11 +183,11 @@
 #'                                 max_depth = 6),
 #'                   nrounds = 10
 #'                   )
-#' 
+#'
 #' # Print parameters and metrics
 #' result
-#' 
-#' 
+#'
+#'
 #' # Perform 5-fold cross-validation a train-test split w/multiple models
 #' args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
 #' result <- classCV(data = iris,
@@ -199,10 +199,10 @@
 #'                                          stratified = TRUE,
 #'                                          random_seed = 50)
 #'                   )
-#' 
+#'
 #' # Print parameters and metrics
 #' result
-#' 
+#'
 #' @author Donisha Smith
 #'
 #' @export
@@ -218,20 +218,20 @@ classCV <- function(data,
                     save = list("models" = FALSE, "data" = FALSE),
                     parallel_configs = list("n_cores" = NULL, "future.seed" = NULL),
                     ...) {
-  
+
   # Ensure model type is lowercase
   if (!is.null(models)) models <- tolower(models)
-  
+
   # Ensure model types are unique
   models <- unique(models)
-  
+
   # Append arguments; append missing so that default arguments appear in the output list and in order
   model_params <- .append_keys("model_params", model_params, models, ...)
   train_params <- .append_keys("train_params", train_params)
   impute_params <- .append_keys("impute_params", impute_params)
   save <- .append_keys("save", save)
   parallel_configs <- .append_keys("parallel_configs", parallel_configs)
-  
+
   # Checking if inputs are valid
   .error_handling(data = data, formula = formula, target = target, predictors = predictors, models = models,
                   model_params = model_params, train_params = train_params, impute_params = impute_params,
@@ -262,7 +262,7 @@ classCV <- function(data,
   # Store information
   final_output <- .store_parameters(formula, missing_n, preprocessed_data, vars, models, model_params, train_params,
                                     impute_params, save, parallel_configs)
-  
+
   # Create class dictionary
   if (any(models %in% c("logistic", "gbm"))) {
     final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target])
@@ -288,49 +288,49 @@ classCV <- function(data,
       if (i == "split" && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         df_list$split <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$split <- prep_out$prep
 
       } else if (startsWith(i, "fold") && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$cv[[i]] <- prep_out$prep
-        
+
       } else {
         prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         preprocessed_data <- prep_out$preprocessed_data
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$preprocessed_data <- prep_out$prep
       }
     }
   }
-  
+
   # Standardize
   if (train_params$standardize != FALSE && !exists("prep_out")) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         df_list$split <- prep_out[!names(prep_out) == "prep"]
       } else if (startsWith(i, "fold") && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
       } else {
         prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-        
+
         preprocessed_data <- prep_out$preprocessed_data
       }
     }
   }
-  
+
   # Create kwargs
   if (exists("df_list")) {
     kwargs <- list(df_list = df_list,
@@ -355,24 +355,24 @@ classCV <- function(data,
         kwargs$model <- model
         train_out <- .train_par(kwargs, parallel_configs, iters[!iters == "final"])
       }
-      
-      
+
+
       # Add metrics information and model information
       if ("split" %in% iters) {
         final_output$metrics[[model]]$split <- train_out$metrics$split
         train_out$metrics <- train_out$metrics[!names(train_out$metrics) == "split"]
       }
-      
+
       if (!is.null(train_params$n_folds)) {
         cv_df <- .merge_df(iters[!iters %in% c("split","final")],
                            train_out$metrics$cv,
                            final_output$metrics[[model]]$cv)
-        
+
         final_output$metrics[[model]]$cv <- .get_desc(cv_df, train_params$n_folds)
       }
-      
+
       if ("models" %in% names(train_out)) final_output$models[[model]] <- train_out$models
-      
+
     }
 
     # Generate final model
@@ -390,7 +390,7 @@ classCV <- function(data,
   # Save data
   if (save$data == TRUE) {
     if (exists("kwargs")) final_output$data_partitions$dataframes <- df_list
-    
+
     if ("final" %in% iters) final_output$data_partitions$dataframes$preprocessed_data <- preprocessed_data
   }
 

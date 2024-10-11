@@ -25,7 +25,7 @@
       if (save_mods == TRUE) mod_list$cv[[i]] <- val_out$train_mod
     }
   }
-  
+
   if (save_mods == FALSE) {
     return(list("metrics" = met_list))
   } else {
@@ -42,10 +42,10 @@
     kwargs$iters <- i
     val_out <- do.call(.train, kwargs)
   }, future.seed = if (!is.null(parallel_configs$future.seed)) parallel_configs$future.seed else TRUE)
-  
+
   # Close the background workers
   plan(sequential)
-  
+
   par_unnest <- .unnest(par_out, iters, kwargs$save_mods)
   return(par_unnest)
 }
@@ -59,7 +59,7 @@
     targets <- c("metrics", "models")
     models <- list()
   }
-  
+
   for (target in targets) {
     for (i in seq_along(iters)) {
       if (target == "metrics") {
@@ -68,7 +68,7 @@
         } else {
           metrics$cv <- c(metrics$cv, par_list[[i]]$metrics$cv)
         }
-        
+
       } else {
         if (iters[i] == "split") {
           models$split <- par_list[[i]]$models$split
@@ -78,23 +78,24 @@
       }
     }
   }
-  
+
   if (saved_mods == TRUE) {
     return(list("metrics" = metrics, "models" = models))
   } else {
     return(list("metrics" = metrics))
   }
-  
+
 }
 # Helper function for classCV that performs validation
 .validation <- function(id, train, test, model, formula, model_params, vars, remove_obs, col_levels, classes, keys,
                         met_df, random_seed, save) {
+
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(col_levels)) {
     train[,names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(train[,col], levels = col_levels[[col]])))
     test[,names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(test[,col], levels = col_levels[[col]])))
   }
-  
+
   # Convert to numerical
   if (model %in% c("logistic", "gbm")) {
     train[,vars$target] <- .convert_keys(train[,vars$target], keys, "encode")
@@ -102,10 +103,10 @@
   # Train model
   train_mod <- .generate_model(model = model, formula = formula, vars = vars, data = train,
                                add_args = model_params$map_args[[model]], random_seed = random_seed)
-  
+
   # Remove observations where certain categorical levels in the predictors were not seen during training
   if (remove_obs && !is.null(col_levels)) test <- .remove_obs(train, test, col_levels, id)$test
-  
+
   # Get predictions for train and test set
   vec <- .prediction(id, model, train_mod, vars, list("train" = train, "test" = test), model_params$logistic_threshold)
 
@@ -121,9 +122,9 @@
       vec$pred[[name]] <- .convert_keys(vec$pred[[name]], keys, "decode")
     }
   }
-  
+
   met_df <- .populate_metrics_df(id, classes, vec, met_df)
-  
+
   if (save) {
     return(list("met_df" = met_df, "train_mod" = train_mod))
   } else {
@@ -169,9 +170,10 @@
 #' @importFrom randomForest randomForest
 #' @importFrom xgboost xgb.DMatrix xgb.train
 .generate_model <- function(model, formula, vars = NULL, data = NULL, add_args = NULL, random_seed = NULL) {
+
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
-  
+
   mod_args <- list(formula = formula, data = data)
 
   if (model == "logistic") mod_args[["family"]] <- "binomial"
@@ -260,10 +262,10 @@
 # Helper function to populate metrics dataframes
 .populate_metrics_df <- function(id, classes, vec, met_df) {
   # Create variables used in for loops to calculate precision, recall, and f1
-  
+
   # Variable to select correct dataframe
   col <- ifelse(id == "split", "Set", "Fold")
-  
+
   dict <- list("train" = "Training", "test" = "Test")
 
   for (j in names(vec$pred)) {
@@ -288,7 +290,7 @@
     }
   }
   if (col == "Fold") met_df <- met_df[met_df[,col] == rowid, colnames(met_df)]
-    
+
   return(met_df)
 }
 
@@ -297,7 +299,7 @@
   for (i in seq_along(iters)) {
     cv_df[i,colnames(cv_df)] <- metrics[[iters[[i]]]][1,]
   }
-  
+
   return(cv_df)
 }
 

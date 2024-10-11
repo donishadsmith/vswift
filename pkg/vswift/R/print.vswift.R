@@ -37,7 +37,7 @@
 #' @author Donisha Smith
 #' @export
 
-"print.vswift" <- function(x , ..., configs = TRUE, metrics = TRUE, models = NULL){
+"print.vswift" <- function(x , ..., configs = TRUE, metrics = TRUE, models = NULL) {
   if (inherits(x, "vswift")) {
     # List for model names
     model_list <- list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
@@ -45,7 +45,7 @@
                        "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
                        "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
                        "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes")
-    
+
     # Get models
     if (is.null(models)) {
       models <- x$configs$models
@@ -54,14 +54,14 @@
     }
 
     if (length(models) == 0) stop("no models specified in `models` or `specified` models not found in `x$metrics`")
-    
+
     # Calculate string length of classes
     str_list <- .dashed_lines(x$class_summary$classes, TRUE)
     for (model in models) {
       cat(paste("Model:", model_list[[model]]), "\n\n")
       # Print parameter information
       if (configs) .print_configs(x, model)
-      
+
       if (metrics) {
         if (is.data.frame(x$metrics[[model]]$split)) .print_metrics_split(x, x$metrics[[model]]$split, str_list$max, str_list$diff)
         if (is.data.frame(x$metrics[[model]]$cv)) .print_metrics_cv(x, x$metrics[[model]]$cv, str_list$max, str_list$diff)

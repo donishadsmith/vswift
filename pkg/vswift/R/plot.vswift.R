@@ -53,7 +53,7 @@
 #' @export
 
 "plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"),
-                          class_names = NULL, save_plots = FALSE, path = NULL, models = NULL){
+                          class_names = NULL, save_plots = FALSE, path = NULL, models = NULL) {
 
   if (inherits(x, "vswift")) {
     # Create list

@@ -7,7 +7,7 @@
   for (class in names(prop_dict)) {
     indices_dict[[class]]  <- which(target_vector == class)
   }
-  
+
   return(list("proportions" = prop_dict, "indices" = indices_dict))
 }
 
@@ -52,14 +52,14 @@
   if (!is.null(random_seed)) set.seed(random_seed)
   # Initialize list
   cv_indxs <- list()
-  
+
   # Create folds
   for (i in 1:n_folds) {
     # Keep initializing variable
     fold_indxs <- c()
     # Fold size; try to undershoot for excess
     fold_n <- floor(N/n_folds)
-    
+
     # Assign class indices to each fold
     for (class in classes) {
       # Check if sampling possible
@@ -74,7 +74,7 @@
   }
   # Deal with excess
   if (N - length(as.numeric(unlist(cv_indxs))) > 0) cv_indxs <- .excess_stratified(cv_indxs, class_indxs, classes, n_folds)
-  
+
   return(cv_indxs)
 }
 
