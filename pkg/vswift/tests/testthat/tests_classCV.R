@@ -263,3 +263,82 @@ test_that("n_cores", {
   expect_equal(result1$metrics$knn$cv,result2$metrics$knn$cv)
   
 })
+
+
+test_that("objectives-single", {
+  df <- iris
+  df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
+
+  bin_obj <- c("reg:logistic", "binary:logistic", "binary:hinge","binary:logitraw")
+  
+  for (obj in bin_obj) {
+    result <- classCV(data = df,
+                      formula = Species ~ .,
+                      models = "gbm",
+                      train_params = list(n_folds = 5, random_seed = 50),
+                      params = list(objective = obj,
+                                    eta = 0.3,
+                                    max_depth = 6),
+                      nrounds = 10,
+                      save = list(models = T)
+    )
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+  }
+  
+  multi_obj <- c("multi:softprob", "multi:softmax")
+
+  for (obj in multi_obj) {
+    result <- classCV(data = df,
+                      formula = Species ~ .,
+                      models = "gbm",
+                      train_params = list(n_folds = 5, random_seed = 50),
+                      params = list(objective = obj,
+                                    num_class = 2,
+                                    eta = 0.3,
+                                    max_depth = 6),
+                      nrounds = 10,
+                      save = list(models = T)
+    )
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+  }
+
+})
+
+test_that("objectives-multi", {
+  df <- iris
+  df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
+  
+  bin_obj <- c("reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge")
+  multi_obj <- c("multi:softprob", "multi:softmax")
+
+  for (obj in bin_obj) {
+    args <- list("knn" = list(ks = 2), "gbm" = list(params = list(booster = "gbtree", objective = obj,
+                                                                  lambda = 0.0003, alpha = 0.0003, eta = 0.8,
+                                                                  max_depth = 6), nrounds = 10))
+    
+    result <- classCV(data = df,
+                      formula = Species ~ .,
+                      models = c("gbm", "knn"),
+                      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+                      model_params = list(map_args = args)
+    )
+    
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+  }
+  
+  for (obj in multi_obj) {
+    args <- list("knn" = list(ks = 2), "gbm" = list(params = list(booster = "gbtree", objective = obj,
+                                                                  lambda = 0.0003, alpha = 0.0003, num_class = 2,
+                                                                  eta = 0.8, max_depth = 6), nrounds = 10))
+    
+    result <- classCV(data = df,
+                      formula = Species ~ .,
+                      models = c("gbm", "knn"),
+                      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+                      model_params = list(map_args = args)
+    )
+    
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+  }
+  
+})

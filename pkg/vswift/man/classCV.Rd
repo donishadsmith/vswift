@@ -34,7 +34,7 @@ variable will be used a predictors. Cannot be used when \code{formula} is specif
 Default = \code{NULL}.}
 
 \item{models}{A character character or character vector indicating the classification algorithm to use. Available
-options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis), 
+options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis),
 \code{"logistic"} (Logistic Regression), \code{"svm"} (Support Vector Machines),
 \code{"naivebayes"} (Naive Bayes), \code{"ann"} (Artificial Neural Network), \code{"knn"}
 (K-Nearest Neighbors), \code{"decisiontree"} (Decision Tree), \code{"randomforest"} (Random Forest),
@@ -42,6 +42,8 @@ options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Di
  \itemize{
  \item For \code{"knn"}, the optimal k will be used unless specified with \code{ks}.
  \item For \code{"ann"}, \code{size} must be specified as an additional argument.
+ \item For \code{"gbm"}, the following objective functions from xgboost are supported:
+ \code{"reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge", "multi:softprob"}.
  }}
 
 \item{model_params}{A list that can contain the following parameters:
@@ -54,8 +56,10 @@ arguments.
 \item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
 decision boundary for logistic regression. This parameter determines if an observation is
 assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
-the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}.
-Default = \code{0.5}.
+the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}. This threshold
+is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
+and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
+"binary:logitraw"}. Default = \code{0.5}.
 \item \code{"final_model"}: A logical value to use all complete observations in the input data
 for model training. Default = \code{FALSE}.
 }}
@@ -154,7 +158,7 @@ classification algorithms.
    \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}, \code{tol}
    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
    \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
-   \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights}, 
+   \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights},
                        \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
@@ -164,7 +168,7 @@ classification algorithms.
    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
-                                \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest}, 
+                                \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest},
                                 \code{norm.votes}
    \item \code{"multinom"}: \code{weights}, \code{Hess}
    \item \code{"gbm"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
@@ -184,7 +188,7 @@ classification algorithms.
    \item \code{"ann"}: \code{nnet()} from nnet package
    \item \code{"knn"}: \code{train.kknn()} from kknn package
    \item \code{"decisiontree"}: \code{rpart()} from rpart package
-   \item \code{"randomforest"}: \code{randomForest()} from randomForest package 
+   \item \code{"randomforest"}: \code{randomForest()} from randomForest package
    \item \code{"multinom"}: \code{multinom()} from nnet package
    \item \code{"gbm"}: \code{xgb.train()} from xgboost package
   }

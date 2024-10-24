@@ -45,11 +45,15 @@
     new_struct <- struct
   }
 
-  # Append ellipses
-  if (length(models) == 1 && length(list(...)) > 0 && param == "model_params") {
-    new_struct$map_args[[models]] <- list(...)
+  if (param == "model_params") {
+    # Append ellipses
+    if (length(models) == 1 && length(list(...)) > 0) {
+      new_struct$map_args[[models]] <- list(...)
+    }
 
-    if (!"logistic" %in% models) {
+    gbm_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+
+    if (!"logistic" %in% models && !("gbm" %in% models && new_struct$map_args$gbm$params$objective %in% gbm_logistic)) {
       # Assigning NULL to logistic_threshold directly will delete this key and leave an empty space
       new_struct <- c(new_struct[!names(new_struct) == "logistic_threshold"], list(logistic_threshold = NULL))
     }

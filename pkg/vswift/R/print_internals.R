@@ -17,7 +17,7 @@
   cat(sprintf("Training Parameters: %s\n\n", str))
   info <- x$configs$model_params
 
-  if (model != "logistic") info <- info[!names(info) == "logistic_threshold"]
+  if (is.null(info$logistic_threshold)) info <- info[!names(info) == "logistic_threshold"]
 
   info$map_args <- info$map_args[!names(info$map_args) != model]
 
