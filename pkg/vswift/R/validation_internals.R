@@ -107,8 +107,13 @@
   # Remove observations where certain categorical levels in the predictors were not seen during training
   if (remove_obs && !is.null(col_levels)) test <- .remove_obs(train, test, col_levels, id)$test
 
+  thresh <- if (model %in% c("logistic", "gbm")) model_params$logistic_threshold else NULL
+  obj <- if (model == "gbm") model_params$map_args$gbm$params$objective else NULL
+  n_classes <- length(classes)
+
   # Get predictions for train and test set
-  vec <- .prediction(id, model, train_mod, vars, list("train" = train, "test" = test), model_params$logistic_threshold)
+  vec <- .prediction(id, model, train_mod, vars, list("train" = train, "test" = test),
+                     thresh, obj, n_classes)
 
   # Delete
   rm(train, test); gc()
@@ -203,7 +208,7 @@
 
 # Helper function for classCV to predict
 #' @importFrom stats predict
-.prediction <- function(id, mod, train_mod, vars, df_list, threshold = NULL) {
+.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes) {
   # vec to store ground truth and predicted data
   vec <- list("ground" = list(), "pred" = list())
   # Only get predictions for training set if train-test split
@@ -221,7 +226,7 @@
            "qda" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class},
            "logistic" = {
              vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
-             vec$pred[[i]] <- ifelse(vec$pred[[i]] > threshold, 1, 0)
+             vec$pred[[i]] <- ifelse(vec$pred[[i]] > thresh, 1, 0)
              },
            "naivebayes" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]][,vars$predictors])},
            "ann" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "class")},
@@ -232,14 +237,43 @@
            "gbm" = {
              mat <- data.matrix(df_list[[i]])
              xgb_mat <- xgb.DMatrix(data = mat[,vars$predictors],label = mat[,vars$target])
-             vec$pred[[i]] <- predict(train_mod, newdata = xgb_mat)
+             vec$pred[[i]] <- .handle_gbm_predict(train_mod, xgb_mat, obj, thresh, n_classes)
              },
            # Default for svm, knn, randomforest, and multinom
            vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])
     )
     vec$pred[[i]] <- as.vector(vec$pred[[i]])
   }
+
   return(vec)
+}
+
+# Handle different gbm objective functions
+.handle_gbm_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes) {
+  # produces probability
+  bin_prob <- c("reg:logistic", "binary:logistic")
+  
+  obj <- ifelse(obj %in% bin_prob, "binary_prob", obj)
+  
+  pred <- predict(train_mod, newdata = xgb_mat)
+
+  # Special cases that need to be converted to labels
+  switch(obj,
+         "binary_prob" = {pred <- ifelse(pred > thresh, 1, 0)},
+         "binary:logitraw" = {
+           pred <- sapply(pred, function(x) .logit2prob(x))
+           pred <- ifelse(pred > thresh, 1, 0)
+         },
+         "multi:softprob" = {pred <- max.col(matrix(pred, ncol = n_classes, byrow = TRUE)) - 1}
+         )
+
+  return(pred)
+}
+
+# Convert logit to probability
+.logit2prob <- function(x) {
+  prob <- exp(x)/(1 + exp(x))
+  return(prob)
 }
 
 # Helper function to calculate metrics

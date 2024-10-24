@@ -33,8 +33,10 @@
 #'                     \item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
 #'                     decision boundary for logistic regression. This parameter determines if an observation is
 #'                     assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
-#'                     the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}.
-#'                     Default = \code{0.5}.
+#'                     the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}. This threshold
+#'                     is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
+#'                     and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
+#'                     "binary:logitraw"}. Default = \code{0.5}.
 #'                     \item \code{"final_model"}: A logical value to use all complete observations in the input data
 #'                     for model training. Default = \code{FALSE}.
 #'                     }

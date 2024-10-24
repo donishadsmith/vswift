@@ -14,6 +14,12 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.1] - 2024-10-23
+### 🐛 Fixes
+- For "gbm", only the "multi:softmax" and "binary:hinge" objective could be used since these objectives print labels directly
+and didn't need to be converted from probability or logit to labels. Now, the following objectives can be
+used: "reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge", and "multi:softprob".
+
 ## [0.2.0] - 2024-09-15
 - Non-Development version of 0.2.0.
 - Minor internal code changes.
