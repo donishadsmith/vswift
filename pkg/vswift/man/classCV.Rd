@@ -10,7 +10,7 @@ classCV(
   target = NULL,
   predictors = NULL,
   models,
-  model_params = list(map_args = NULL, logistic_threshold = 0.5, final_model = FALSE),
+  model_params = list(map_args = NULL, threshold = NULL, final_model = FALSE),
   train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed =
     NULL, standardize = FALSE, remove_obs = FALSE),
   impute_params = list(method = NULL, args = NULL),
@@ -53,13 +53,17 @@ options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Di
 parameter, and contains the parameters to be passed to the respective model.
 Default = \code{NULL}. Please refer to "Additional Model Parameters" section for accepted
 arguments.
-\item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
-decision boundary for logistic regression. This parameter determines if an observation is
-assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
-the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}. This threshold
-is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
-and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
-"binary:logitraw"}. Default = \code{0.5}.
+\item \code{"threshold"}, A number between 0 and 1 indicating representing the
+decision boundary for classifying the positive instances. This parameter determines if an
+observation is assigned to the class coded as "1" if
+\code{P(Class = 1 | Features) > threshold} or to the class coded as "0" if
+\code{P(Class = 1 | Features) <= threshold}. If \code{"threshold"} is defined, then
+regardless of the model selected, the probabilities for each observation will be predicted and
+the specified threshold will be used to classify the positive instances. If \code{"logistic"} is
+in \code{models} or when \code{"gbm"} is in \code{models} and the following objective functions
+are used: \code{"reg:logistic", "binary:logistic", "binary:logitraw"} and \code{"threshold"}
+is not defined, a warning will be issued and by default, a threshold of 0.5 will be used. This
+threshold is only available for binary classification problems. Default = \code{NULL}.
 \item \code{"final_model"}: A logical value to use all complete observations in the input data
 for model training. Default = \code{FALSE}.
 }}
@@ -159,7 +163,7 @@ classification algorithms.
    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
    \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights},
-                       \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
+                       \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}, \code{probability}
    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
                               \code{to}, \code{cut}

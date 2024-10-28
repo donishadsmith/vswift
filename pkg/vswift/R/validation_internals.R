@@ -175,14 +175,16 @@
 #' @importFrom randomForest randomForest
 #' @importFrom xgboost xgb.DMatrix xgb.train
 .generate_model <- function(model, formula, vars = NULL, data = NULL, add_args = NULL, random_seed = NULL) {
-
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
 
   mod_args <- list(formula = formula, data = data)
 
-  if (model == "logistic") mod_args[["family"]] <- "binomial"
-
+  if (model == "logistic") mod_args$family <- "binomial"
+  
+  # Prevent default internal scaling for models with the scale parameter
+  if (model != "decisiontree") mod_args$scale <- FALSE
+  
   if (!is.null(add_args)) mod_args <- c(mod_args, add_args)
 
   switch(model,
@@ -217,13 +219,23 @@
   } else {
     df_list <- df_list[names(df_list) != "train"]
   }
+  
+  mod <- if (mod == "lda" || mod == "qda") "discriminant" else mod
 
   vec$ground$test <- as.vector(df_list$test[,vars$target])
-
+  
+  # For probabilities, lda and qda is posterior and svm requires that probability is set to true when generating model and getting predictions
+  # naivebayes is type="prob", for ann it is type = "raw", multinom is type = "probs", randomforest is type = "probs"
+  # decisiontree is type = "probs", "gbm" defaults to probs
   for (i in names(df_list)) {
     switch(mod,
-           "lda" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class},
-           "qda" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class},
+           "discriminant" = {
+             if (!is.null(thresh)) {
+               vec$pred[[i]] <- .p2c(predict(train_mod, newdata = df_list[[i]])$posterior[,"1"], thresh)
+             } else {
+               vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+             }
+             },
            "logistic" = {
              vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
              vec$pred[[i]] <- ifelse(vec$pred[[i]] > thresh, 1, 0)
@@ -236,7 +248,7 @@
              },
            "gbm" = {
              mat <- data.matrix(df_list[[i]])
-             xgb_mat <- xgb.DMatrix(data = mat[,vars$predictors],label = mat[,vars$target])
+             xgb_mat <- xgb.DMatrix(data = mat[,vars$predictors], label = mat[,vars$target])
              vec$pred[[i]] <- .handle_gbm_predict(train_mod, xgb_mat, obj, thresh, n_classes)
              },
            # Default for svm, knn, randomforest, and multinom
@@ -259,25 +271,37 @@
 
   # Special cases that need to be converted to labels
   switch(obj,
-         "binary_prob" = {pred <- ifelse(pred > thresh, 1, 0)},
+         "binary_prob" = {pred <- .p2c(pred, thresh)},
          "binary:logitraw" = {
-           pred <- sapply(pred, function(x) .logit2prob(x))
-           pred <- ifelse(pred > thresh, 1, 0)
+           pred <- sapply(pred, function(x) .l2p(x))
+           pred <- .p2c(pred, thresh)
          },
-         "multi:softprob" = {pred <- max.col(matrix(pred, ncol = n_classes, byrow = TRUE)) - 1}
+         "multi:softprob" = {
+           if (!is.null(thresh)) {
+             pred <- .p2c(pred, thresh)
+           } else {
+             pred <- max.col(matrix(pred, ncol = n_classes, byrow = TRUE)) - 1
+           }
+         }
          )
 
   return(pred)
 }
 
+# Convert probs to classes
+.p2c <- function(vec, thresh) {
+  classes <- ifelse(vec > thresh, 1, 0)
+  return(classes)
+}
+
 # Convert logit to probability
-.logit2prob <- function(x) {
+.l2p <- function(x) {
   prob <- exp(x)/(1 + exp(x))
   return(prob)
 }
 
 # Helper function to calculate metrics
-.calculate_metrics <- function(class, ground, pred) {
+.calculate_metrics <- function(class, ground, pred, call = ".validation") {
   # Sum of true positives
   true_pos <- sum(ground[which(ground == class)] == pred[which(ground == class)])
   # Sum of false negatives
@@ -287,9 +311,11 @@
   # Calculate metrics
   precision <- true_pos/(true_pos + false_pos)
   recall <- true_pos/(true_pos + false_neg)
-  f1 <- 2*(precision*recall)/(precision + recall)
+  
+  metrics <- list("precision" = precision, "recall" = recall)
 
-  metrics <- list("precision" = precision, "recall" = recall,"f1" = f1)
+  if (call == ".validation") metrics$f1 <- 2*(precision*recall)/(precision + recall)
+
   return(metrics)
 }
 

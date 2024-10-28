@@ -42,21 +42,23 @@
 
   # Check map_args
   if (!is.null(model_params$map_args)) .check_args(model_params = model_params, call = "model")
+  
+  # Check if target is binary
+  is_binary <- .check_if_binary(data, formula, target)
+  
+  # Check threshold
+  if (!is.null(model_params$threshold)) {
+    if (!is_binary) stop("`threshold` can only be used for binary target")
+    
+    valid_threshold <- model_params$threshold > 0 | model_params$threshold < 1
+    if (!valid_threshold) stop("`threshold` must a numeric value from 0 to 1")
+  }
 
-  # Check logistic threshold
+  # Check if target binary for logistic models
   obj <- c("reg:logistic", "binary:logistic", "binary:logitraw")
   
   if ("logistic" %in% models || "gbm" %in% models && model_params$map_args$gbm$params$objective %in% obj) {
-    # Check if binary and threshold valid
-    if (!is.null(formula)) target <- .get_var_names(formula = formula, data = data)$target
-    binary_target <- length(levels(factor(data[,target], exclude = NA))) == 2
-    valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
-    
-    if (!binary_target) {
-      stop("'logistic' and 'gbm' with a logistic regression objective requires a binary target")
-    } else if (!valid_threshold) {
-      stop("`threshold` must a numeric value from 0 to 1")
-    }
+    if (!is_binary) stop("'logistic' and 'gbm' with a logistic regression objective requires a binary target")
   }
 
   # Check split and n_folds
@@ -143,7 +145,7 @@
                    "qda" = c("prior", "method", "nu"),
                    "logistic" = c("weights", "singular.ok", "maxit"),
                    "svm" = c("kernel", "degree", "gamma", "cost", "nu", "class.weights", "shrinking",
-                             "epsilon", "tolerance", "cachesize"),
+                             "epsilon", "tolerance", "cachesize", "probability"),
                    "naivebayes" = c("prior", "laplace", "usekernel", "bw", "kernal", "adjust", "weights",
                                     "give.Rkern", "subdensity", "from", "to", "cut"),
                    "ann" = c("size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol", "Hess"),
@@ -175,6 +177,13 @@
   }
 }
 
+# Add args to map_args
+.add_args <- function(models, model_params) {
+  if ("svm" %in% models) model_params$map_args$svm$probability <- TRUE
+  
+  return(model_params)
+}
+  
 # Function to get name of target and features.
 .get_var_names <- function(formula = NULL, target = NULL, predictors = NULL, data) {
   # Get target and predictor if formula used
@@ -201,6 +210,34 @@
     }
 
   return(list("predictors" = predictor_vec, "target" = target))
+}
+
+# Check if target is binary
+.check_if_binary <- function(data, formula = NULL, target = NULL) {
+  if (!is.null(formula)) target <- .get_var_names(formula = formula, data = data)$target
+  is_binary <- length(levels(factor(data[,target], exclude = NA))) == 2
+  
+  return(is_binary)
+}
+  
+# Check and change threshold
+.check_threshold <- function(models, model_params) {
+  obj <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+
+  if ("logistic" %in% models || "gbm" %in% models && model_params$map_args$gbm$params$objective %in% obj) {
+    if (is.null(model_params$threshold)) {
+      default_threshold <- 0.5
+      
+      warning("'logistic' or 'gbm' with a logistic regression objective function requested but no threshold specified.
+              Defaulting to a threshold of 0.5")
+    }
+  }
+
+  if (exists("default_threshold")) {
+    return(default_threshold)
+  } else {
+    return(model_params$threshold)
+  }
 }
 
 # Check if data is missing

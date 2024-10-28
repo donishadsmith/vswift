@@ -126,7 +126,7 @@
 #'    \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
 #'    \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
 #'    \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights},
-#'                        \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
+#'                        \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}, \code{probability}
 #'    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
 #'                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
 #'                               \code{to}, \code{cut}
@@ -241,13 +241,17 @@ classCV <- function(data,
   parallel_configs <- .append_keys("parallel_configs", parallel_configs)
   
   # Checking if inputs are valid
-  default_threshold <- .error_handling(data = data, formula = formula, target = target, predictors = predictors,
-                                       models = models, model_params = model_params, train_params = train_params,
-                                       impute_params = impute_params, save = save, parallel_configs = parallel_configs,
-                                       call = "classCV")
+  .error_handling(data = data, formula = formula, target = target, predictors = predictors,
+                  models = models, model_params = model_params, train_params = train_params,
+                  impute_params = impute_params, save = save, parallel_configs = parallel_configs,
+                  call = "classCV")
   
-  if (!is.null(default_threshold)) model_params$threshold <- default_threshold
+  # Check if default value for threshold needs to be added
+  model_params$threshold <- .check_threshold(models, model_params)
   
+  # Check if "svm" in model and threshold is requested to ensure probability is in the arguments
+  model_params <- .add_args(models, model_params)
+
   # Get character form of target and predictor variables
   vars <- .get_var_names(formula, target, predictors, data)
   
@@ -275,7 +279,7 @@ classCV <- function(data,
                                     impute_params, save, parallel_configs)
   
   # Create class dictionary
-  if (any(models %in% c("logistic", "gbm"))) {
+  if (any(models %in% c("logistic", "gbm")) || !is.null(model_params$threshold)) {
     final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target])
   }
   

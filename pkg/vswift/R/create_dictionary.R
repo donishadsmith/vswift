@@ -1,5 +1,5 @@
 # Create dictionary for target variable if needed for certain algos
-.create_dictionary <- function(target_vector) {
+.create_dictionary <- function(target_vector, call = "classCV") {
   counter <- 0
   new_classes <- c()
   class_dict <- list()
@@ -11,7 +11,7 @@
   }
 
   warning(sprintf(
-    "creating keys for target variable due to 'logistic' or 'gbm' being specified;\n  classes are now encoded: %s",
+    "creating keys for target variable due to 'logistic' or 'gbm' being specified in `models` or `threshold` being specified;\n  classes are now encoded: %s",
     paste(new_classes, collapse = ", ")))
 
   return(class_dict)

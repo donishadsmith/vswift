@@ -39,12 +39,6 @@
 
 "print.vswift" <- function(x , ..., configs = TRUE, metrics = TRUE, models = NULL) {
   if (inherits(x, "vswift")) {
-    # List for model names
-    model_list <- list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-                       "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
-                       "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
-                       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes")
 
     # Get models
     if (is.null(models)) {
@@ -58,7 +52,7 @@
     # Calculate string length of classes
     str_list <- .dashed_lines(x$class_summary$classes, TRUE)
     for (model in models) {
-      cat(paste("Model:", model_list[[model]]), "\n\n")
+      cat(paste("Model:", .model_list[[model]]), "\n\n")
       # Print parameter information
       if (configs) .print_configs(x, model)
 

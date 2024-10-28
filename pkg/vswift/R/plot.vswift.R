@@ -57,11 +57,6 @@
 
   if (inherits(x, "vswift")) {
     # Create list
-    model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-                      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
-                      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
-                      "knn" = "K-Nearest Neighbors","naivebayes" = "Naive Bayes")
 
     # Lowercase and intersect common names
     metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
@@ -97,10 +92,10 @@
     for (model in models) {
       if (save_plots == FALSE) {
         .visible_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
-                       model_list = model_list)
+                       model_list = .model_list)
       } else {
         .save_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path,
-                    model_name = model, model_list = model_list,...)
+                    model_name = model, model_list = .model_list,...)
       }
     }
   }
