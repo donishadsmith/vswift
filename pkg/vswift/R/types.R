@@ -12,7 +12,7 @@
                  save = c("list"),
                  parallel_configs = c("list")),
   secondary = list(map_args = c("list", "NULL"),
-                   logistic_threshold = c("numeric", "NULL"),
+                   threshold = c("numeric", "NULL"),
                    final_model = c("logical"),
                    split = c("numeric", "NULL"),
                    n_folds = c("numeric", "NULL"),
