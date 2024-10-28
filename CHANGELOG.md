@@ -14,6 +14,12 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.3] - 2024-10-28
+### 🐛 Fixes
+- Ensures internal scaling for multiple models are not done so that scaling is only handled by the `scale` parameter
+for `classCV`.
+- For "gbm", no more warning about using "formula".
+
 ## [0.2.2] - 2024-10-27
 ### 🐛 Fixes
 - For "logistic", fixed error that occurs when using `formula` instead of `target` due to the target in the formula

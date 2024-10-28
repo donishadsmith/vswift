@@ -101,7 +101,7 @@
     train[,vars$target] <- .convert_keys(train[,vars$target], keys, "encode")
   }
   # Train model
-  train_mod <- .generate_model(model = model, formula = formula, vars = vars, data = train,
+  train_mod <- .generate_model(model = model, data = train, formula = formula, vars = vars,
                                add_args = model_params$map_args[[model]], random_seed = random_seed)
 
   # Remove observations where certain categorical levels in the predictors were not seen during training
@@ -173,17 +173,23 @@
 #' @importFrom kknn train.kknn
 #' @importFrom rpart rpart
 #' @importFrom randomForest randomForest
-#' @importFrom xgboost xgb.DMatrix xgb.train
-.generate_model <- function(model, formula, vars = NULL, data = NULL, add_args = NULL, random_seed = NULL) {
-
+#' @importFrom xgboost xgb.DMatrix xgb.train 
+.generate_model <- function(model, data, formula, vars = NULL, add_args = NULL, random_seed = NULL) {
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
+  
+  if (model == "gbm") {
+    mod_args <- list()
+  } else {
+    mod_args <- list(formula = formula, data = data)
+  }
 
-  mod_args <- list(formula = formula, data = data)
-
-  if (model == "logistic") mod_args[["family"]] <- "binomial"
+  if (model == "logistic") mod_args$family <- "binomial"
 
   if (!is.null(add_args)) mod_args <- c(mod_args, add_args)
+  
+  # Prevent default internal scaling for models with the scale parameter
+  if (!model %in% c("decisiontree", "gbm", "logistic")) mod_args$scale <- FALSE
 
   switch(model,
          "lda" = {model <- do.call(lda, mod_args)},

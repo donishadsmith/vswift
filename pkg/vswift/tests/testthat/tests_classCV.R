@@ -366,7 +366,7 @@ test_that("binary target", {
     
     result <- classCV(data = df,
                       target = "Species",
-                      models = c("logistic", "gbm"),
+                      models = c("gbm", "logistic"),
                       train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
                       model_params = list(map_args = args)
     )
