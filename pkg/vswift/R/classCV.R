@@ -32,13 +32,17 @@
 #'                     parameter, and contains the parameters to be passed to the respective model.
 #'                     Default = \code{NULL}. Please refer to "Additional Model Parameters" section for accepted
 #'                     arguments.
-#'                     \item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
-#'                     decision boundary for logistic regression. This parameter determines if an observation is
-#'                     assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
-#'                     the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}. This threshold
-#'                     is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
-#'                     and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
-#'                     "binary:logitraw"}. Default = \code{0.5}.
+#'                     \item \code{"threshold"}, A number between 0 and 1 indicating representing the
+#'                     decision boundary for classifying the positive instances. This parameter determines if an
+#'                     observation is assigned to the class coded as "1" if
+#'                     \code{P(Class = 1 | Features) > threshold} or to the class coded as "0" if
+#'                     \code{P(Class = 1 | Features) <= threshold}. If \code{"threshold"} is defined, then
+#'                     regardless of the model selected, the probabilities for each observation will be predicted and
+#'                     the specified threshold will be used to classify the positive instances. If \code{"logistic"} is
+#'                     in \code{models} or when \code{"gbm"} is in \code{models} and the following objective functions
+#'                     are used: \code{"reg:logistic", "binary:logistic", "binary:logitraw"} and \code{"threshold"}
+#'                     is not defined, a warning will be issued and by default, a threshold of 0.5 will be used. This
+#'                     threshold is only available for binary classification problems. Default = \code{NULL}.
 #'                     \item \code{"final_model"}: A logical value to use all complete observations in the input data
 #'                     for model training. Default = \code{FALSE}.
 #'                     }
@@ -215,35 +219,38 @@ classCV <- function(data,
                     target = NULL,
                     predictors = NULL,
                     models,
-                    model_params = list("map_args" = NULL, "logistic_threshold" = 0.5, "final_model" = FALSE),
+                    model_params = list("map_args" = NULL, "threshold" = NULL, "final_model" = FALSE),
                     train_params = list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE,
                                         "random_seed" = NULL, "standardize" = FALSE, "remove_obs" = FALSE),
                     impute_params = list("method" = NULL, "args" = NULL),
                     save = list("models" = FALSE, "data" = FALSE),
                     parallel_configs = list("n_cores" = NULL, "future.seed" = NULL),
                     ...) {
-
+  
   # Ensure model type is lowercase
   if (!is.null(models)) models <- tolower(models)
-
+  
   # Ensure model types are unique
   models <- unique(models)
-
+  
   # Append arguments; append missing so that default arguments appear in the output list and in order
   model_params <- .append_keys("model_params", model_params, models, ...)
   train_params <- .append_keys("train_params", train_params)
   impute_params <- .append_keys("impute_params", impute_params)
   save <- .append_keys("save", save)
   parallel_configs <- .append_keys("parallel_configs", parallel_configs)
-
+  
   # Checking if inputs are valid
-  .error_handling(data = data, formula = formula, target = target, predictors = predictors, models = models,
-                  model_params = model_params, train_params = train_params, impute_params = impute_params,
-                  save = save, parallel_configs = parallel_configs, call = "classCV")
-
+  default_threshold <- .error_handling(data = data, formula = formula, target = target, predictors = predictors,
+                                       models = models, model_params = model_params, train_params = train_params,
+                                       impute_params = impute_params, save = save, parallel_configs = parallel_configs,
+                                       call = "classCV")
+  
+  if (!is.null(default_threshold)) model_params$threshold <- default_threshold
+  
   # Get character form of target and predictor variables
   vars <- .get_var_names(formula, target, predictors, data)
-
+  
   # Remove missing data if no imputation specified and remove rows with missing target variables.
   if (is.null(impute_params$method)) {
     preprocessed_data <- .remove_missing_data(data)
@@ -253,25 +260,25 @@ classCV <- function(data,
     # Check if removing missing target variables removes all missing data
     miss_data <- .check_if_missing(preprocessed_data)
   }
-
+  
   # Ensure target is factored and get all levels of character columns obtained if svm in models
   factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params)
   preprocessed_data <- factored$data
   col_levels <- factored$col_levels
-
+  
   missing_n <- nrow(data) - nrow(preprocessed_data)
   # Delete data
   rm(data, factored); gc()
-
+  
   # Store information
   final_output <- .store_parameters(formula, missing_n, preprocessed_data, vars, models, model_params, train_params,
                                     impute_params, save, parallel_configs)
-
+  
   # Create class dictionary
   if (any(models %in% c("logistic", "gbm"))) {
     final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target])
   }
-
+  
   # Sampling data
   if (!is.null(train_params$split) | !is.null(train_params$n_folds)) {
     # Initialize list to store sample indices
@@ -282,59 +289,59 @@ classCV <- function(data,
     # Partition data to ensure no issues with floating point precision or stochastic imputations
     df_list <- .partition(preprocessed_data, final_output$data_partitions$indices)
   }
-
+  
   # Generate vector for iteration
   iters <- .gen_iterations(train_params, model_params)
-
+  
   # Impute train and test data
   if (!is.null(impute_params$method) && miss_data == TRUE) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         df_list$split <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$split <- prep_out$prep
-
+        
       } else if (startsWith(i, "fold") && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$cv[[i]] <- prep_out$prep
-
+        
       } else {
         prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         preprocessed_data <- prep_out$preprocessed_data
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$preprocessed_data <- prep_out$prep
       }
     }
   }
-
+  
   # Standardize
   if (train_params$standardize != FALSE && !exists("prep_out")) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         df_list$split <- prep_out[!names(prep_out) == "prep"]
       } else if (startsWith(i, "fold") && exists("df_list")) {
         prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
       } else {
         prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
                                train_params = train_params, impute_params = impute_params)
-
+        
         preprocessed_data <- prep_out$preprocessed_data
       }
     }
   }
-
+  
   # Create kwargs
   if (exists("df_list")) {
     kwargs <- list(df_list = df_list,
@@ -347,7 +354,7 @@ classCV <- function(data,
                    save_mods = save$models,
                    met_df = final_output$metrics)
   }
-
+  
   # Iterate to obtain validation metrics, training models, and final model for each algo
   for (model in models) {
     if (exists("kwargs")) {
@@ -359,26 +366,26 @@ classCV <- function(data,
         kwargs$model <- model
         train_out <- .train_par(kwargs, parallel_configs, iters[!iters == "final"])
       }
-
-
+      
+      
       # Add metrics information and model information
       if ("split" %in% iters) {
         final_output$metrics[[model]]$split <- train_out$metrics$split
         train_out$metrics <- train_out$metrics[!names(train_out$metrics) == "split"]
       }
-
+      
       if (!is.null(train_params$n_folds)) {
         cv_df <- .merge_df(iters[!iters %in% c("split","final")],
                            train_out$metrics$cv,
                            final_output$metrics[[model]]$cv)
-
+        
         final_output$metrics[[model]]$cv <- .get_desc(cv_df, train_params$n_folds)
       }
-
+      
       if ("models" %in% names(train_out)) final_output$models[[model]] <- train_out$models
-
+      
     }
-
+    
     # Generate final model
     if ("final" %in% iters) {
       # Generate model depending on chosen models
@@ -390,14 +397,14 @@ classCV <- function(data,
                                                             random_seed = train_params$random_seed)
     }
   }
-
+  
   # Save data
   if (save$data == TRUE) {
     if (exists("kwargs")) final_output$data_partitions$dataframes <- df_list
-
+    
     if ("final" %in% iters) final_output$data_partitions$dataframes$preprocessed_data <- preprocessed_data
   }
-
+  
   # Make list a vswift class
   class(final_output) <- "vswift"
   return(final_output)
