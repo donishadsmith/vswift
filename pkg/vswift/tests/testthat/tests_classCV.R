@@ -269,7 +269,7 @@ test_that("objectives-single", {
   df <- iris
   df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
 
-  bin_obj <- c("reg:logistic", "binary:logistic", "binary:hinge","binary:logitraw")
+  bin_obj <- c("reg:logistic", "binary:logistic", "binary:hinge", "binary:logitraw")
   
   for (obj in bin_obj) {
     result <- classCV(data = df,
@@ -335,6 +335,39 @@ test_that("objectives-multi", {
                       formula = Species ~ .,
                       models = c("gbm", "knn"),
                       train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+                      model_params = list(map_args = args)
+    )
+    
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+  }
+  
+})
+
+test_that("binary target", {
+  df <- iris
+  df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
+  
+  bin_obj <- c("reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge")
+  
+  for (obj in bin_obj) {
+    args <- list("gbm" = list(params = list(booster = "gbtree", objective = obj,
+                                            lambda = 0.0003, alpha = 0.0003, eta = 0.8,
+                                            max_depth = 6), nrounds = 10))
+    
+    result <- classCV(data = df,
+                      formula = Species ~ .,
+                      models = c("logistic", "gbm"),
+                      train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+                      model_params = list(map_args = args)
+    )
+    
+    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    
+    
+    result <- classCV(data = df,
+                      target = "Species",
+                      models = c("logistic", "gbm"),
+                      train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
                       model_params = list(map_args = args)
     )
     

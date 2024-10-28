@@ -14,6 +14,13 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.2] - 2024-10-27
+### 🐛 Fixes
+- For "logistic", fixed error that occurs when using `formula` instead of `target` due to the target in the formula
+not being extracted when assessing if the target variable is binary.
+### ♻ Changed
+- If "gbm" has a logistic regression objective function, then if the target is not binary, it will fail faster.
+
 ## [0.2.1] - 2024-10-23
 ### 🐛 Fixes
 - For "gbm", only the "multi:softmax" and "binary:hinge" objective could be used since these objectives print labels directly

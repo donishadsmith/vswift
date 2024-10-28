@@ -44,13 +44,16 @@
   if (!is.null(model_params$map_args)) .check_args(model_params = model_params, call = "model")
 
   # Check logistic threshold
-  if ("logistic" %in% models) {
+  obj <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+  
+  if ("logistic" %in% models || "gbm" %in% models && model_params$map_args$gbm$params$objective %in% obj) {
     # Check if binary and threshold valid
+    if (!is.null(formula)) target <- .get_var_names(formula = formula, data = data)$target
     binary_target <- length(levels(factor(data[,target], exclude = NA))) == 2
     valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
-
+    
     if (!binary_target) {
-      stop("logistic regression requires a binary target")
+      stop("'logistic' and 'gbm' with a logistic regression objective requires a binary target")
     } else if (!valid_threshold) {
       stop("`threshold` must a numeric value from 0 to 1")
     }
