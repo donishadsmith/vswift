@@ -20,8 +20,6 @@ functions used from packages for each classification algorithms:
   - `multinom()` from nnet package for Multinomial Regression
   - `xgb.train()` from xgboost package for Gradient Boosting Machines
 
-This package was initially inspired by topepo's [caret](https://github.com/topepo/caret) package.
-
 ## Features
 
 - **Versatile Data Splitting**: Perform train-test splits or k-fold cross-validation on your classification data.
@@ -771,3 +769,6 @@ plot(results, models = "gbm" , save_plots = TRUE,
   ![image](https://github.com/user-attachments/assets/a6edc7c9-c925-4a5b-83f1-75432a3f62aa)
 
 </details>
+
+## Acknowledgements
+This package was initially inspired by topepo's [caret](https://github.com/topepo/caret) package.
