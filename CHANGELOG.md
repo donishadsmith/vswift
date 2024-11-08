@@ -16,6 +16,11 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.2.3] - 2024-10-28
 ### 🐛 Fixes
+- Fixes logistic decision rule such that probabilities of 0.50 are assigned to the positive instance
+instead of negative instance. Previous rule followed `"1" if P(Class = 1 | Features) > threshold; "0" otherwise` now follows `"1" if P(Class = 1 | Features) >= threshold; "0" otherwise`.
+
+## [0.2.3] - 2024-10-28
+### 🐛 Fixes
 - Ensures internal scaling for multiple models are not done so that scaling is only handled by the `scale` parameter
 for `classCV`.
 - For "gbm", no more warning about using "formula".

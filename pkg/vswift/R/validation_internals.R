@@ -232,7 +232,7 @@
            "qda" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class},
            "logistic" = {
              vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
-             vec$pred[[i]] <- ifelse(vec$pred[[i]] > thresh, 1, 0)
+             vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
              },
            "naivebayes" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]][,vars$predictors])},
            "ann" = {vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "class")},
@@ -265,10 +265,10 @@
 
   # Special cases that need to be converted to labels
   switch(obj,
-         "binary_prob" = {pred <- ifelse(pred > thresh, 1, 0)},
+         "binary_prob" = {pred <- ifelse(pred >= thresh, 1, 0)},
          "binary:logitraw" = {
            pred <- sapply(pred, function(x) .logit2prob(x))
-           pred <- ifelse(pred > thresh, 1, 0)
+           pred <- ifelse(pred >= thresh, 1, 0)
          },
          "multi:softprob" = {pred <- max.col(matrix(pred, ncol = n_classes, byrow = TRUE)) - 1}
          )

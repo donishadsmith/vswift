@@ -57,7 +57,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.2.3/vswift_0.2.3.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.2.4/vswift_0.2.4.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -557,8 +557,8 @@ library(vswift)
 
 # Create arguments variable to tune parameters for multiple models
 args <- list("knn" = list(ks = 5), 
-             "gbm" = list(params = list(booster = "gbtree", objective = "multi:softmax",
-                                        lambda = 0.0003, alpha = 0.0003, num_class = 2, eta = 0.8,
+             "gbm" = list(params = list(booster = "gbtree", objective = "reg:logistic",
+                                        lambda = 0.0003, alpha = 0.0003, eta = 0.8,
                                         max_depth = 6), nrounds = 10))
 
 print("Without Parallel Processing:")
@@ -615,7 +615,7 @@ In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 336.93    1.97  344.62 
+ 202.89    1.20  212.01
 
 [1] "Parallel Processing:"
 
@@ -624,7 +624,7 @@ In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   1.48    9.16  188.28
+   1.83    8.83  142.35 
 ```
 
 ```R
@@ -647,7 +647,7 @@ Classes: ad., nonad.
 
 Training Parameters: list(split = 0.8, n_folds = 5, random_seed = 50, stratified = FALSE, standardize = FALSE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = list(gbm = list(params = list(booster = "gbtree", objective = "multi:softmax", lambda = 3e-04, alpha = 3e-04, num_class = 2, eta = 0.8, max_depth = 6), nrounds = 10)), final_model = FALSE)
+Model Parameters: list(map_args = list(gbm = list(params = list(booster = "gbtree", objective = "reg:logistic", lambda = 3e-04, alpha = 3e-04, eta = 0.8, max_depth = 6), nrounds = 10)), logistic_threshold = 0.5, final_model = FALSE)
 
 Missing Data: 0
 
@@ -666,8 +666,8 @@ Classification Accuracy:  0.99
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.99     0.96      0.97 
-nonad.            0.99     1.00      1.00 
+ad.               0.99     0.93      0.96 
+nonad.            0.99     1.00      0.99 
 
 
  Test 
@@ -677,7 +677,7 @@ Classification Accuracy:  0.98
 
 Class:       Precision:  Recall:  F-Score:
 
-ad.               0.94     0.89      0.92 
+ad.               0.97     0.89      0.93 
 nonad.            0.98     0.99      0.99 
 
 
@@ -688,7 +688,7 @@ Average Classification Accuracy:  0.98 (0.01)
 
 Class:       Average Precision:  Average Recall:  Average F-score:
 
-ad.              0.95 (0.02)       0.88 (0.04)       0.91 (0.02) 
+ad.              0.95 (0.02)       0.88 (0.04)       0.91 (0.03) 
 nonad.           0.98 (0.01)       0.99 (0.00)       0.99 (0.00) 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -704,7 +704,7 @@ Classes: ad., nonad.
 
 Training Parameters: list(split = 0.8, n_folds = 5, random_seed = 50, stratified = FALSE, standardize = FALSE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = list(knn = list(ks = 5)), final_model = FALSE)
+Model Parameters: list(map_args = list(knn = list(ks = 5)), logistic_threshold = 0.5, final_model = FALSE)
 
 Missing Data: 0
 
