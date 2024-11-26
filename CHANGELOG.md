@@ -14,7 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.2.3] - 2024-10-28
+## [0.2.5] - 2024-11-25
+- Small update to allow `skip` has passed parameter for "ann" model.
+
+## [0.2.4] - 2024-11-08
 ### 🐛 Fixes
 - Fixes logistic decision rule such that probabilities of 0.50 are assigned to the positive instance
 instead of negative instance. Previous rule followed `"1" if P(Class = 1 | Features) > threshold; "0" otherwise` now follows `"1" if P(Class = 1 | Features) >= threshold; "0" otherwise`.

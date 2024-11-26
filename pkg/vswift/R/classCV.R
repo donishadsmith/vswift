@@ -127,7 +127,7 @@
 #'                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
 #'                               \code{to}, \code{cut}
 #'    \item \code{"ann"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
-#'                        \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}
+#'                        \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}, \code{skip}
 #'    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
 #'    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
 #'    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
