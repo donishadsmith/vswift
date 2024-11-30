@@ -52,7 +52,7 @@
     cat("\n\n", set, "\n")
     cat(rep("_", nchar(set)), "\n\n")
     # Print classification accuracy
-    cat("Classification Accuracy: ", format(round(df[which(df$Set == set),"Classification Accuracy"], 2), nsmall = 2), "\n\n")
+    cat("Classification Accuracy: ", format(round(df[df$Set == set,"Classification Accuracy"], 2), nsmall = 2), "\n\n")
     # Print name of metrics
     cat("Class:",rep("", max_str_len),"Precision:  Recall:  F-Score:\n\n")
     # For loop to obtain vector of values for each class
@@ -72,7 +72,7 @@
       }
 
       # Print metric corresponding to class
-      class_met <- sapply(df[which(df$Set == set), class_col], function(x) format(round(x, 2), nsmall = 2))
+      class_met <- sapply(df[df$Set == set, class_col], function(x) format(round(x, 2), nsmall = 2))
       # Add spacing
       padding <- nchar(paste("Class:", rep("", max_str_len),"Pre"))[1]
 
@@ -97,8 +97,8 @@
   # Print parameters name
   cat("\n\n", "K-fold CV","\n")
   cat(rep("_", nchar("K-fold CV")), "\n\n")
-  mean_cv <- round(df[which(df$Fold == "Mean CV:"),"Classification Accuracy"],2)
-  sd_cv <- round(df[which(df$Fold == "Standard Deviation CV:"),"Classification Accuracy"],2)
+  mean_cv <- round(df[df$Fold == "Mean CV:", "Classification Accuracy"], 2)
+  sd_cv <- round(df[df$Fold == "Standard Deviation CV:", "Classification Accuracy"], 2)
   acc_met <- c(format(mean_cv, nsmall = 2), format(sd_cv, nsmall = 2))
 
   acc_met <- sprintf("%s (%s)", acc_met[1], acc_met[2])

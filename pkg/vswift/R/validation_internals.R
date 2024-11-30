@@ -285,7 +285,7 @@
 # Helper function to calculate metrics
 .calculate_metrics <- function(class, ground, pred) {
   # Sum of true positives
-  true_pos <- sum(ground[which(ground == class)] == pred[which(ground == class)])
+  true_pos <- sum(ground[ground == class] == pred[ground == class])
   # Sum of false negatives
   false_neg <- sum(ground == class & pred != class)
   # Sum of the false positive
@@ -352,9 +352,9 @@
   for (colname in colnames(cv_df)[colnames(cv_df) != "Fold"]) {
     # Create vector containing corresponding column name values for each fold
     num_vector <- cv_df[1:indx, colname]
-    cv_df[which(cv_df$Fold == desc[1]),colname] <- mean(num_vector, na.rm = TRUE)
-    cv_df[which(cv_df$Fold == desc[2]),colname] <- sd(num_vector, na.rm = TRUE)
-    cv_df[which(cv_df$Fold == desc[3]),colname] <- sd(num_vector, na.rm = TRUE)/sqrt(n_folds)
+    cv_df[cv_df$Fold == desc[1], colname] <- mean(num_vector, na.rm = TRUE)
+    cv_df[cv_df$Fold == desc[2], colname] <- sd(num_vector, na.rm = TRUE)
+    cv_df[cv_df$Fold == desc[3], colname] <- sd(num_vector, na.rm = TRUE)/sqrt(n_folds)
   }
   return(cv_df)
 }

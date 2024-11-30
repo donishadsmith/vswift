@@ -165,7 +165,7 @@
   # Obtain user-specified model arguments based on the number of models called
   for (method in methods) {
     user_args <- ifelse(call == "model", names(model_params$map_args[[method]]), names(impute_params$args))
-    invalid_args <- user_args[which(!user_args %in% valid_args[[call]][[method]])]
+    invalid_args <- user_args[!user_args %in% valid_args[[call]][[method]]]
 
     # Special case
     if (method == "knn" & !"ks" %in% user_args) {
