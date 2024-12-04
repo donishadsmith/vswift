@@ -87,25 +87,45 @@ Acceptable inputs for the `models` parameter includes:
 library(vswift)
 
 # Perform train-test split and k-fold cross-validation with stratified sampling
-results <- classCV(data = iris,
-                   target = "Species",
-                   models = "lda",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50)
-                   )
+results <- classCV(
+  data = iris,
+  target = "Species",
+  models = "lda",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  )
+)
                    
 # Also valid; the target variable can refer to the column index
 
-results <- classCV(data = iris,
-                   target = 5,
-                   models = "lda",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50))
+results <- classCV(
+  data = iris,
+  target = 5,
+  models = "lda",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  )
+)
 
 # Using formula method is also valid 
 
-results <- classCV(formula = Species ~ .,
-                   data = iris,
-                   models = "lda",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50))
+results <- classCV(
+  formula = Species ~ .,
+  data = iris,
+  models = "lda",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  )
+)
 ```
 `classCV()` produces a vswift object which can be used for custom printing and plotting of performance metrics by using the `print()` and `plot()` functions.
 ```R
@@ -221,29 +241,49 @@ The number of predictors can be modified using the `predictors` or `formula` par
 
 ```R
 # Using knn on iris dataset, using the first, third, and fourth columns as predictors. Also, adding an additional argument, `ks = 5`, which is used in train.kknn() from kknn package
-
-results <- classCV(data = iris,
-                   target = "Species",
-                   predictors = c("Sepal.Length","Petal.Length","Petal.Width"),
-                   models = "knn",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
-                   ks = 5)
+results <- classCV(
+  data = iris,
+  target = "Species",
+  predictors = c("Sepal.Length", "Petal.Length", "Petal.Width"),
+  models = "knn",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  ),
+  ks = 5
+)
 
 # All configurations below are valid and will produce the same output
-
 args <- list(knn = list(ks = 5))
-results <- classCV(data = iris,
-                   target = 5,
-                   predictors = c(1,3,4),
-                   models = "knn",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
-                   model_params = list(map_args = args))
 
-results <- classCV(formula = Species ~ Sepal.Length + Petal.Length + Petal.Width,
-                   data = iris,
-                   models = "knn",
-                   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
-                   ks = 5)
+results <- classCV(
+  data = iris,
+  target = 5,
+  predictors = c(1, 3, 4),
+  models = "knn",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  ),
+  model_params = list(map_args = args)
+)
+
+results <- classCV(
+  formula = Species ~ Sepal.Length + Petal.Length + Petal.Width,
+  data = iris,
+  models = "knn",
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  ),
+  ks = 5
+)
                    
 print(results)
 ```
@@ -556,10 +596,20 @@ ad_data <- read.csv("ad.data")
 library(vswift)
 
 # Create arguments variable to tune parameters for multiple models
-args <- list("knn" = list(ks = 5), 
-             "gbm" = list(params = list(booster = "gbtree", objective = "reg:logistic",
-                                        lambda = 0.0003, alpha = 0.0003, eta = 0.8,
-                                        max_depth = 6), nrounds = 10))
+args <- list(
+  "knn" = list(ks = 5),
+  "gbm" = list(
+    params = list(
+      booster = "gbtree",
+      objective = "reg:logistic",
+      lambda = 0.0003,
+      alpha = 0.0003,
+      eta = 0.8,
+      max_depth = 6
+    ),
+    nrounds = 10
+  )
+)
 
 print("Without Parallel Processing:")
 
@@ -569,12 +619,17 @@ start <- proc.time()
 
 # Run the same model without parallel processing 
 
-results <- classCV(data = ad_data,
-                   target = "ad.",
-                   models = c("knn","svm","decisiontree","gbm"),
-                   train_params = list(split = 0.8, n_folds = 5, random_seed = 50),
-                   model_params = list(map_args = args)
-                   )
+results <- classCV(
+  data = ad_data,
+  target = "ad.",
+  models = c("knn", "svm", "decisiontree", "gbm"),
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    random_seed = 50
+  ),
+  model_params = list(map_args = args)
+)
 
 # Get end time 
 end <- proc.time() - start
@@ -591,13 +646,21 @@ options(future.globals.maxSize = 1200 * 1024^2)
 start_par <- proc.time()
 
 # Run model using parallel processing with 4 cores
-results <- classCV(data = ad_data,
-                   target = "ad.",
-                   models = c("knn","svm","decisiontree","gbm"),
-                   train_params = list(split = 0.8, n_folds = 5, random_seed = 50),
-                   model_params = list(map_args = args),
-                   parallel_configs = list(n_cores = 4, future.seed = 100)
-                   )
+results <- classCV(
+  data = ad_data,
+  target = "ad.",
+  models = c("knn", "svm", "decisiontree", "gbm"),
+  train_params = list(
+    split = 0.8,
+    n_folds = 5,
+    random_seed = 50
+  ),
+  model_params = list(map_args = args),
+  parallel_configs = list(
+    n_cores = 4,
+    future.seed = 100
+  )
+)
 
 # Obtain end time
 
@@ -755,8 +818,13 @@ nonad.           0.97 (0.00)       0.95 (0.02)       0.96 (0.01)
 ```R
 # Plot results
 
-plot(results, models = "gbm" , save_plots = TRUE,
-     class_names = "ad.", metrics = c("precision", "recall"))
+plot(
+  results,
+  models = "gbm" ,
+  save_plots = TRUE,
+  class_names = "ad.",
+  metrics = c("precision", "recall")
+)
 ```
 
 <details>
