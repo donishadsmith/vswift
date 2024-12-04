@@ -3,8 +3,10 @@
   if (call != "classCV") {
     train_keys <- list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE, "random_seed" = NULL)
   } else {
-    train_keys <- list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE, "random_seed" = NULL,
-                       "standardize" = FALSE, "remove_obs" = FALSE)
+    train_keys <- list(
+      "split" = NULL, "n_folds" = NULL, "stratified" = FALSE, "random_seed" = NULL,
+      "standardize" = FALSE, "remove_obs" = FALSE
+    )
   }
 
   default_keys <- list(
@@ -19,19 +21,25 @@
   if (!inherits(struct, "list")) stop(sprintf("`%s` must be a list", param))
 
   # Ensure struct is a nested list
-  if (is.null(names(struct))) stop(
-    sprintf("`%s` must be a nested list containing a valid key: '%s'", param,
-            paste(names(default_keys[[param]]), collapse = "', '")
-    ))
+  if (is.null(names(struct))) {
+    stop(
+      sprintf(
+        "`%s` must be a nested list containing a valid key: '%s'", param,
+        paste(names(default_keys[[param]]), collapse = "', '")
+      )
+    )
+  }
 
   # Drop keys
   drop_keys <- setdiff(names(struct), names(default_keys[[param]]))
 
   if (length(drop_keys) > 0) {
     warning(
-      sprintf("the following keys are invalid for `%s` and will be ignored: '%s'", param,
-              paste(drop_keys, collapse = "', '")
-      ))
+      sprintf(
+        "the following keys are invalid for `%s` and will be ignored: '%s'", param,
+        paste(drop_keys, collapse = "', '")
+      )
+    )
     struct <- struct[!names(struct) %in% drop_keys]
   }
 

@@ -55,8 +55,8 @@ Default = \code{NULL}. Please refer to "Additional Model Parameters" section for
 arguments.
 \item \code{"logistic_threshold"}, A number between 0 and 1 indicating representing the
 decision boundary for logistic regression. This parameter determines if an observation is
-assigned to the class coded as "1" if \code{P(Class = 1 | Features) > logistic_threshold} or to
-the class coded as "0" if \code{P(Class = 1 | Features) <= logistic_threshold}. This threshold
+assigned to the class coded as "1" if \code{P(Class = 1 | Features) >= logistic_threshold} or to
+the class coded as "0" if \code{P(Class = 1 | Features) < logistic_threshold}. This threshold
 is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
 and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
 "binary:logitraw"}. Default = \code{0.5}.
@@ -164,7 +164,7 @@ classification algorithms.
                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
                               \code{to}, \code{cut}
    \item \code{"ann"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
-                       \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}
+                       \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}, \code{skip}
    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
    \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
@@ -199,27 +199,31 @@ classification algorithms.
 data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
-result <- classCV(data = iris,
-                  target = "Species",
-                  models = "lda",
-                  train_params = list(split = 0.8)
-                  )
+result <- classCV(
+  data = iris,
+  target = "Species",
+  models = "lda",
+  train_params = list(split = 0.8)
+)
 
 # Print parameters and metrics
 result
 
 # Perform 5-fold cross-validation using Gradient Boosted Model
 # w/ additional parameters: params & nrounds
-result <- classCV(data = iris,
-                  formula = Species ~ .,
-                  models = "gbm",
-                  train_params = list(n_folds = 5, random_seed = 50),
-                  params = list(objective = "multi:softprob",
-                                num_class = 3,
-                                eta = 0.3,
-                                max_depth = 6),
-                  nrounds = 10
-                  )
+result <- classCV(
+  data = iris,
+  formula = Species ~ .,
+  models = "gbm",
+  train_params = list(n_folds = 5, random_seed = 50),
+  params = list(
+    objective = "multi:softprob",
+    num_class = 3,
+    eta = 0.3,
+    max_depth = 6
+  ),
+  nrounds = 10
+)
 
 # Print parameters and metrics
 result
@@ -227,15 +231,18 @@ result
 
 # Perform 5-fold cross-validation a train-test split w/multiple models
 args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
-result <- classCV(data = iris,
-                  target = 5,
-                  predictors = c(1:3),
-                  models = c("decisiontree","knn", "ann","svm"),
-                  model_params = list(map_args = args),
-                  train_params = list(n_folds = 5,
-                                         stratified = TRUE,
-                                         random_seed = 50)
-                  )
+result <- classCV(
+  data = iris,
+  target = 5,
+  predictors = c(1:3),
+  models = c("decisiontree", "knn", "ann", "svm"),
+  model_params = list(map_args = args),
+  train_params = list(
+    n_folds = 5,
+    stratified = TRUE,
+    random_seed = 50
+  )
+)
 
 # Print parameters and metrics
 result

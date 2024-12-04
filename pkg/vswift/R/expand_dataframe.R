@@ -3,8 +3,10 @@
   # Create df_list
   df_list <- list()
   # Create base column names
-  col_names <- c("Classification Accuracy",
-                 sapply(classes, function(x) paste(paste("Class:", x),c("Precision", "Recall", "F-Score"))))
+  col_names <- c(
+    "Classification Accuracy",
+    sapply(classes, function(x) paste(paste("Class:", x), c("Precision", "Recall", "F-Score")))
+  )
 
   # Create split df
   if (!is.null(train_params$split)) {
@@ -22,7 +24,7 @@
     cv_df <- data.frame(sapply(unlist(col_names), function(x) assign(x, rep(NA, train_params$n_folds))))
     colnames(cv_df) <- col_names
     for (model in models) {
-      df_list[[model]]$cv <- cbind(data.frame("Fold" = paste("Fold", 1:train_params$n_folds)),cv_df)
+      df_list[[model]]$cv <- cbind(data.frame("Fold" = paste("Fold", 1:train_params$n_folds)), cv_df)
     }
   }
 

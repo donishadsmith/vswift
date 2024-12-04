@@ -25,11 +25,12 @@
 #'
 #' # Perform a train-test split with an 80% training set using LDA
 #'
-#' result <- classCV(data = iris,
-#'                   target = "Species",
-#'                   models = "lda",
-#'                   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
-#'                   )
+#' result <- classCV(
+#'   data = iris,
+#'   target = "Species",
+#'   models = "lda",
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+#' )
 #'
 #' #  Print parameter information and performance metrics
 #' print(result)
@@ -37,14 +38,16 @@
 #' @author Donisha Smith
 #' @export
 
-"print.vswift" <- function(x , ..., configs = TRUE, metrics = TRUE, models = NULL) {
+"print.vswift" <- function(x, ..., configs = TRUE, metrics = TRUE, models = NULL) {
   if (inherits(x, "vswift")) {
     # List for model names
-    model_list <- list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-                       "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
-                       "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
-                       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes")
+    model_list <- list(
+      "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
+      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
+      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+      "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
+    )
 
     # Get models
     if (is.null(models)) {

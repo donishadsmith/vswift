@@ -14,6 +14,11 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.6] - 2024-12-04
+### 🐛 Fixes
+- Clean namespace
+- Add error when `split`, `n_folds`, or `final_model` is not set
+
 ## [0.2.5] - 2024-11-25
 - Small update to allow `skip` has passed parameter for "ann" model.
 

@@ -38,11 +38,12 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set using LDA
 
-result <- classCV(data = iris,
-                  target = "Species",
-                  models = "lda",
-                  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
-                  )
+result <- classCV(
+  data = iris,
+  target = "Species",
+  models = "lda",
+  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+)
 
 #  Print parameter information and performance metrics
 print(result)

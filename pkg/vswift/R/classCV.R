@@ -166,27 +166,31 @@
 #' data(iris)
 #'
 #' # Perform a train-test split with an 80% training set using LDA
-#' result <- classCV(data = iris,
-#'                   target = "Species",
-#'                   models = "lda",
-#'                   train_params = list(split = 0.8)
-#'                   )
+#' result <- classCV(
+#'   data = iris,
+#'   target = "Species",
+#'   models = "lda",
+#'   train_params = list(split = 0.8)
+#' )
 #'
 #' # Print parameters and metrics
 #' result
 #'
 #' # Perform 5-fold cross-validation using Gradient Boosted Model
 #' # w/ additional parameters: params & nrounds
-#' result <- classCV(data = iris,
-#'                   formula = Species ~ .,
-#'                   models = "gbm",
-#'                   train_params = list(n_folds = 5, random_seed = 50),
-#'                   params = list(objective = "multi:softprob",
-#'                                 num_class = 3,
-#'                                 eta = 0.3,
-#'                                 max_depth = 6),
-#'                   nrounds = 10
-#'                   )
+#' result <- classCV(
+#'   data = iris,
+#'   formula = Species ~ .,
+#'   models = "gbm",
+#'   train_params = list(n_folds = 5, random_seed = 50),
+#'   params = list(
+#'     objective = "multi:softprob",
+#'     num_class = 3,
+#'     eta = 0.3,
+#'     max_depth = 6
+#'   ),
+#'   nrounds = 10
+#' )
 #'
 #' # Print parameters and metrics
 #' result
@@ -194,15 +198,18 @@
 #'
 #' # Perform 5-fold cross-validation a train-test split w/multiple models
 #' args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
-#' result <- classCV(data = iris,
-#'                   target = 5,
-#'                   predictors = c(1:3),
-#'                   models = c("decisiontree","knn", "ann","svm"),
-#'                   model_params = list(map_args = args),
-#'                   train_params = list(n_folds = 5,
-#'                                          stratified = TRUE,
-#'                                          random_seed = 50)
-#'                   )
+#' result <- classCV(
+#'   data = iris,
+#'   target = 5,
+#'   predictors = c(1:3),
+#'   models = c("decisiontree", "knn", "ann", "svm"),
+#'   model_params = list(map_args = args),
+#'   train_params = list(
+#'     n_folds = 5,
+#'     stratified = TRUE,
+#'     random_seed = 50
+#'   )
+#' )
 #'
 #' # Print parameters and metrics
 #' result
@@ -216,13 +223,14 @@ classCV <- function(data,
                     predictors = NULL,
                     models,
                     model_params = list("map_args" = NULL, "logistic_threshold" = 0.5, "final_model" = FALSE),
-                    train_params = list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE,
-                                        "random_seed" = NULL, "standardize" = FALSE, "remove_obs" = FALSE),
+                    train_params = list(
+                      "split" = NULL, "n_folds" = NULL, "stratified" = FALSE,
+                      "random_seed" = NULL, "standardize" = FALSE, "remove_obs" = FALSE
+                    ),
                     impute_params = list("method" = NULL, "args" = NULL),
                     save = list("models" = FALSE, "data" = FALSE),
                     parallel_configs = list("n_cores" = NULL, "future.seed" = NULL),
                     ...) {
-
   # Ensure model type is lowercase
   if (!is.null(models)) models <- tolower(models)
 
@@ -237,9 +245,11 @@ classCV <- function(data,
   parallel_configs <- .append_keys("parallel_configs", parallel_configs)
 
   # Checking if inputs are valid
-  .error_handling(data = data, formula = formula, target = target, predictors = predictors, models = models,
-                  model_params = model_params, train_params = train_params, impute_params = impute_params,
-                  save = save, parallel_configs = parallel_configs, call = "classCV")
+  .error_handling(
+    data = data, formula = formula, target = target, predictors = predictors, models = models,
+    model_params = model_params, train_params = train_params, impute_params = impute_params,
+    save = save, parallel_configs = parallel_configs, call = "classCV"
+  )
 
   # Get character form of target and predictor variables
   vars <- .get_var_names(formula, target, predictors, data)
@@ -261,11 +271,14 @@ classCV <- function(data,
 
   missing_n <- nrow(data) - nrow(preprocessed_data)
   # Delete data
-  rm(data, factored); gc()
+  rm(data, factored)
+  gc()
 
   # Store information
-  final_output <- .store_parameters(formula, missing_n, preprocessed_data, vars, models, model_params, train_params,
-                                    impute_params, save, parallel_configs)
+  final_output <- .store_parameters(
+    formula, missing_n, preprocessed_data, vars, models, model_params, train_params,
+    impute_params, save, parallel_configs
+  )
 
   # Create class dictionary
   if (any(models %in% c("logistic", "gbm"))) {
@@ -290,22 +303,26 @@ classCV <- function(data,
   if (!is.null(impute_params$method) && miss_data == TRUE) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
-        prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          train = df_list$split$train, test = df_list$split$test, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         df_list$split <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$split <- prep_out$prep
-
       } else if (startsWith(i, "fold") && exists("df_list")) {
-        prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$cv[[i]] <- prep_out$prep
-
       } else {
-        prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          preprocessed_data = preprocessed_data, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         preprocessed_data <- prep_out$preprocessed_data
         if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$preprocessed_data <- prep_out$prep
@@ -317,18 +334,24 @@ classCV <- function(data,
   if (train_params$standardize != FALSE && !exists("prep_out")) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
-        prep_out <- .prep_data(train = df_list$split$train, test = df_list$split$test, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          train = df_list$split$train, test = df_list$split$test, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         df_list$split <- prep_out[!names(prep_out) == "prep"]
       } else if (startsWith(i, "fold") && exists("df_list")) {
-        prep_out <- .prep_data(train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
       } else {
-        prep_out <- .prep_data(preprocessed_data = preprocessed_data, vars = vars,
-                               train_params = train_params, impute_params = impute_params)
+        prep_out <- .prep_data(
+          preprocessed_data = preprocessed_data, vars = vars,
+          train_params = train_params, impute_params = impute_params
+        )
 
         preprocessed_data <- prep_out$preprocessed_data
       }
@@ -337,15 +360,17 @@ classCV <- function(data,
 
   # Create kwargs
   if (exists("df_list")) {
-    kwargs <- list(df_list = df_list,
-                   formula = final_output$configs$formula,
-                   model_params = model_params,
-                   vars = vars,
-                   train_params = train_params,
-                   col_levels = col_levels,
-                   class_summary = final_output$class_summary,
-                   save_mods = save$models,
-                   met_df = final_output$metrics)
+    kwargs <- list(
+      df_list = df_list,
+      formula = final_output$configs$formula,
+      model_params = model_params,
+      vars = vars,
+      train_params = train_params,
+      col_levels = col_levels,
+      class_summary = final_output$class_summary,
+      save_mods = save$models,
+      met_df = final_output$metrics
+    )
   }
 
   # Iterate to obtain validation metrics, training models, and final model for each algo
@@ -368,26 +393,29 @@ classCV <- function(data,
       }
 
       if (!is.null(train_params$n_folds)) {
-        cv_df <- .merge_df(iters[!iters %in% c("split","final")],
-                           train_out$metrics$cv,
-                           final_output$metrics[[model]]$cv)
+        cv_df <- .merge_df(
+          iters[!iters %in% c("split", "final")],
+          train_out$metrics$cv,
+          final_output$metrics[[model]]$cv
+        )
 
         final_output$metrics[[model]]$cv <- .get_desc(cv_df, train_params$n_folds)
       }
 
       if ("models" %in% names(train_out)) final_output$models[[model]] <- train_out$models
-
     }
 
     # Generate final model
     if ("final" %in% iters) {
       # Generate model depending on chosen models
-      final_output$models[[model]]$final <- .generate_model(model = model,
-                                                            formula = final_output$configs$formula,
-                                                            vars = vars,
-                                                            data = preprocessed_data,
-                                                            add_args = model_params$mod_args,
-                                                            random_seed = train_params$random_seed)
+      final_output$models[[model]]$final <- .generate_model(
+        model = model,
+        formula = final_output$configs$formula,
+        vars = vars,
+        data = preprocessed_data,
+        add_args = model_params$mod_args,
+        random_seed = train_params$random_seed
+      )
     }
   }
 

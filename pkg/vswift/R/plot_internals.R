@@ -1,5 +1,4 @@
 # Helper function for regular plotting
-#' @importFrom stats sd
 .visible_plots <- function(x, split, cv, metrics, class_names, model_name, model_list) {
   # Simplify parameters
   df <- x$metrics[[model_name]]
@@ -18,26 +17,30 @@
   if (all(is.data.frame(df$split), split == TRUE)) {
     if ("accuracy" %in% metrics) {
       # Plot metrics for training and test
-      dev.new()
+      grDevices::dev.new()
       # Plot data
-      plot(x = 1:2, y = df$split[1:2,"Classification Accuracy"],
-           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy",
-           xaxt = "n", main = converted_model_name_plot)
+      plot(
+        x = 1:2, y = df$split[1:2, "Classification Accuracy"],
+        ylim = c(0, 1), xlab = "Set", ylab = "Classification Accuracy",
+        xaxt = "n", main = converted_model_name_plot
+      )
       # Add axis info
-      axis(1, at = 1:2, labels = c("Training","Test"))
+      graphics::axis(1, at = 1:2, labels = c("Training", "Test"))
     }
     # Iterate over classes
     if (any(names(metrics_list) %in% metrics)) {
       for (class in classes) {
         for (metric in specified_metrics) {
           # Plot metrics for training and test
-          dev.new()
+          grDevices::dev.new()
           # Plot data
-          plot(x = 1:2, y = df$split[1:2,sprintf("Class: %s %s", class, metric)],
-               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n",
-               main = sprintf("%s - Class: %s", converted_model_name_plot, class))
+          plot(
+            x = 1:2, y = df$split[1:2, sprintf("Class: %s %s", class, metric)],
+            ylim = c(0, 1), xlab = "Set", ylab = metric, xaxt = "n",
+            main = sprintf("%s - Class: %s", converted_model_name_plot, class)
+          )
           # Add axis info
-          axis(1, at = 1:2, labels = c("Training","Test"))
+          graphics::axis(1, at = 1:2, labels = c("Training", "Test"))
         }
       }
     }
@@ -48,7 +51,7 @@
     # Create vector of metrics to obtain
     col_names <- c()
     if ("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
+    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names, paste("Class:", classes, specified_metrics))
 
     for (col_name in col_names) {
       # Get values
@@ -59,26 +62,30 @@
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
       } else if (any(names(metrics_list) %in% metrics)) {
-          # Get name of metric - "Precision", "Recall", "F-Score
-          split_name <- unlist(strsplit(col_name, split = " "))
-          split_metric_name <- split_name[length(split_name)]
-          # Get class name
-          split_class_name_plot <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = " ")
-          # Get ylab and main
-          ylab <- split_metric_name
-          main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
+        # Get name of metric - "Precision", "Recall", "F-Score
+        split_name <- unlist(strsplit(col_name, split = " "))
+        split_metric_name <- split_name[length(split_name)]
+        # Get class name
+        split_class_name_plot <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))],
+          collapse = " "
+        )
+        # Get ylab and main
+        ylab <- split_metric_name
+        main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
       }
       # Plot metrics for training and test
-      dev.new()
+      grDevices::dev.new()
       # Generate plot
-      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds",
-           ylab = ylab, xaxt = "n", main = main)
+      plot(
+        x = 1:idx, y = num_vector, ylim = c(0, 1), xlab = "K-folds",
+        ylab = ylab, xaxt = "n", main = main
+      )
       # Add axis info
-      axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
+      graphics::axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
       # Add mean and standard deviation to the plot
-      abline(h = mean(num_vector, na.rm = TRUE), col = "red", lwd = 1)
-      abline(h = mean(num_vector, na.rm = TRUE) + sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
-      abline(h = mean(num_vector, na.rm = TRUE) - sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE), col = "red", lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE) + stats::sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE) - stats::sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
     }
   }
 }
@@ -87,14 +94,13 @@
 .dev_off_and_new <- function() {
   # Don't display plot if save_plot is TRUE
   if (Sys.getenv("RStudio") == "1") {
-    graphics.off()
+    grDevices::graphics.off()
   } else {
-    dev.off()
+    grDevices::dev.off()
   }
 }
 
 # Function for plot saving
-#' @importFrom stats sd
 .save_plots <- function(x, path, split, cv, metrics, class_names, model_name, model_list, ...) {
   # Simplify parameters
   df <- x$metrics[[model_name]]
@@ -117,14 +123,18 @@
   if (all(is.data.frame(df$split), split == TRUE)) {
     if ("accuracy" %in% metrics) {
       # Create png
-      png(filename = paste0(path, os.sep, sprintf("%s_train_test_classification_accuracy.png",
-                                                 tolower(converted_model_name_png))), ...)
+      grDevices::png(filename = paste0(path, os.sep, sprintf(
+        "%s_train_test_classification_accuracy.png",
+        tolower(converted_model_name_png)
+      )), ...)
       # Plot data
-      plot(x = 1:2, y = df$split[1:2,"Classification Accuracy"],
-           ylim = c(0,1), xlab = "Set", ylab = "Classification Accuracy",
-           xaxt = "n", main = converted_model_name_plot)
+      plot(
+        x = 1:2, y = df$split[1:2, "Classification Accuracy"],
+        ylim = c(0, 1), xlab = "Set", ylab = "Classification Accuracy",
+        xaxt = "n", main = converted_model_name_plot
+      )
       # Add axis info
-      axis(1, at = 1:2, labels = c("Training","Test"))
+      graphics::axis(1, at = 1:2, labels = c("Training", "Test"))
       # Don't display plot and create new plot
       .dev_off_and_new()
     }
@@ -134,15 +144,22 @@
       for (class in classes) {
         for (metric in specified_metrics) {
           # Create png
-          png(filename = paste0(path, os.sep, sprintf("%s_train_test_%s_%s.png",
-                                                      tolower(converted_model_name_png),
-                                                      tolower(metric), paste(unlist(strsplit(class, split = " ")), collapse = "_"))), ...)
+          grDevices::png(filename = paste0(path, os.sep, sprintf(
+            "%s_train_test_%s_%s.png",
+            tolower(converted_model_name_png),
+            tolower(metric),
+            paste(unlist(strsplit(class, split = " ")),
+              collapse = "_"
+            )
+          )), ...)
           # Plot data
-          plot(x = 1:2, y = df$split[1:2,sprintf("Class: %s %s", class, metric)],
-               ylim = c(0,1), xlab = "Set",ylab = metric, xaxt = "n",
-               main = sprintf("%s - Class: %s", converted_model_name_plot, class))
+          plot(
+            x = 1:2, y = df$split[1:2, sprintf("Class: %s %s", class, metric)],
+            ylim = c(0, 1), xlab = "Set", ylab = metric, xaxt = "n",
+            main = sprintf("%s - Class: %s", converted_model_name_plot, class)
+          )
           # Add axis info
-          axis(1, at = 1:2, labels = c("Training","Test"))
+          graphics::axis(1, at = 1:2, labels = c("Training", "Test"))
           # Don't display plot and create new plot
           .dev_off_and_new()
         }
@@ -156,40 +173,44 @@
     # Create vector of metrics to obtain
     col_names <- c()
     if ("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names,paste("Class:", classes, specified_metrics))
+    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names, paste("Class:", classes, specified_metrics))
 
     for (col_name in col_names) {
       # Get values
       num_vector <- df$cv[1:idx, col_name]
       # Create png
       if (col_name == "Classification Accuracy") {
-        png(filename = paste0(path, os.sep, sprintf("%s_cv_classification_accuracy.png", tolower(converted_model_name_png))),...)
+        grDevices::png(filename = paste0(path, os.sep, sprintf("%s_cv_classification_accuracy.png", tolower(converted_model_name_png))), ...)
         # Get ylab and main
         ylab <- "Classification Accuracy"
         main <- converted_model_name_plot
       } else if (any(names(metrics_list) %in% metrics)) {
-          # Get name of metric - "Precision", "Recall", "F-Score
-          split_name <- unlist(strsplit(col_name, split = " "))
-          split_metric_name <- split_name[length(split_name)]
-          # Get class name
-          split_class_name_plot <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = " ")
-          split_class_name_png <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = "_")
-          # Create png
-          png(filename = paste0(path, os.sep, sprintf("%s_cv_%s_%s.png", tolower(converted_model_name_png),
-                                                      tolower(split_metric_name),split_class_name_png)),...)
-          # Get ylab and main
-          ylab <- split_metric_name
-          main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
+        # Get name of metric - "Precision", "Recall", "F-Score
+        split_name <- unlist(strsplit(col_name, split = " "))
+        split_metric_name <- split_name[length(split_name)]
+        # Get class name
+        split_class_name_plot <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = " ")
+        split_class_name_png <- paste(split_name[-which(split_name %in% c("Class:", split_metric_name))], collapse = "_")
+        # Create png
+        grDevices::png(filename = paste0(path, os.sep, sprintf(
+          "%s_cv_%s_%s.png", tolower(converted_model_name_png),
+          tolower(split_metric_name), split_class_name_png
+        )), ...)
+        # Get ylab and main
+        ylab <- split_metric_name
+        main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
       }
       # Generate plot
-      plot(x = 1:idx, y = num_vector, ylim = c(0,1), xlab = "K-folds",
-           ylab = ylab, xaxt = "n", main = main)
+      plot(
+        x = 1:idx, y = num_vector, ylim = c(0, 1), xlab = "K-folds",
+        ylab = ylab, xaxt = "n", main = main
+      )
       # Add axis info
-      axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
+      graphics::axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
       # Add mean and standard deviation to the plot
-      abline(h = mean(num_vector, na.rm = TRUE), col = "red", lwd = 1)
-      abline(h = mean(num_vector, na.rm = TRUE) + sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
-      abline(h = mean(num_vector, na.rm = TRUE) - sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE), col = "red", lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE) + stats::sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
+      graphics::abline(h = mean(num_vector, na.rm = TRUE) - stats::sd(num_vector, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
       # Don't display plot and create new plot
       .dev_off_and_new()
     }

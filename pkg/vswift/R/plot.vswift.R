@@ -36,11 +36,12 @@
 #'
 #' # Perform a train-test split with an 80% training set and stratified_sampling using QDA
 #'
-#' result <- classCV(data = iris,
-#'                   target = "Species",
-#'                   models = "qda",
-#'                   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
-#'                   )
+#' result <- classCV(
+#'   data = iris,
+#'   target = "Species",
+#'   models = "qda",
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+#' )
 #'
 #'
 #' # Plot performance metrics for train-test split
@@ -48,25 +49,24 @@
 #' plot(result, class_names = "setosa", metrics = "f1")
 #'
 #' @author Donisha Smith
-#' @importFrom grDevices dev.new dev.off graphics.off png
-#' @importFrom graphics abline axis
 #' @export
 
-"plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy","precision", "recall", "f1"),
+"plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy", "precision", "recall", "f1"),
                           class_names = NULL, save_plots = FALSE, path = NULL, models = NULL) {
-
   if (inherits(x, "vswift")) {
     # Create list
-    model_list = list("lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-                      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
-                      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
-                      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
-                      "knn" = "K-Nearest Neighbors","naivebayes" = "Naive Bayes")
+    model_list <- list(
+      "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
+      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
+      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+      "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
+    )
 
     # Lowercase and intersect common names
-    metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy","precision", "recall", "f1"))
+    metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy", "precision", "recall", "f1"))
     if (length(metrics) == 0) {
-      stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy","precision","recall","f1"), collapse = ", ")))
+      stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy", "precision", "recall", "f1"), collapse = ", ")))
     }
     # intersect common names
     if (!is.null(class_names)) {
@@ -88,19 +88,25 @@
       # Warning when invalid models specified
       invalid_models <- models[which(!models %in% models)]
       if (length(invalid_models) > 0) {
-        warning(sprintf("invalid model in models or information for specified model not present in vswift x: %s",
-                        paste(unlist(invalid_models), collapse = ", ")))
+        warning(sprintf(
+          "invalid model in models or information for specified model not present in vswift x: %s",
+          paste(unlist(invalid_models), collapse = ", ")
+        ))
       }
     }
 
     # Iterate over models
     for (model in models) {
       if (save_plots == FALSE) {
-        .visible_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
-                       model_list = model_list)
+        .visible_plots(
+          x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
+          model_list = model_list
+        )
       } else {
-        .save_plots(x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path,
-                    model_name = model, model_list = model_list,...)
+        .save_plots(
+          x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path,
+          model_name = model, model_list = model_list, ...
+        )
       }
     }
   }

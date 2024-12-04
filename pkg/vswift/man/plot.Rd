@@ -64,11 +64,12 @@ data(iris)
 
 # Perform a train-test split with an 80\% training set and stratified_sampling using QDA
 
-result <- classCV(data = iris,
-                  target = "Species",
-                  models = "qda",
-                  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
-                  )
+result <- classCV(
+  data = iris,
+  target = "Species",
+  models = "qda",
+  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+)
 
 
 # Plot performance metrics for train-test split

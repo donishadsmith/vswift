@@ -12,7 +12,8 @@
 
   warning(sprintf(
     "creating keys for target variable due to 'logistic' or 'gbm' being specified;\n  classes are now encoded: %s",
-    paste(new_classes, collapse = ", ")))
+    paste(new_classes, collapse = ", ")
+  ))
 
   return(class_dict)
 }

@@ -51,7 +51,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           R CMD build --no-build-vignettes .
-          R CMD check --no-manual --as-cran vswift_0.2.5.tar.gz
+          R CMD check --no-manual --as-cran vswift_0.2.6.tar.gz
         shell: cmd
         working-directory: pkg/vswift
 

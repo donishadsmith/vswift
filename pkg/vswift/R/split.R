@@ -5,7 +5,7 @@
 
   split_indxs <- list("train" = NULL, "test" = NULL)
   # Create test and train set
-  train_indxs <- sample(1:N ,size = round(N*split, 0),replace = F)
+  train_indxs <- sample(1:N, size = round(N * split, 0), replace = F)
   # Store indices in list
   split_indxs$train <- c(1:N)[train_indxs]
   split_indxs$test <- c(1:N)[-train_indxs]
@@ -23,7 +23,7 @@
   # Create folds; start with randomly shuffling indices
   indices <- sample(1:N)
   # Get floor
-  folds_vec <- rep(floor(N/n_folds), n_folds)
+  folds_vec <- rep(floor(N / n_folds), n_folds)
   excess <- N - sum(folds_vec)
   if (excess > 0) {
     folds_vector <- rep(1:n_folds, excess)[1:excess]
@@ -37,7 +37,7 @@
     # Remove rows from vectors to prevent overlapping, last fold may be smaller or larger than other folds
     indices <- indices[-c(1:folds_vec[i])]
     # Add indices to list
-    cv_indxs[[sprintf("fold%s",i)]] <- fold_indxs
+    cv_indxs[[sprintf("fold%s", i)]] <- fold_indxs
   }
   return(cv_indxs)
 }
@@ -47,15 +47,15 @@
   df_list <- list()
   # Get data for train-test split
   if ("split" %in% names(subsets)) {
-    df_list$split$train <- data[subsets$split$train,]
-    df_list$split$test  <- data[subsets$split$test,]
+    df_list$split$train <- data[subsets$split$train, ]
+    df_list$split$test <- data[subsets$split$test, ]
   }
 
   # Get train and test partitions for cv
   if ("cv" %in% names(subsets)) {
     for (fold in names(subsets$cv)) {
-      df_list$cv[[fold]]$train <- data[-subsets$cv[[fold]],]
-      df_list$cv[[fold]]$test <- data[subsets$cv[[fold]],]
+      df_list$cv[[fold]]$train <- data[-subsets$cv[[fold]], ]
+      df_list$cv[[fold]]$test <- data[subsets$cv[[fold]], ]
     }
   }
 
