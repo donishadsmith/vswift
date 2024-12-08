@@ -66,8 +66,8 @@
   }
 
   # Check split, n_folds, final_model
-  if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model)) || model_params$final_model == FALSE) {
-    warning("neither `split`, `n_folds`, or `final_model` specified")
+  if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model) || model_params$final_model == FALSE)) {
+    stop("neither `split`, `n_folds`, or `final_model` specified")
   }
 
 
@@ -230,53 +230,53 @@
   return(list("predictors" = predictor_vec, "target" = target))
 }
 
-# Check if data is missing
-.check_if_missing <- function(data) {
-  # Get rows of missing data
-  miss_obs <- sort(unique(which(is.na(data), arr.ind = TRUE)[, "row"]))
-  missing_data <- if (length(miss_obs) > 0) TRUE else FALSE
+.missing_summary <- function(data, target) {
+  # Indices of unlabeled observations
+  unlabeled_data <- which(is.na(data[, target]))
+  # Number of observations with ONLY missing features
+  incomplete_labeled_data <- unique(which(is.na(data), arr.ind = TRUE)[, "row"])
+  n_incomplete_labeled_data <- length(incomplete_labeled_data[!incomplete_labeled_data %in% unlabeled_data])
 
-  # Warn users the total number of rows with at least one column of missing data
-  if (missing_data) {
-    msg <- sprintf("%s observations have at least one instance of missing data", length(miss_obs))
-  } else {
-    msg <- "no observations have missing data; no imputation will be performed"
-  }
-
-  warning(msg)
-
-  return(missing_data)
+  return(list("unlabeled_data_indices" = unlabeled_data, "n_incomplete_labeled_data" = n_incomplete_labeled_data))
 }
 
-# Helper function to remove missing data
-.remove_missing_data <- function(data) {
-  # Warning for missing data if no imputation method selected or imputation fails to fill in some missing data
-  miss <- nrow(data) - nrow(data[complete.cases(data), ])
-  if (miss > 0) {
-    complete_data <- data[stats::complete.cases(data), ]
-    warning(sprintf(
-      "dataset contains %s observations with incomplete data only complete observations will be used",
-      paste(miss, collapse = ", ")
-    ))
-    return(complete_data)
-  } else {
-    return(data)
-  }
-}
+.clean_data <- function(data, missing_info, imputation_requested) {
+  perform_imputation <- imputation_requested
 
-# Helper function to remove observations with missing target variable prior to imputation
-.remove_missing_target <- function(data, target) {
-  missing_targets <- which(is.na(data[, target]))
-  if (length(missing_targets) > 0) {
-    cleaned_data <- data[-missing_targets, ]
-    warning(sprintf(
-      "the following observations have been removed due to missing target variable: %s",
-      paste(sort(missing_targets), collapse = ", ")
-    ))
-    return(cleaned_data)
+  # Messages
+  msg1 <- sprintf("dropping %s unlabeled observations", length(missing_info$unlabeled_data_indices))
+
+  if (imputation_requested) {
+    msg2 <- sprintf(
+      "%s labeled observations are missing data in one or more features and will be imputed",
+      missing_info$n_incomplete_labeled_data
+    )
   } else {
-    return(data)
+    msg2 <- sprintf(
+      "dropping %s labeled observations with one or more missing features",
+      length(missing_info$n_incomplete_labeled_data)
+    )
   }
+
+  # Dropping unlabeled data
+  if (length(missing_info$unlabeled_data_indices) > 0) {
+    warning(msg1)
+    data <- data[-missing_info$unlabeled_data_indices, ]
+  }
+
+  # Issue warning for labeled data with missing values
+  if (missing_info$n_incomplete_labeled_data > 0) warning(msg2)
+
+  # Drop missing labeled data if no imputation requested
+  if (missing_info$n_incomplete_labeled_data > 0 && !imputation_requested) {
+    data <- data[stats::complete.cases(data), ]
+  }
+
+  if (nrow(data) == sum(stats::complete.cases(data)) && imputation_requested) {
+    warning("remaining labeled observations has no missing data; imputation will not be performed")
+    perform_imputation <- FALSE
+  }
+  return(list("cleaned_data" = data, "perform_imputation" = perform_imputation))
 }
 
 # Helper function to turn character data into factors

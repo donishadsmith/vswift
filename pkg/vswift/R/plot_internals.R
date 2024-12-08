@@ -1,3 +1,10 @@
+# Todo: Refactor .visible_plots and .save_plots
+
+# Get new plots if not in Rstudio
+.new_plot <- function() {
+  if (Sys.getenv("RStudio") == "0") grDevices::dev.new()
+}
+
 # Helper function for regular plotting
 .visible_plots <- function(x, split, cv, metrics, class_names, model_name, model_list) {
   # Simplify parameters
@@ -6,7 +13,7 @@
   converted_model_name_plot <- model_list[[model_name]]
   # Metrics list
   metrics_list <- list("precision" = "Precision", "recall" = "Recall", "f1" = "F-Score")
-  specified_metrics <- lapply(metrics[metrics != "accuracy"], function(x) metrics_list[[x]])
+  specified_metrics <- as.vector(sapply(metrics[metrics != "accuracy"], function(x) metrics_list[[x]]))
   # Get classes
   if (is.null(class_names)) {
     classes <- x$class_summary$classes
@@ -17,7 +24,7 @@
   if (all(is.data.frame(df$split), split == TRUE)) {
     if ("accuracy" %in% metrics) {
       # Plot metrics for training and test
-      grDevices::dev.new()
+      .new_plot()
       # Plot data
       plot(
         x = 1:2, y = df$split[1:2, "Classification Accuracy"],
@@ -50,8 +57,12 @@
     idx <- nrow(x$metrics[[model_name]]$cv) - 3
     # Create vector of metrics to obtain
     col_names <- c()
+
     if ("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names, paste("Class:", classes, specified_metrics))
+
+    if (any(names(metrics_list) %in% metrics)) {
+      col_names <- c(col_names, as.vector(sapply(classes, function(x) paste("Class:", x, specified_metrics))))
+    }
 
     for (col_name in col_names) {
       # Get values
@@ -74,7 +85,7 @@
         main <- sprintf("%s - Class: %s", converted_model_name_plot, split_class_name_plot)
       }
       # Plot metrics for training and test
-      grDevices::dev.new()
+      .new_plot
       # Generate plot
       plot(
         x = 1:idx, y = num_vector, ylim = c(0, 1), xlab = "K-folds",
@@ -173,7 +184,10 @@
     # Create vector of metrics to obtain
     col_names <- c()
     if ("accuracy" %in% metrics) col_names <- c("Classification Accuracy")
-    if (any(names(metrics_list) %in% metrics)) col_names <- c(col_names, paste("Class:", classes, specified_metrics))
+
+    if (any(names(metrics_list) %in% metrics)) {
+      col_names <- c(col_names, as.vector(sapply(classes, function(x) paste("Class:", x, specified_metrics))))
+    }
 
     for (col_name in col_names) {
       # Get values

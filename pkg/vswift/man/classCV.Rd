@@ -94,7 +94,7 @@ Default = \code{FALSE}.
 \item{impute_params}{A list that can contain the following parameters to perform imputation on missing
 predictors/features. During imputation, the targets are not included in the training or
 test/validation set. Prior to imputation, train-test splitting, or k-fold CV generation,
-any rows with missing data for the targets are dropped completely. Additionally, imputation
+unlabeled data (data with missing targets) are dropped. Additionally, imputation
 models are generated for each training data (one model for the training subset of the train-test
 split, as well as one model for the training subset of each k-fold; so the imputation model for
 fold 1 is not the same model used for fold 2) and the same model is used for both the training

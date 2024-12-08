@@ -71,7 +71,7 @@
 #' @param impute_params A list that can contain the following parameters to perform imputation on missing
 #'                      predictors/features. During imputation, the targets are not included in the training or
 #'                      test/validation set. Prior to imputation, train-test splitting, or k-fold CV generation,
-#'                      any rows with missing data for the targets are dropped completely. Additionally, imputation
+#'                      unlabeled data (data with missing targets) are dropped. Additionally, imputation
 #'                      models are generated for each training data (one model for the training subset of the train-test
 #'                      split, as well as one model for the training subset of each k-fold; so the imputation model for
 #'                      fold 1 is not the same model used for fold 2) and the same model is used for both the training
@@ -254,29 +254,26 @@ classCV <- function(data,
   # Get character form of target and predictor variables
   vars <- .get_var_names(formula, target, predictors, data)
 
-  # Remove missing data if no imputation specified and remove rows with missing target variables.
-  if (is.null(impute_params$method)) {
-    preprocessed_data <- .remove_missing_data(data)
-    miss_data <- FALSE
-  } else {
-    preprocessed_data <- .remove_missing_target(data, target)
-    # Check if removing missing target variables removes all missing data
-    miss_data <- .check_if_missing(preprocessed_data)
-  }
+  # Get information on unlabeled data and labeled data with missing features
+  missing_info <- .missing_summary(data, vars$target)
+
+  # Clean data; Unlabeled data dropped and labeled missing data dropped if imputation is not requested
+  clean_outputs <- .clean_data(data, missing_info, !is.null(impute_params$method))
+  preprocessed_data <- clean_outputs$cleaned_data
+  perform_imputation <- clean_outputs$perform_imputation
 
   # Ensure target is factored and get all levels of character columns obtained if svm in models
   factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params)
   preprocessed_data <- factored$data
   col_levels <- factored$col_levels
 
-  missing_n <- nrow(data) - nrow(preprocessed_data)
   # Delete data
   rm(data, factored)
   gc()
 
   # Store information
   final_output <- .store_parameters(
-    formula, missing_n, preprocessed_data, vars, models, model_params, train_params,
+    formula, missing_info, preprocessed_data, vars, models, model_params, train_params,
     impute_params, save, parallel_configs
   )
 
@@ -300,7 +297,7 @@ classCV <- function(data,
   iters <- .gen_iterations(train_params, model_params)
 
   # Impute train and test data
-  if (!is.null(impute_params$method) && miss_data == TRUE) {
+  if (!is.null(impute_params$method) && perform_imputation) {
     for (i in iters) {
       if (i == "split" && exists("df_list")) {
         prep_out <- .prep_data(

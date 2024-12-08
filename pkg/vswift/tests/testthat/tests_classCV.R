@@ -146,7 +146,8 @@ test_that("test final", {
     model_params = list(final_model = TRUE)
   ))
 
-  expect_warning(result <- classCV(
+  # Should stop
+  expect_error(result <- classCV(
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
     model_params = list(final_model = FALSE)

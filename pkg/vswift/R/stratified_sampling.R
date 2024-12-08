@@ -26,23 +26,46 @@
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
   # Split sizes
-  train_n <- round(N * split)
+  train_n <- round(N * split, 0)
   test_n <- N - train_n
   # Initialize list
   split_indxs <- list("train" = NULL, "test" = NULL)
   for (class in classes) {
     # Check if sampling possible
-    .stratified_check(class, class_indxs[[class]], class_props[[class]], train_n)
-    .stratified_check(class, class_indxs[[class]], class_props[[class]], test_n)
+    .stratified_check(class, class_indxs[[class]], class_props[[class]], train_n, "train-test splitting", "training set")
     # Get train indices
-    train_indxs <- sample(class_indxs[[class]], size = round(train_n * class_props[[class]], 0), replace = F)
+    train_indxs <- sample(class_indxs[[class]], size = floor(train_n * class_props[[class]]), replace = F)
     # Store indices for train set
     split_indxs$train <- c(split_indxs$train, train_indxs)
     # Remove indices to not add to test set
     class_indxs[[class]] <- class_indxs[[class]][!(class_indxs[[class]] %in% train_indxs)]
+    # Check if the test set will have the necessary proportions
+    .stratified_check(class, class_indxs[[class]], class_props[[class]], test_n, "train-test splitting", "test set")
     # Add indices for test set
-    test_indxs <- sample(class_indxs[[class]], size = round(test_n * class_props[[class]], 0), replace = F)
+    test_indxs <- sample(class_indxs[[class]], size = floor(test_n * class_props[[class]]), replace = F)
     split_indxs$test <- c(split_indxs$test, test_indxs)
+    # Remove indices to check if leftovers remain for special circumstances
+    class_indxs[[class]] <- class_indxs[[class]][!(class_indxs[[class]] %in% test_indxs)]
+  }
+  # Get number of leftover
+  leftover <- length(as.vector(unlist(class_indxs)))
+  if (leftover > 0) split_indxs <- .excess_split(class_indxs, split_indxs, classes)
+  return(split_indxs)
+}
+
+.excess_split <- function(class_indxs, split_indxs, classes) {
+  # Check relative proportion; train will be higher than test
+  test_prop <- length(split_indxs$test) / length(split_indxs$train)
+  train_prop <- 1 - test_prop
+
+  for (class in classes) {
+    if (length(class_indxs[class]) > 0) {
+      train_indxs <- sample(class_indxs[[class]], size = ceiling(length(class_indxs[[class]] * train_prop)))
+      split_indxs$train <- c(split_indxs$train, train_indxs)
+      class_indxs[[class]] <- class_indxs[[class]][!(class_indxs[[class]] %in% train_indxs)]
+      # Assign rest to test
+      split_indxs$test <- c(split_indxs$test, class_indxs[[class]])
+    }
   }
   return(split_indxs)
 }
@@ -63,7 +86,7 @@
     # Assign class indices to each fold
     for (class in classes) {
       # Check if sampling possible
-      .stratified_check(class, class_indxs[[class]], class_props[[class]], fold_n)
+      .stratified_check(class, class_indxs[[class]], class_props[[class]], fold_n, "cross validation")
       sampled_indxs <- sample(class_indxs[[class]], size = floor(fold_n * class_props[[class]]), replace = F)
       fold_indxs <- c(fold_indxs, sampled_indxs)
       # Remove already selected indices
@@ -73,13 +96,13 @@
     cv_indxs[[sprintf("fold%s", i)]] <- fold_indxs
   }
   # Deal with excess
-  if (N - length(as.numeric(unlist(cv_indxs))) > 0) cv_indxs <- .excess_stratified(cv_indxs, class_indxs, classes, n_folds)
+  if (N - length(as.numeric(unlist(cv_indxs))) > 0) cv_indxs <- .excess_cv(cv_indxs, class_indxs, classes, n_folds)
 
   return(cv_indxs)
 }
 
 # Function to deal with excess indices
-.excess_stratified <- function(cv_indxs, leftover, classes, n_folds) {
+.excess_cv <- function(cv_indxs, leftover, classes, n_folds) {
   for (class in classes) {
     # Get the remaining indices for class
     remain_idxs <- leftover[[class]]
@@ -100,9 +123,21 @@
 }
 
 # Helper function for .stratified_sampling to error check
-.stratified_check <- function(class, class_indx, class_prop, N) {
+.stratified_check <- function(class, class_indx, class_prop, N, strategy, id = NULL) {
   # Check if there are enough indices in class for proper assignment
-  if (round(N * class_prop, 0) > length(class_indx)) {
-    stop(sprintf("not enough samples of %s class for stratified sampling", class))
+  need <- floor(N * class_prop)
+  have <- length(class_indx)
+
+  if (strategy == "train-test splitting") {
+    msg <- sprintf("Need %s for %s but only have %s", need, id, have)
+  } else {
+    msg <- sprintf("Need %s for each fold but only have %s", need, have)
+  }
+
+  if (need > length(class_indx)) {
+    stop(sprintf(
+      "not enough samples of %s class for %s using stratified sampling; Need %s for %s but only have %s",
+      class, strategy
+    ))
   }
 }

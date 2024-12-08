@@ -21,8 +21,9 @@
   info_dict$configs$models <- models
   info_dict$configs$model_params <- model_params
   info_dict$configs$train_params <- train_params
-  info_dict$configs$missing_data <- missing_n
-  info_dict$configs$effective_sample_size <- nrow(preprocessed_data)
+  info_dict$missing_data_summary$unlabeled_data <- length(missing_n$unlabeled_data_indices)
+  info_dict$missing_data_summary$incomplete_labeled_data <- missing_n$n_incomplete_labeled_data
+  info_dict$missing_data_summary$complete_data <- sum(stats::complete.cases(preprocessed_data))
   info_dict$configs$impute_params <- impute_params
   info_dict$configs$parallel_configs <- parallel_configs
   info_dict$configs$save <- save

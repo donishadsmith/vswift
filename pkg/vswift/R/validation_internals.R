@@ -194,7 +194,7 @@
       model <- do.call(MASS::qda, mod_args)
     },
     "logistic" = {
-      model <- do.call(glm, mod_args)
+      model <- do.call(stats::glm, mod_args)
     },
     "svm" = {
       model <- do.call(e1071::svm, mod_args)
@@ -243,23 +243,23 @@
   for (i in names(df_list)) {
     switch(mod,
       "lda" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])$class
       },
       "qda" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])$class
       },
       "logistic" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
+        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]], type = "response")
         vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
       },
       "naivebayes" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]][, vars$predictors])
+        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]][, vars$predictors])
       },
       "ann" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "class")
+        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]], type = "class")
       },
       "decisiontree" = {
-        mat <- predict(train_mod, newdata = df_list[[i]])
+        mat <- stats::predict(train_mod, newdata = df_list[[i]])
         vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
       },
       "gbm" = {
@@ -268,7 +268,7 @@
         vec$pred[[i]] <- .handle_gbm_predict(train_mod, xgb_mat, obj, thresh, n_classes)
       },
       # Default for svm, knn, randomforest, and multinom
-      vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])
+      vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])
     )
     vec$pred[[i]] <- as.vector(vec$pred[[i]])
   }
@@ -283,7 +283,7 @@
 
   obj <- ifelse(obj %in% bin_prob, "binary_prob", obj)
 
-  pred <- predict(train_mod, newdata = xgb_mat)
+  pred <- stats::predict(train_mod, newdata = xgb_mat)
 
   # Special cases that need to be converted to labels
   switch(obj,
