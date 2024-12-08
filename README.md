@@ -570,6 +570,8 @@ print(results)
 *Note*: This example uses the [Internet Advertisements data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/51/internet+advertisements).
 
 ```R
+set.seed(NULL)
+
 # Set url for Internet Advertisements data from UCI Machine Learning Repository. This data has 3,278 instances and 1558 features.
 url <- "https://archive.ics.uci.edu/static/public/51/internet+advertisements.zip"
 
