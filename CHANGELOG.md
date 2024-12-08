@@ -14,6 +14,14 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.2.7] - 2024-12-08
+### 🐛 Fixes
+- Change warnings to errors when split, n_folds, and final_model is not used and fix related conditions.
+- Resolve issue where missing targets are not removed when the target variable is NULL.
+- Add missing data summary to classCV output and differentiate between unlabeled and labeled observations with missing data in the printed output.
+- Improve handling of leftovers during train-test splitting using stratified sampling.
+- Fix issue where not all cross-validation plots are produced and plots open on a separate device in RStudio.
+
 ## [0.2.6] - 2024-12-04
 ### 🐛 Fixes
 - Clean namespace
