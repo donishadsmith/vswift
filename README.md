@@ -5,8 +5,12 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![Platform Support](https://img.shields.io/badge/OS-Ubuntu%20|%20macOS%20|%20Windows-blue)
 
-This R package is a simple, user-friendly tool for train-test splitting and k-fold cross-validation for classification data using various classification algorithms from popular R packages. The 
-functions used from packages for each classification algorithms:
+This R package streamlines the process of train-test splitting and k-fold cross-validation for classification tasks,
+providing a unified interface to multiple classification algorithms from popular R packages through a single
+function call.
+
+## Supported Classification Algorithms
+The following classification algorithms are available through their respective R packages:
 
   - `lda()` from MASS package for Linear Discriminant Analysis
   - `qda()` from MASS package for Quadratic Discriminant Analysis
@@ -22,19 +26,25 @@ functions used from packages for each classification algorithms:
 
 ## Features
 
+### Data Handling
 - **Versatile Data Splitting**: Perform train-test splits or k-fold cross-validation on your classification data.
-- **Support for Popular Algorithms**: Choose from a wide range of classification algorithms such as Linear Discriminant Analysis, Quadratic Discriminant Analysis, Logistic Regression, Support Vector Machines, Naive Bayes, Artificial Neural Networks, K-Nearest Neighbors, Decision Trees, Random Forest, Multinomial Logistic Regression, and Gradient Boosting Machines. Additionally, multiple algorithms can be specified in a single function call.
 - **Stratified Sampling Option**: Ensure representative class distribution using stratified sampling based on class proportions.
-- **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set with categories not seen during model training. This is particularly helpful for specific algorithms that might throw errors in such cases.
-- **Model Saving Capabilities**: Save all models utilized for training and testing.
-- **Dataset Saving Options**: Preserve split datasets and folds.
-- **Model Creation**: Easily create and save final models.
-- **Missing Data Imputation**: Choose from two imputation methods - Bagged Tree Imputation and KNN Imputation. These two methods use the `step_bag_impute()` and `step_knn_impute()` functions from the recipes package, respectively. The recipes package is used to create an imputation model using the training data to predict missing data in the predictors for both  the training data and the validation data. This is done to prevent data leakage. Rows with missing target variables are removed and the target is removed from being a predictor during imputation.
-- **Model Creation**: Easily create and save final models.
-- **Performance Metrics**: View performance metrics in the console and generate/save plots for key metrics, including overall classification accuracy, as well as f-score, precision, and recall for each class in the target variable across train-test split and k-fold cross-validation.
-- **Automatic Numerical Encoding**: Classes within the target variable are automatically numerically encoded for algorithms such as Logistic Regression and Gradient Boosted Models that require numerical inputs for the target variable.
-- **Parallel Processing**: Specify the `n_cores` and `future.seed` parameters in `parallel_configs` to specify the number of cores for parallel processing to process multiple folds simultaneously. Only available when cross validation is specified.
-- **Minimal Code Requirement**: Access desired information quickly and efficiently with just a few lines of code.
+- **Handling Unseen Categorical Levels**: Automatically exclude observations from the validation/test set with categories not seen during model training.
+
+### Model Configuration
+- **Support for Popular Algorithms**: Choose from a wide range of classification algorithms. Multiple algorithms can be specified in a single function call.
+- **Model Saving Capabilities**: Save all models utilized for training and testing for both train-test splitting and cross-validation.
+- **Final Model Creation**: Easily create and save final models for future use.
+- **Dataset Saving Options**: Preserve split datasets and folds for reproducibility.
+
+### Data Preprocessing
+- **Missing Data Imputation**: Select either Bagged Tree Imputation or KNN Imputation, implemented using the recipes package. Imputation uses only feature data from the training set to prevent leakage.
+- **Automatic Numerical Encoding**: Target variable classes are automatically encoded numerically for algorithms requiring numerical inputs.
+
+### Performance & Efficiency
+- **Comprehensive Metrics**: Generate and save performance metrics including classification accuracy, F-score, precision, and recall for each class.
+- **Parallel Processing**: Utilize multi-core processing for cross-validation through the future package, configurable via `n_cores` and `future.seed` keys in the `parallel_configs` parameter.
+- **Minimal Code Requirement**: Access all functionality efficiently with just a few lines of code.
 
 ## Installation
 
@@ -565,7 +575,9 @@ print(results)
     ```
 </details>
 
-### Using multiple models with parallel processing 
+### Using Parallel Processing
+
+Parallel processing operates at the fold level, which means the system can simultaneously process multiple cross-validation folds (and the train-test split) even when training a single model.
 
 *Note*: This example uses the [Internet Advertisements data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/51/internet+advertisements).
 
@@ -650,7 +662,7 @@ results <- classCV(
   ),
   model_params = list(map_args = args),
   parallel_configs = list(
-    n_cores = 4,
+    n_cores = 6,
     future.seed = 100
   )
 )
@@ -671,7 +683,7 @@ In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 222.57    4.47  211.13
+ 224.31    4.81  211.69 
 
 [1] "Parallel Processing:"
 
@@ -680,7 +692,7 @@ In .create_dictionary(preprocessed_data = preprocessed_data,  :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   3.54   19.01  131.39 
+   3.77   29.28  122.87 
 ```
 
 ```R
