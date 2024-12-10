@@ -38,7 +38,7 @@ test_that("k-fold CV no stratified sampling", {
 test_that("k-fold CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
-    data = data, target = "Species", models = "ann", size = 10,
+    data = data, target = "Species", models = "ann", size = 5,
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 50)
   ))
 })
@@ -315,9 +315,30 @@ test_that("n_cores", {
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
+  expect_equal(result1$metrics$knn$split, result2$metrics$knn$split)
   expect_equal(result1$metrics$knn$cv, result2$metrics$knn$cv)
 })
 
+
+test_that("ensure parallel and nonparallel outputs are equal", {
+  data <- iris
+
+  expect_no_error(result1 <- classCV(
+    data = data, target = 5, models = "lda",
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    save = list(models = TRUE)
+  ))
+
+  expect_no_error(result2 <- classCV(
+    data = data, target = 5, models = "lda",
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    save = list(models = TRUE),
+    parallel_configs = list(n_cores = 2)
+  ))
+
+  expect_equal(result1$metrics$lda$split, result2$metrics$lda$split)
+  expect_equal(result1$metrics$lda$cv, result2$metrics$lda$cv)
+})
 
 test_that("objectives-single", {
   df <- iris
