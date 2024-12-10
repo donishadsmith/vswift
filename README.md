@@ -14,7 +14,7 @@ The following classification algorithms are available through their respective R
 
   - `lda()` from MASS package for Linear Discriminant Analysis
   - `qda()` from MASS package for Quadratic Discriminant Analysis
-  - `glm()` from base package with family = "binomial" for Logistic Regression
+  - `glm()` from base package with `family = "binomial"` for Logistic Regression
   - `svm()` from e1071 package for Support Vector Machines
   - `naive_bayes()` from naivebayes package for Naive Bayes
   - `nnet()` from nnet package for Artificial Neural Network
