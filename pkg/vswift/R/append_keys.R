@@ -59,9 +59,10 @@
       new_struct$map_args[[models]] <- list(...)
     }
 
-    gbm_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+    xgboost_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+    check_bool <- new_struct$map_args$xgboost$params$objective %in% xgboost_logistic
 
-    if (!"logistic" %in% models && !("gbm" %in% models && new_struct$map_args$gbm$params$objective %in% gbm_logistic)) {
+    if (!"logistic" %in% models && !("xgboost" %in% models && isTRUE(check_bool))) {
       # Assigning NULL to logistic_threshold directly will delete this key and leave an empty space
       new_struct <- c(new_struct[!names(new_struct) == "logistic_threshold"], list(logistic_threshold = NULL))
     }

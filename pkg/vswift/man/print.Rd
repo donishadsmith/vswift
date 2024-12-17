@@ -12,24 +12,25 @@
 
 \item{...}{Additional arguments to be passed.}
 
-\item{configs}{A logical value indicating whether to print model configeration information from the vswift object.
+\item{configs}{A logical value indicating whether to print model configuration information from the vswift object.
 Default = \code{TRUE}.}
 
 \item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will
-display the precision, recall, and f-score for each class, along with the means of each metric (if
+display the precision, recall, and f1 for each class, along with the means of each metric (if
 k-fold validation was used). Default = \code{TRUE}.}
 
 \item{models}{A character or vector of the model information to be printed. If \code{NULL}, all model
 information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
-\code{"qda"} (Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression),
-\code{"svm"} (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
-(Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+\code{"qda"} (Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression),
+\code{"svm"} (Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
+(Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
 (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
-(Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.}
+(unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
+Default = \code{NULL}.}
 }
 \description{
 Prints model configuration information and/or model evaluation metrics (classification accuracy,
-precision, recall, and f-score for each class) from a vswift object.
+precision, recall, and f1 for each class) from a vswift object.
 }
 \examples{
 # Load an example dataset

@@ -4,14 +4,14 @@
   if (x$configs$n_features > 20) {
     cat(sprintf("Target: %s\n\n", all.vars(x$configs$formula)[1]))
   } else {
-    str <- utils::capture.output(dput(deparse(x$configs$formula)))
+    str <- capture.output(dput(deparse(x$configs$formula)))
     str <- gsub("\\s+", " ", paste(str, collapse = ""))
     str <- gsub('\"', "", str)
     cat(sprintf("Formula: %s\n\n", str))
   }
   cat(sprintf("Number of Features: %s\n\n", x$configs$n_features))
   cat(sprintf("Classes: %s\n\n", paste(x$class_summary$classes, collapse = ", ")))
-  str <- utils::capture.output(dput(x$configs$train_params))
+  str <- capture.output(dput(x$configs$train_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Training Parameters: %s\n\n", str))
   info <- x$configs$model_params
@@ -25,7 +25,7 @@
     info <- c(list(map_args = NULL), info)
   }
 
-  str <- utils::capture.output(dput(info))
+  str <- capture.output(dput(info))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Model Parameters: %s\n\n", str))
 
@@ -38,12 +38,12 @@
   } else {
     cat(sprintf("Sample Size (Complete Data): %s\n\n", x$missing_data_summary$complete_data))
   }
-  str <- utils::capture.output(dput(x$configs$impute_params))
+  str <- capture.output(dput(x$configs$impute_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Imputation Parameters: %s\n\n", str))
 
   # Print information for parallel processing
-  str <- utils::capture.output(dput(x$configs$parallel_configs))
+  str <- capture.output(dput(x$configs$parallel_configs))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Parallel Configs: %s\n\n", str))
 }
@@ -55,11 +55,11 @@
     class_pos <- 1
     # Print name of the set metrics to be printed and add underscores
     cat("\n\n", set, "\n")
-    cat(rep("_", nchar(set)), "\n\n")
+    cat(rep("_", 21), "\n\n")
     # Print classification accuracy
     cat("Classification Accuracy: ", format(round(df[df$Set == set, "Classification Accuracy"], 2), nsmall = 2), "\n\n")
     # Print name of metrics
-    cat("Class:", rep("", max_str_len), "Precision:  Recall:  F-Score:\n\n")
+    cat("Class:", rep("", max_str_len - 1), "Precision:", "", "Recall:", strrep(" ", 5), "F1:\n\n")
     # For loop to obtain vector of values for each class
 
     for (class in x$class_summary$classes) {
@@ -79,7 +79,7 @@
       # Print metric corresponding to class
       class_met <- sapply(df[df$Set == set, class_col], function(x) format(round(x, 2), nsmall = 2))
       # Add spacing
-      padding <- nchar(paste("Class:", rep("", max_str_len), "Pre"))[1]
+      padding <- nchar(paste("Class:", "", "Pre"))
 
       if (class_met[1] == "NaN") {
         class_met <- c(class_met[1], rep("", 5), class_met[2], rep("", 5), class_met[3])
@@ -100,15 +100,18 @@
   # Get number of folds to select the correct rows for mean and stdev
   n_folds <- x$configs$train_params$n_folds
   # Print parameters name
-  cat("\n\n", "K-fold CV", "\n")
-  cat(rep("_", nchar("K-fold CV")), "\n\n")
+  cat("\n\n", "Cross-validation (CV)", "\n")
+  cat(rep("_", 21), "\n\n")
   mean_cv <- round(df[df$Fold == "Mean CV:", "Classification Accuracy"], 2)
   sd_cv <- round(df[df$Fold == "Standard Deviation CV:", "Classification Accuracy"], 2)
   acc_met <- c(format(mean_cv, nsmall = 2), format(sd_cv, nsmall = 2))
 
-  acc_met <- sprintf("%s (%s)", acc_met[1], acc_met[2])
+  acc_met <- sprintf("%s \U00B1 %s (SD)", acc_met[1], acc_met[2])
   cat("Average Classification Accuracy: ", acc_met, "\n\n")
-  cat("Class:", rep("", max_str_len), "Average Precision:  Average Recall:  Average F-score:\n\n")
+  cat(
+    "Class:", rep("", max_str_len), strrep(" ", 2), "Average Precision:", strrep(" ", 6),
+    "Average Recall:", strrep(" ", 10), "Average F1:\n\n"
+  )
 
   # Go through column names, split the colnames and class name to see if the column name is the metric for that class
   for (class in x$class_summary$classes) {
@@ -131,7 +134,7 @@
     class_met <- c()
 
     for (metric in mean_met) {
-      class_met <- c(class_met, sprintf("%s (%s)", metric, sd_met[sd_met_pos]))
+      class_met <- c(class_met, sprintf("%s \U00B1 %s (SD)", metric, sd_met[sd_met_pos]))
       sd_met_pos <- sd_met_pos + 1
     }
 
@@ -142,9 +145,8 @@
     }
 
     # Add spacing
-    padding <- nchar(paste("Class:", rep("", max_str_len), "Av"))[1]
+    padding <- nchar(paste("Class:", "", "Ave"))
     cat(class, rep("", (padding + str_diff[class_pos])), paste(class_met), "\n")
-
     # Update variable
     class_pos <- class_pos + 1
   }
@@ -155,8 +157,8 @@
   str_len <- sapply(classes, function(x) nchar(x))
   max_str_len <- max(str_len)
   cat("\n")
-  partial_output_names <- "Average Precision:  Average Recall:  Average F-score:\n\n"
-  cat(rep("-", nchar(paste("Class:", rep("", max_str_len), partial_output_names))[1] %/% 1.5), "\n")
+  partial_output_names <- "Average Precision:  Average Recall:  Average F1:\n\n"
+  cat(rep("-", nchar(paste("Class:", strrep(" ", max_str_len), partial_output_names)) %/% 1.5), "\n")
   cat("\n\n")
 
   if (return_str) {

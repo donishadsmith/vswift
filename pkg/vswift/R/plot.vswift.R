@@ -7,7 +7,7 @@
 #' @param x An vswift object.
 #' @param split A logical value indicating whether to plot metrics for train-test splitting results.
 #'              Default = \code{TRUE}.
-#' @param cv A logical value indicating whether to plot metrics for k-fold cross-validation results.
+#' @param cv A logical value indicating whether to plot metrics for cross-validation results.
 #'           Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
 #'           Default = \code{TRUE}.
 #' @param metrics A vector consisting of which metrics to plot. Available metrics includes, \code{"accuracy"},
@@ -21,12 +21,13 @@
 #'             will be saved to the current working directory. Default = \code{NULL}.
 #' @param models A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
 #'                   be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
-#'                   (Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression), \code{"svm"}
-#'                   (Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
-#'                   (Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
-#'                   (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.
-#' @param ... Additional arguments that can be passed to the \code{png()} function.
+#'                   (Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression), \code{"svm"}
+#'                   (Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
+#'                   (Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinomial"}
+#'                   (unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
+#'                   Default = \code{NULL}.
+#' @param ... Additional arguments that can be passed to the \code{png} function.
 #'
 #' @return Plots representing evaluation metrics.
 #' @examples
@@ -48,6 +49,9 @@
 #'
 #' plot(result, class_names = "setosa", metrics = "f1")
 #'
+#' @importFrom grDevices dev.off dev.new graphics.off png
+#' @importFrom  graphics axis abline legend
+#'
 #' @author Donisha Smith
 #' @export
 
@@ -57,8 +61,8 @@
     # Create list
     model_list <- list(
       "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-      "svm" = "Support Vector Machines", "ann" = "Neural Network", "decisiontree" = "Decision Tree",
-      "randomforest" = "Random Forest", "gbm" = "Gradient Boosted Machine",
+      "svm" = "Support Vector Machine", "nnet" = "Neural Network", "decisiontree" = "Decision Tree",
+      "randomforest" = "Random Forest", "xgboost" = "Extreme Gradient Boosting",
       "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
     )
@@ -83,7 +87,7 @@
       # Make lowercase
       models <- sapply(models, function(x) tolower(x))
       models <- intersect(models, x$configs$models)
-      if (length(models) == 0) stop("no models specified in models")
+      if (length(models) == 0) stop("no valid models specified in `models`")
 
       # Warning when invalid models specified
       invalid_models <- models[which(!models %in% models)]

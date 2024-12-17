@@ -4,10 +4,10 @@ library(testthat)
 test_that("testing plot function", {
   data <- iris
 
-  args <- list("knn" = list(ks = 3), "ann" = list(size = 10))
+  args <- list("knn" = list(ks = 3), "nnet" = list(size = 10))
 
   expect_no_error(result <- classCV(
-    data = data, target = 5, models = c("knn", "randomforest", "ann", "svm"),
+    data = data, target = 5, models = c("knn", "randomforest", "nnet", "svm"),
     train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T),
     model_params = list(map_args = args), save = list(models = T, data = T)
   ))

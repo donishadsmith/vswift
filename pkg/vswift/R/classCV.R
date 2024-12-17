@@ -1,4 +1,4 @@
-#' Perform Train-Test Split and/or K-Fold Cross-Validation with optional stratified sampling for classification data
+#' Perform Train-Test Split and/or Cross-validation with optional stratified sampling for classification data
 #'
 #' @name classCV
 #' @description performs a train-test split and/or k-fold cross validation on classification data using various
@@ -15,14 +15,15 @@
 #'                   Default = \code{NULL}.
 #' @param models A character character or character vector indicating the classification algorithm to use. Available
 #'               options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"} (Quadratic Discriminant Analysis),
-#'               \code{"logistic"} (Logistic Regression), \code{"svm"} (Support Vector Machines),
-#'               \code{"naivebayes"} (Naive Bayes), \code{"ann"} (Artificial Neural Network), \code{"knn"}
+#'               \code{"logistic"} (unregularized Logistic Regression), \code{"svm"} (Support Vector Machine),
+#'               \code{"naivebayes"} (Naive Bayes), \code{"nnet"} (Neural Network), \code{"knn"}
 #'               (K-Nearest Neighbors), \code{"decisiontree"} (Decision Tree), \code{"randomforest"} (Random Forest),
-#'               \code{"multinom"} (Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine).
+#'               \code{"multinom"} (unregularized Multinomial Logistic Regression), \code{"xgboost"}
+#'               (Extreme Gradient Boosting).
 #'                \itemize{
 #'                \item For \code{"knn"}, the optimal k will be used unless specified with \code{ks}.
-#'                \item For \code{"ann"}, \code{size} must be specified as an additional argument.
-#'                \item For \code{"gbm"}, the following objective functions from xgboost are supported:
+#'                \item For \code{"nnet"}, \code{size} must be specified as an additional argument.
+#'                \item For \code{"xgboost"}, the following objective functions from xgboost are supported:
 #'                \code{"reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge", "multi:softprob"}.
 #'                }
 #' @param model_params A list that can contain the following parameters:
@@ -36,7 +37,7 @@
 #'                     decision boundary for logistic regression. This parameter determines if an observation is
 #'                     assigned to the class coded as "1" if \code{P(Class = 1 | Features) >= logistic_threshold} or to
 #'                     the class coded as "0" if \code{P(Class = 1 | Features) < logistic_threshold}. This threshold
-#'                     is used when \code{"logistic"} is in \code{models} or when \code{"gbm"} is in \code{models}
+#'                     is used when \code{"logistic"} is in \code{models} or when \code{"xgboost"} is in \code{models}
 #'                     and the following objective functions are used: \code{"reg:logistic", "binary:logistic",
 #'                     "binary:logitraw"}. Default = \code{0.5}.
 #'                     \item \code{"final_model"}: A logical value to use all complete observations in the input data
@@ -126,7 +127,7 @@
 #'    \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
 #'                               \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity}, \code{from},
 #'                               \code{to}, \code{cut}
-#'    \item \code{"ann"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
+#'    \item \code{"nnet"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
 #'                        \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}, \code{skip}
 #'    \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
 #'    \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
@@ -134,27 +135,27 @@
 #'                                 \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest},
 #'                                 \code{norm.votes}
 #'    \item \code{"multinom"}: \code{weights}, \code{Hess}
-#'    \item \code{"gbm"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
+#'    \item \code{"xgboost"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
 #'                        \code{early_stopping_rounds}, \code{obj}, \code{save_period}, \code{save_name}
 #'   }
 #'
 #' @section Package Dependencies:
 #'   Each option of \code{models} uses the following function from the specified packages:
 #'   \itemize{
-#'    \item \code{"lda"}: \code{lda()} from MASS package
-#'    \item \code{"qda"}: \code{qda()} from MASS package
-#'    \item \code{"logistic"}: \code{glm()} from base package with \code{family = "binomial"}
+#'    \item \code{"lda"}: \code{lda} from MASS package
+#'    \item \code{"qda"}: \code{qda} from MASS package
+#'    \item \code{"logistic"}: \code{glm} from base package with \code{family = "binomial"}
 #'    \item \code{"svm"}: \code{svm()} from e1071 package
-#'    \item \code{"naivebayes"}: \code{naive_bayes()} from naivebayes package
-#'    \item \code{"ann"}: \code{nnet()} from nnet package
-#'    \item \code{"knn"}: \code{train.kknn()} from kknn package
-#'    \item \code{"decisiontree"}: \code{rpart()} from rpart package
-#'    \item \code{"randomforest"}: \code{randomForest()} from randomForest package
-#'    \item \code{"multinom"}: \code{multinom()} from nnet package
-#'    \item \code{"gbm"}: \code{xgb.train()} from xgboost package
+#'    \item \code{"naivebayes"}: \code{naive_bayes} from naivebayes package
+#'    \item \code{"nnet"}: \code{nnet} from nnet package
+#'    \item \code{"knn"}: \code{train.kknn} from kknn package
+#'    \item \code{"decisiontree"}: \code{rpart} from rpart package
+#'    \item \code{"randomforest"}: \code{randomForest} from randomForest package
+#'    \item \code{"multinom"}: \code{multinom} from nnet package
+#'    \item \code{"xgboost"}: \code{xgb.train} from xgboost package
 #'   }
 #'
-#' @return A list containing the results of train-test splitting and/or k-fold cross-validation (if specified),
+#' @return A list containing the results of train-test splitting and/or cross-validation (if specified),
 #'         performance metrics, information on the class distribution in the training, test sets, folds
 #'         (if applicable), saved models (if specified), saved datasets (if specified), a final model
 #'         (if specified).
@@ -176,12 +177,12 @@
 #' # Print parameters and metrics
 #' result
 #'
-#' # Perform 5-fold cross-validation using Gradient Boosted Model
+#' # Perform 5-fold cross-validation using Extreme Gradient Boosting
 #' # w/ additional parameters: params & nrounds
 #' result <- classCV(
 #'   data = iris,
 #'   formula = Species ~ .,
-#'   models = "gbm",
+#'   models = "xgboost",
 #'   train_params = list(n_folds = 5, random_seed = 50),
 #'   params = list(
 #'     objective = "multi:softprob",
@@ -197,12 +198,12 @@
 #'
 #'
 #' # Perform 5-fold cross-validation a train-test split w/multiple models
-#' args <- list("knn" = list(ks = 5), "ann" = list(size = 20))
+#' args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
 #' result <- classCV(
 #'   data = iris,
 #'   target = 5,
 #'   predictors = c(1:3),
-#'   models = c("decisiontree", "knn", "ann", "svm"),
+#'   models = c("decisiontree", "knn", "nnet", "svm"),
 #'   model_params = list(map_args = args),
 #'   train_params = list(
 #'     n_folds = 5,
@@ -216,6 +217,7 @@
 #'
 #' @author Donisha Smith
 #'
+#' @importFrom stats as.formula complete.cases glm predict sd
 #' @export
 classCV <- function(data,
                     formula = NULL,
@@ -278,7 +280,7 @@ classCV <- function(data,
   )
 
   # Create class dictionary
-  if (any(models %in% c("logistic", "gbm"))) {
+  if (any(models %in% c("logistic", "xgboost"))) {
     final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target])
   }
 
