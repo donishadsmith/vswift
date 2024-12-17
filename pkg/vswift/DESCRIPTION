@@ -1,12 +1,12 @@
 Package: vswift
 Title: Classification Model Evaluation
-Version: 0.2.7
-Date: 2024-12-08
+Version: 0.3.0
+Date: 2024-12-18
 Authors@R: person(given = "Donisha",
              family = "Smith",
              role = c("aut", "cre"),
              email = "donishasmith@outlook.com")
-Description: The vswift package streamlines model evaluation by providing tools to perform train-test splitting and k-fold cross-validation. It supports a wide range of popular classification algorithms, including logistic regression, linear discriminant analysis, quadratic discriminant analysis, support vector machines, k-nearest neighbors, artificial neural networks, decision trees, random forests, multinomial logistic regression, and gradient boosting machine.
+Description: The vswift package streamlines model evaluation by providing tools to perform train-test splitting and cross-validation. It supports a wide range of popular classification algorithms, including logistic regression, linear discriminant analysis, quadratic discriminant analysis, support vector machines, k-nearest neighbors, neural networks, decision trees, random forests, multinomial logistic regression, and extreme gradient boosting.
 License: MIT + file LICENSE
 URL: https://github.com/donishadsmith/vswift
 BugReports: https://github.com/donishadsmith/vswift/issues

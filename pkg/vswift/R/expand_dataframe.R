@@ -5,7 +5,7 @@
   # Create base column names
   col_names <- c(
     "Classification Accuracy",
-    sapply(classes, function(x) paste(paste("Class:", x), c("Precision", "Recall", "F-Score")))
+    sapply(classes, function(x) paste(paste("Class:", x), c("Precision", "Recall", "F1")))
   )
 
   # Create split df

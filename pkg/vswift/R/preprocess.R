@@ -5,8 +5,8 @@
   # List of valid inputs
   valid_inputs <- list(
     models = c(
-      "lda", "qda", "logistic", "svm", "naivebayes", "ann", "knn", "decisiontree",
-      "randomforest", "multinom", "gbm"
+      "lda", "qda", "logistic", "svm", "naivebayes", "nnet", "knn", "decisiontree",
+      "randomforest", "multinom", "xgboost"
     ),
     imputes = c("knn_impute", "bag_impute")
   )
@@ -34,13 +34,16 @@
   }
 
   # Check models
+  error_msg <- "invalid model specified in `%s`, the following is a list of valid models: '%s'"
+
   if (!is.null(models) & !all(models %in% valid_inputs$models)) {
-    stop(
-      sprintf(
-        "invalid model specified in `models`, the following is a list of valid models: '%s'",
-        paste(valid_inputs$models, collapse = "', '")
-      )
-    )
+    stop(sprintf(error_msg, "models", paste(valid_inputs$models, collapse = "', '")))
+  }
+
+  # Check map_args
+  map_args_models <- names(model_params$map_args)
+  if (!is.null(map_args_models) & !all(map_args_models %in% valid_inputs$models)) {
+    stop(sprintf(error_msg, "model_params$map_args", paste(valid_inputs$models, collapse = "', '")))
   }
 
   # Check vars
@@ -52,14 +55,14 @@
   # Check logistic threshold
   obj <- c("reg:logistic", "binary:logistic", "binary:logitraw")
 
-  if ("logistic" %in% models || "gbm" %in% models && model_params$map_args$gbm$params$objective %in% obj) {
+  if ("logistic" %in% models || "xgboost" %in% models && model_params$map_args$xgboost$params$objective %in% obj) {
     # Check if binary and threshold valid
     if (!is.null(formula)) target <- .get_var_names(formula = formula, data = data)$target
     binary_target <- length(levels(factor(data[, target], exclude = NA))) == 2
     valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
 
     if (!binary_target) {
-      stop("'logistic' and 'gbm' with a logistic regression objective requires a binary target")
+      stop("'logistic' and 'xgboost' with a logistic regression objective requires a binary target")
     } else if (!valid_threshold) {
       stop("`threshold` must a numeric value from 0 to 1")
     }
@@ -164,7 +167,7 @@
         "prior", "laplace", "usekernel", "bw", "kernal", "adjust", "weights",
         "give.Rkern", "subdensity", "from", "to", "cut"
       ),
-      "ann" = c(
+      "nnet" = c(
         "size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol", "Hess",
         "skip"
       ),
@@ -175,7 +178,7 @@
         "nPerm", "proximity", "keep.forest", "norm.votes"
       ),
       "multinom" = c("weights", "Hess"),
-      "gbm" = c(
+      "xgboost" = c(
         "params", "nrounds", "print_every_n", "feval", "verbose",
         "early_stopping_rounds", "obj", "save_period", "save_name"
       )
@@ -269,10 +272,10 @@
 
   # Drop missing labeled data if no imputation requested
   if (missing_info$n_incomplete_labeled_data > 0 && !imputation_requested) {
-    data <- data[stats::complete.cases(data), ]
+    data <- data[complete.cases(data), ]
   }
 
-  if (nrow(data) == sum(stats::complete.cases(data)) && imputation_requested) {
+  if (nrow(data) == sum(complete.cases(data)) && imputation_requested) {
     warning("remaining labeled observations has no missing data; imputation will not be performed")
     perform_imputation <- FALSE
   }
@@ -302,7 +305,7 @@
   return(list("data" = preprocessed_data, "col_levels" = if (length(col_levels) > 0) col_levels else NULL))
 }
 
-# Function to retrieve columns that will be standardized features
+# Function to retrieve columns that will be standardized
 .get_cols <- function(df, standardize, target) {
   # Get predictor names
   predictors <- colnames(df)[colnames(df) != target]
@@ -379,7 +382,7 @@
       if (any(is.numeric(train[, col]), is.integer(train[, col]))) {
         # Get mean and sample sd of the train data
         train_col_mean <- mean(as.numeric(train[, col]), na.rm = TRUE)
-        train_col_sd <- stats::sd(as.numeric(train[, col]), na.rm = TRUE)
+        train_col_sd <- sd(as.numeric(train[, col]), na.rm = TRUE)
         # Scale train and test data using the train mean and sample sd
         scaled_train_col <- (train[, col] - train_col_mean) / train_col_sd
         train[, col] <- as.vector(scaled_train_col)
@@ -394,15 +397,17 @@
   return(list("train" = train, "test" = test))
 }
 
-# Function to standardize features for preprocessed data
+# Function to standardize features for preprocessed data/data used for final model
 .standardize <- function(preprocessed_data, standardize = TRUE, target) {
   col_names <- .get_cols(preprocessed_data, standardize, target)
 
   if (length(col_names) > 0) {
-    preprocessed_data[, col_names] <- sapply(
-      preprocessed_data[, col_names],
-      function(x) scale(x, center = TRUE, scale = TRUE)
-    )
+    for (col_name in col_names) {
+      if (any(is.numeric(preprocessed_data[, col_name]), is.integer(preprocessed_data[, col_name]))) {
+        # using scale produces a matrix/array instead of numeric
+        preprocessed_data[, col_name] <- as.vector(scale(preprocessed_data[, col_name], center = TRUE, scale = TRUE))
+      }
+    }
   } else {
     warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
     being of class 'numeric'")

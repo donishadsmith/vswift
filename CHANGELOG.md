@@ -14,6 +14,18 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.3.0] - 2024-12-18
+### ♻ Changed
+- Renamed models for clarity: "ann" -> "nnet" and "gbm" -> "xgboost".
+- Changed "F-score" to "F1".
+- Enhanced output formatting: the standard deviation values now clearly labeled next to mean values in cross-validation results.
+- Improved warning message clarity by: 1) adding distinct warnings for invalid model names in `models` parameter and `model_params$map_args` and 2) adding warning about standardizing prior to imputation when `train_params$standardize` is `FALSE`.
+- Added legend to plots that distinguishes between mean and standard deviation lines in cross-validation visualizations.
+
+### 🐛 Fixes
+- Error with standardizing prior to creating the final model due to some columns not being of class numeric. This issue did not
+affect the training and test data only the data used to create the final model.
+
 ## [0.2.7] - 2024-12-08
 ### 🐛 Fixes
 - Change warnings to errors when split, n_folds, and final_model is not used and fix related conditions.

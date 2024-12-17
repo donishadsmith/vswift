@@ -94,7 +94,7 @@
   }
 
   # Convert to numerical
-  if (model %in% c("logistic", "gbm")) {
+  if (model %in% c("logistic", "xgboost")) {
     train[, vars$target] <- .convert_keys(train[, vars$target], keys, "encode")
   }
   # Train model
@@ -106,8 +106,8 @@
   # Remove observations where certain categorical levels in the predictors were not seen during training
   if (remove_obs && !is.null(col_levels)) test <- .remove_obs(train, test, col_levels, id)$test
 
-  thresh <- if (model %in% c("logistic", "gbm")) model_params$logistic_threshold else NULL
-  obj <- if (model == "gbm") model_params$map_args$gbm$params$objective else NULL
+  thresh <- if (model %in% c("logistic", "xgboost")) model_params$logistic_threshold else NULL
+  obj <- if (model == "xgboost") model_params$map_args$xgboost$params$objective else NULL
   n_classes <- length(classes)
 
   # Get predictions for train and test set
@@ -121,7 +121,7 @@
   gc()
 
   # Convert labels back
-  if (model %in% c("logistic", "gbm")) {
+  if (model %in% c("logistic", "xgboost")) {
     for (name in names(vec$ground)) {
       if (name == "train") {
         vec$ground[[name]] <- .convert_keys(vec$ground[[name]], keys, "decode")
@@ -173,7 +173,7 @@
   # Set seed
   if (!is.null(random_seed)) set.seed(random_seed)
 
-  if (model == "gbm") {
+  if (model == "xgboost") {
     mod_args <- list()
   } else {
     mod_args <- list(formula = formula, data = data)
@@ -184,7 +184,7 @@
   if (!is.null(add_args)) mod_args <- c(mod_args, add_args)
 
   # Prevent default internal scaling for models with the scale parameter
-  if (!model %in% c("decisiontree", "gbm", "logistic")) mod_args$scale <- FALSE
+  if (!model %in% c("decisiontree", "xgboost", "logistic")) mod_args$scale <- FALSE
 
   switch(model,
     "lda" = {
@@ -194,7 +194,7 @@
       model <- do.call(MASS::qda, mod_args)
     },
     "logistic" = {
-      model <- do.call(stats::glm, mod_args)
+      model <- do.call(glm, mod_args)
     },
     "svm" = {
       model <- do.call(e1071::svm, mod_args)
@@ -202,7 +202,7 @@
     "naivebayes" = {
       model <- do.call(naivebayes::naive_bayes, mod_args)
     },
-    "ann" = {
+    "nnet" = {
       model <- do.call(nnet::nnet.formula, mod_args)
     },
     "knn" = {
@@ -217,7 +217,7 @@
     "multinom" = {
       model <- do.call(nnet::multinom, mod_args)
     },
-    "gbm" = {
+    "xgboost" = {
       mat_data <- data.matrix(data)
       mod_args$data <- xgboost::xgb.DMatrix(data = mat_data[, vars$predictors], label = mat_data[, vars$target])
       model <- do.call(xgboost::xgb.train, mod_args)
@@ -243,32 +243,32 @@
   for (i in names(df_list)) {
     switch(mod,
       "lda" = {
-        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])$class
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
       },
       "qda" = {
-        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])$class
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
       },
       "logistic" = {
-        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]], type = "response")
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
         vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
       },
       "naivebayes" = {
-        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]][, vars$predictors])
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]][, vars$predictors])
       },
-      "ann" = {
-        vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]], type = "class")
+      "nnet" = {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "class")
       },
       "decisiontree" = {
-        mat <- stats::predict(train_mod, newdata = df_list[[i]])
+        mat <- predict(train_mod, newdata = df_list[[i]])
         vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
       },
-      "gbm" = {
+      "xgboost" = {
         mat <- data.matrix(df_list[[i]])
         xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
-        vec$pred[[i]] <- .handle_gbm_predict(train_mod, xgb_mat, obj, thresh, n_classes)
+        vec$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes)
       },
       # Default for svm, knn, randomforest, and multinom
-      vec$pred[[i]] <- stats::predict(train_mod, newdata = df_list[[i]])
+      vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])
     )
     vec$pred[[i]] <- as.vector(vec$pred[[i]])
   }
@@ -276,14 +276,14 @@
   return(vec)
 }
 
-# Handle different gbm objective functions
-.handle_gbm_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes) {
+# Handle different xgboost objective functions
+.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes) {
   # produces probability
   bin_prob <- c("reg:logistic", "binary:logistic")
 
   obj <- ifelse(obj %in% bin_prob, "binary_prob", obj)
 
-  pred <- stats::predict(train_mod, newdata = xgb_mat)
+  pred <- predict(train_mod, newdata = xgb_mat)
 
   # Special cases that need to be converted to labels
   switch(obj,
@@ -345,11 +345,11 @@
       # Add information to dataframes
       met_df[met_df[, col] == rowid, sprintf("Class: %s Precision", class)] <- met_list$precision
       met_df[met_df[, col] == rowid, sprintf("Class: %s Recall", class)] <- met_list$recall
-      met_df[met_df[, col] == rowid, sprintf("Class: %s F-Score", class)] <- met_list$f1
+      met_df[met_df[, col] == rowid, sprintf("Class: %s F1", class)] <- met_list$f1
       # Warning is a metric is NA
       met_vals <- c(
         "classification accuracy" = class_acc, "precision" = met_list$precision,
-        "recall" = met_list$recall, "f-score" = met_list$f1
+        "recall" = met_list$recall, "f1" = met_list$f1
       )
       if (any(is.na(met_vals))) {
         warning(sprintf(
@@ -382,8 +382,8 @@
     # Create vector containing corresponding column name values for each fold
     num_vector <- cv_df[1:indx, colname]
     cv_df[cv_df$Fold == desc[1], colname] <- mean(num_vector, na.rm = TRUE)
-    cv_df[cv_df$Fold == desc[2], colname] <- stats::sd(num_vector, na.rm = TRUE)
-    cv_df[cv_df$Fold == desc[3], colname] <- stats::sd(num_vector, na.rm = TRUE) / sqrt(n_folds)
+    cv_df[cv_df$Fold == desc[2], colname] <- sd(num_vector, na.rm = TRUE)
+    cv_df[cv_df$Fold == desc[3], colname] <- sd(num_vector, na.rm = TRUE) / sqrt(n_folds)
   }
   return(cv_df)
 }

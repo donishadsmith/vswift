@@ -20,12 +20,12 @@
 \arguments{
 \item{x}{An vswift object.}
 
-\item{...}{Additional arguments that can be passed to the \code{png()} function.}
+\item{...}{Additional arguments that can be passed to the \code{png} function.}
 
 \item{split}{A logical value indicating whether to plot metrics for train-test splitting results.
 Default = \code{TRUE}.}
 
-\item{cv}{A logical value indicating whether to plot metrics for k-fold cross-validation results.
+\item{cv}{A logical value indicating whether to plot metrics for cross-validation results.
 Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
 Default = \code{TRUE}.}
 
@@ -44,11 +44,12 @@ will be saved to the current working directory. Default = \code{NULL}.}
 
 \item{models}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
 be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
-(Quadratic Discriminant Analysis), \code{"logistic"} (Logistic Regression), \code{"svm"}
-(Support Vector Machines), \code{"naivebayes"} (Naive Bayes), \code{"ann"}
-(Artificial Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
-(Multinomial Logistic Regression), \code{"gbm"} (Gradient Boosting Machine). Default = \code{NULL}.}
+(Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression), \code{"svm"}
+(Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
+(Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
+(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinomial"}
+(unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
+Default = \code{NULL}.}
 }
 \value{
 Plots representing evaluation metrics.

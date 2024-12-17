@@ -38,7 +38,7 @@ test_that("k-fold CV no stratified sampling", {
 test_that("k-fold CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
-    data = data, target = "Species", models = "ann", size = 5,
+    data = data, target = "Species", models = "nnet", size = 5,
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 50)
   ))
 })
@@ -241,7 +241,7 @@ test_that("test random seed", {
 test_that("running multiple models", {
   data <- iris
 
-  args <- list("knn" = list(ks = 3), "gbm" = list(params = list(
+  args <- list("knn" = list(ks = 3), "xgboost" = list(params = list(
     booster = "gbtree", objective = "multi:softmax",
     lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
     max_depth = 6
@@ -250,7 +250,7 @@ test_that("running multiple models", {
 
 
   expect_warning(result <- classCV(
-    data = data, target = 5, models = c("knn", "svm", "gbm", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(
       split = 0.8, n_folds = 3, stratified = TRUE,
       random_seed = 50, remove_obs = TRUE
@@ -264,7 +264,7 @@ test_that("running multiple models", {
 
   args <- list(
     "knn" = list(ks = 3),
-    "gbm" = list(params = list(
+    "xgboost" = list(params = list(
       booster = "gbtree", objective = "multi:softmax",
       lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
       max_depth = 6
@@ -272,7 +272,7 @@ test_that("running multiple models", {
     "logistic" = list(maxit = 10000)
   )
 
-  models <- c("knn", "svm", "logistic", "gbm", "randomforest")
+  models <- c("knn", "svm", "logistic", "xgboost", "randomforest")
   expect_warning(expect_warning(result <- classCV(
     data = data, target = 5, models = models,
     train_params = list(
@@ -295,21 +295,21 @@ test_that("running multiple models", {
 test_that("n_cores", {
   data <- iris
 
-  args <- list("knn" = list(ks = 3), "gbm" = list(params = list(
+  args <- list("knn" = list(ks = 3), "xgboost" = list(params = list(
     booster = "gbtree", objective = "multi:softmax",
     lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
     max_depth = 6
   ), nrounds = 10))
 
   expect_warning(result1 <- classCV(
-    data = data, target = 5, models = c("knn", "svm", "gbm", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
   expect_warning(result2 <- classCV(
-    data = data, target = 5, models = c("knn", "svm", "gbm", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
@@ -350,7 +350,7 @@ test_that("objectives-single", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = "gbm",
+      models = "xgboost",
       train_params = list(n_folds = 5, random_seed = 50),
       params = list(
         objective = obj,
@@ -360,7 +360,7 @@ test_that("objectives-single", {
       nrounds = 10,
       save = list(models = T)
     )
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 
   multi_obj <- c("multi:softprob", "multi:softmax")
@@ -369,7 +369,7 @@ test_that("objectives-single", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = "gbm",
+      models = "xgboost",
       train_params = list(n_folds = 5, random_seed = 50),
       params = list(
         objective = obj,
@@ -380,7 +380,7 @@ test_that("objectives-single", {
       nrounds = 10,
       save = list(models = T)
     )
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 })
 
@@ -392,7 +392,7 @@ test_that("objectives-multi", {
   multi_obj <- c("multi:softprob", "multi:softmax")
 
   for (obj in bin_obj) {
-    args <- list("knn" = list(ks = 2), "gbm" = list(params = list(
+    args <- list("knn" = list(ks = 2), "xgboost" = list(params = list(
       booster = "gbtree", objective = obj,
       lambda = 0.0003, alpha = 0.0003, eta = 0.8,
       max_depth = 6
@@ -401,16 +401,16 @@ test_that("objectives-multi", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = c("gbm", "knn"),
+      models = c("xgboost", "knn"),
       train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 
   for (obj in multi_obj) {
-    args <- list("knn" = list(ks = 2), "gbm" = list(params = list(
+    args <- list("knn" = list(ks = 2), "xgboost" = list(params = list(
       booster = "gbtree", objective = obj,
       lambda = 0.0003, alpha = 0.0003, num_class = 2,
       eta = 0.8, max_depth = 6
@@ -419,12 +419,12 @@ test_that("objectives-multi", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = c("gbm", "knn"),
+      models = c("xgboost", "knn"),
       train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 })
 
@@ -435,7 +435,7 @@ test_that("binary target", {
   bin_obj <- c("reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge")
 
   for (obj in bin_obj) {
-    args <- list("gbm" = list(params = list(
+    args <- list("xgboost" = list(params = list(
       booster = "gbtree", objective = obj,
       lambda = 0.0003, alpha = 0.0003, eta = 0.8,
       max_depth = 6
@@ -444,22 +444,22 @@ test_that("binary target", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = c("logistic", "gbm"),
+      models = c("logistic", "xgboost"),
       train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
 
 
     result <- classCV(
       data = df,
       target = "Species",
-      models = c("gbm", "logistic"),
+      models = c("xgboost", "logistic"),
       train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$gbm$cv)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 })
