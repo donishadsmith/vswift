@@ -154,11 +154,17 @@
   }
 
   # List of valid arguments for each model type
+  glmnet_args <- c(
+    "alpha", "nlambda", "lambda.min.ratio", "lambda", "dfmax", "pfmax", "maxit", "thresh",
+    "relax", "penalty.factor", "maxp"
+  )
+
   valid_args <- list(
     "model" = list(
       "lda" = c("prior", "method", "nu", "tol"),
       "qda" = c("prior", "method", "nu"),
       "logistic" = c("weights", "singular.ok", "maxit"),
+      "regularized_logistic" = c(glmnet_args, "type.logistic", "path"),
       "svm" = c(
         "kernel", "degree", "gamma", "cost", "nu", "class.weights", "shrinking",
         "epsilon", "tolerance", "cachesize"

@@ -276,6 +276,44 @@
   return(vec)
 }
 
+# Helper function to perform regularized logistic or multinomial regression
+.regularized <- function(model, data, vars = NULL, add_args = NULL, random_seed = NULL, rule = "1se") {
+  # Set seed
+  if (!is.null(random_seed)) set.seed(random_seed)
+
+  mod_args <- list()
+
+  # Create x and y matrices
+  mod_args$x <- as.matrix(data[, vars$predictors])
+  mod_args$y <- as.matrix(data[, vars$target])
+
+  # Family
+  mod_args$family <- ifelse(model == "regularized_logistic", "binomial", "multinomial")
+
+  # Prevent default scaling
+  mod_args$standardize <- FALSE
+
+  # Classification measure
+  mod_args$type.measure <- "class"
+
+  # Additional arguments
+  if (model == "regularized_multinomial") mod_args$type.multinomial <- "grouped"
+
+  if (!is.null(add_args)) {
+    cross_args <- c(mod_args, add_args)
+    mod_args <- c(mod_args, add_args[!add_args %in% c("nfolds", "lambda")])
+  }
+
+  # Perform internal cross validation on data; default n_folds is 10
+  cvfit <- do.call(glmnet::cv.glmnet, cross_args)
+
+  # Select optimal lambda based on rule
+  mod_args$lambda <- ifelse(rule == "1se", cvfit$lambda.1se, cvfit$lambda.min)
+
+  # Get model
+  model <- do.call(glmnet::glmnet, mod_args)
+}
+
 # Handle different xgboost objective functions
 .handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes) {
   # produces probability
