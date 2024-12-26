@@ -3,67 +3,72 @@
 \name{plot}
 \alias{plot}
 \alias{plot.vswift}
-\title{Plot model evaluation metrics}
+\title{Plot Model Evaluation Metrics}
 \usage{
 \method{plot}{vswift}(
   x,
-  ...,
+  metrics = c("accuracy", "precision", "recall", "f1"),
+  models = NULL,
   split = TRUE,
   cv = TRUE,
-  metrics = c("accuracy", "precision", "recall", "f1"),
   class_names = NULL,
-  save_plots = FALSE,
   path = NULL,
-  models = NULL
+  ...
 )
 }
 \arguments{
-\item{x}{An vswift object.}
+\item{x}{A \code{vswift} object.}
 
-\item{...}{Additional arguments that can be passed to the \code{png} function.}
+\item{metrics}{A character vector indicating which metrics to plot. Supported options are
+\code{"accuracy"}, \code{"precision"}, \code{"recall"}, and \code{"f1"}.
+Default is \code{c("accuracy", "precision", "recall", "f1")}.}
 
-\item{split}{A logical value indicating whether to plot metrics for train-test splitting results.
-Default = \code{TRUE}.}
+\item{models}{A character string or a character vector specifying the classification algorithm(s) evaluation metrics
+to plot. If \code{NULL}, all models will be plotted.
+The following options are available:
+\itemize{
+  \item \code{"lda"}: Linear Discriminant Analysis
+  \item \code{"qda"}: Quadratic Discriminant Analysis
+  \item \code{"logistic"}: Logistic Regression (unregularized)
+  \item \code{"svm"}: Support Vector Machine
+  \item \code{"naivebayes"}: Naive Bayes
+  \item \code{"nnet"}: Neural Network
+  \item \code{"knn"}: K-Nearest Neighbors
+  \item \code{"decisiontree"}: Decision Tree
+  \item \code{"randomforest"}: Random Forest
+  \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
+  \item \code{"xgboost"}: Extreme Gradient Boosting
+}
+Default = \code{NULL}.}
+
+\item{split}{A logical value indicating whether to plot metrics for the train-test split results.
+Default is \code{TRUE}.}
 
 \item{cv}{A logical value indicating whether to plot metrics for cross-validation results.
-Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
-Default = \code{TRUE}.}
+Default is \code{TRUE}.}
 
-\item{metrics}{A vector consisting of which metrics to plot. Available metrics includes, \code{"accuracy"},
-\code{"precision"}, \code{"recall"}, \code{"f1"}.
-Default = \code{c("accuracy","precision", "recall", "f1")}.}
+\item{class_names}{A vector of the specific classes to plot. If \code{NULL}, plots are generated for all classes.
+Default is \code{NULL}.}
 
-\item{class_names}{A vector consisting of class names to plot. If NULL, plots are generated for each class.
-Default = \code{NULL}.}
+\item{path}{A character string specifying the directory (with a trailing slash) to save the plots.
+If \code{NULL}, the plots are saved to the current working directory.
+Default is \code{NULL}.}
 
-\item{save_plots}{A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE.
-Default = \code{FALSE}.}
-
-\item{path}{A character representing the file location, with trailing slash, to save to. If not specified, the plots
-will be saved to the current working directory. Default = \code{NULL}.}
-
-\item{models}{A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
-be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
-(Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression), \code{"svm"}
-(Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
-(Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinomial"}
-(unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
-Default = \code{NULL}.}
+\item{...}{Additional arguments passed to the \code{png} function.}
 }
 \value{
-Plots representing evaluation metrics.
+lots representing the specified evaluation metrics.
 }
 \description{
-Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each
-             class) from a vswift object.
+Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a
+             \code{vswift} object.
 }
 \examples{
 # Load an example dataset
 
 data(iris)
 
-# Perform a train-test split with an 80\% training set and stratified_sampling using QDA
+# Perform a train-test split with an 80\% training set and stratified sampling using QDA
 
 result <- classCV(
   data = iris,

@@ -14,6 +14,12 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.0.9000] - 2024-12-18
+### ♻ Changed
+- `save_plots` parameter removed in `plot` function, now `path` must be used to save plots.
+- The parameter order in `plot` has been changed to improve organization.
+- Documentation has been improved.
+
 ## [0.3.0] - 2024-12-18
 ### ♻ Changed
 - Renamed models for clarity: "ann" -> "nnet" and "gbm" -> "xgboost".

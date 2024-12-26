@@ -1,41 +1,58 @@
-#' Plot model evaluation metrics
+#' Plot Model Evaluation Metrics
 #'
 #' @name plot
-#' @description Plots model evaluation metrics (classification accuracy and precision, recall, and f-score for each
-#'              class) from a vswift object.
 #'
-#' @param x An vswift object.
-#' @param split A logical value indicating whether to plot metrics for train-test splitting results.
-#'              Default = \code{TRUE}.
+#' @description Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a
+#'              \code{vswift} object.
+#'
+#' @param x A \code{vswift} object.
+#'
+#' @param metrics A character vector indicating which metrics to plot. Supported options are
+#'                \code{"accuracy"}, \code{"precision"}, \code{"recall"}, and \code{"f1"}.
+#'                Default is \code{c("accuracy", "precision", "recall", "f1")}.
+
+#'
+#' @param models A character string or a character vector specifying the classification algorithm(s) evaluation metrics
+#'               to plot. If \code{NULL}, all models will be plotted.
+#'               The following options are available:
+#'               \itemize{
+#'                 \item \code{"lda"}: Linear Discriminant Analysis
+#'                 \item \code{"qda"}: Quadratic Discriminant Analysis
+#'                 \item \code{"logistic"}: Logistic Regression (unregularized)
+#'                 \item \code{"svm"}: Support Vector Machine
+#'                 \item \code{"naivebayes"}: Naive Bayes
+#'                 \item \code{"nnet"}: Neural Network
+#'                 \item \code{"knn"}: K-Nearest Neighbors
+#'                 \item \code{"decisiontree"}: Decision Tree
+#'                 \item \code{"randomforest"}: Random Forest
+#'                 \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
+#'                 \item \code{"xgboost"}: Extreme Gradient Boosting
+#'               }
+#'               Default = \code{NULL}.
+#'
+#' @param split A logical value indicating whether to plot metrics for the train-test split results.
+#'              Default is \code{TRUE}.
+#'
 #' @param cv A logical value indicating whether to plot metrics for cross-validation results.
-#'           Note: Solid red line represents the mean and dashed blue line represents the standard deviation.
-#'           Default = \code{TRUE}.
-#' @param metrics A vector consisting of which metrics to plot. Available metrics includes, \code{"accuracy"},
-#'                \code{"precision"}, \code{"recall"}, \code{"f1"}.
-#'                Default = \code{c("accuracy","precision", "recall", "f1")}.
-#' @param class_names A vector consisting of class names to plot. If NULL, plots are generated for each class.
-#'                    Default = \code{NULL}.
-#' @param save_plots A logical value to save all plots as separate png files. Plot will not be displayed if set to TRUE.
-#'                   Default = \code{FALSE}.
-#' @param path A character representing the file location, with trailing slash, to save to. If not specified, the plots
-#'             will be saved to the current working directory. Default = \code{NULL}.
-#' @param models A character or vector of the model metrics to be printed. If \code{NULL}, all model metrics will
-#'                   be printed. Available options: \code{"lda"} (Linear Discriminant Analysis), \code{"qda"}
-#'                   (Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression), \code{"svm"}
-#'                   (Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
-#'                   (Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinomial"}
-#'                   (unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
-#'                   Default = \code{NULL}.
-#' @param ... Additional arguments that can be passed to the \code{png} function.
+#'           Default is \code{TRUE}.
 #'
-#' @return Plots representing evaluation metrics.
+#' @param class_names A vector of the specific classes to plot. If \code{NULL}, plots are generated for all classes.
+#'                    Default is \code{NULL}.
+#'
+#' @param path A character string specifying the directory (with a trailing slash) to save the plots.
+#'             If \code{NULL}, the plots are saved to the current working directory.
+#'             Default is \code{NULL}.
+#'
+#' @param ... Additional arguments passed to the \code{png} function.
+#'
+#' @return lots representing the specified evaluation metrics.
+#'
 #' @examples
 #' # Load an example dataset
 #'
 #' data(iris)
 #'
-#' # Perform a train-test split with an 80% training set and stratified_sampling using QDA
+#' # Perform a train-test split with an 80% training set and stratified sampling using QDA
 #'
 #' result <- classCV(
 #'   data = iris,
@@ -53,10 +70,10 @@
 #' @importFrom  graphics axis abline legend
 #'
 #' @author Donisha Smith
+#'
 #' @export
-
-"plot.vswift" <- function(x, ..., split = TRUE, cv = TRUE, metrics = c("accuracy", "precision", "recall", "f1"),
-                          class_names = NULL, save_plots = FALSE, path = NULL, models = NULL) {
+"plot.vswift" <- function(x, metrics = c("accuracy", "precision", "recall", "f1"), models = NULL, split = TRUE,
+                          cv = TRUE, class_names = NULL, path = NULL, ...) {
   if (inherits(x, "vswift")) {
     # Create list
     model_list <- list(
@@ -101,17 +118,10 @@
 
     # Iterate over models
     for (model in models) {
-      if (save_plots == FALSE) {
-        .visible_plots(
-          x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, model_name = model,
-          model_list = model_list
-        )
-      } else {
-        .save_plots(
-          x = x, split = split, cv = cv, metrics = metrics, class_names = class_names, path = path,
-          model_name = model, model_list = model_list, ...
-        )
-      }
+      .plot_internal(
+        x = x, metrics = metrics, model = model, plot_title = model_list[[model]], split = split, cv = cv,
+        class_names = class_names, path = path, ...
+      )
     }
   }
 }

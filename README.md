@@ -14,14 +14,14 @@ The following classification algorithms are available through their respective R
 
   - `lda` from MASS package for Linear Discriminant Analysis
   - `qda` from MASS package for Quadratic Discriminant Analysis
-  - `glm` from base package with `family = "binomial"` for unregularized Logistic Regression
+  - `glm` from base package with `family = "binomial"` for Logistic Regression (unregularized)
   - `svm` from e1071 package for Support Vector Machine
   - `naive_bayes` from naivebayes package for Naive Bayes
   - `nnet` from nnet package for Neural Network
   - `train.kknn` from kknn package for K-Nearest Neighbors
   - `rpart` from rpart package for Decision Trees
   - `randomForest` from randomForest package for Random Forest
-  - `multinom` from nnet package for unregularized Multinomial Regression
+  - `multinom` from nnet package for Multinomial Regression (unregularized)
   - `xgb.train` from xgboost package for Extreme Gradient Boosting
 
 ## Features
@@ -67,7 +67,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.3.0/vswift_0.3.0.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9000/vswift_0.4.0.9000.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -80,14 +80,14 @@ Acceptable inputs for the `models` parameter includes:
 
   - "lda" for Linear Discriminant Analysis
   - "qda" for Quadratic Discriminant Analysis
-  - "logistic" for Logistic Regression
+  - "logistic" for Logistic Regression (unregularized)
   - "svm" for Support Vector Machine
   - "naivebayes" for Naive Bayes
   - "nnet" for Neural Network 
   - "knn" for K-Nearest Neighbors
   - "decisiontree" for Decision Trees
   - "randomforest" for Random Forest
-  - "multinom" for Multinomial Regression
+  - "multinom" for Multinomial Regression (unregularized)
   - "xgboost" for Extreme Gradient Boosting
 
 ### Using a single model:
@@ -235,7 +235,7 @@ Yes            0.79 ± 0.12 (SD)       0.87 ± 0.07 (SD)       0.82 ± 0.08 (SD)
 
 ```R
 # Plot model evaluation metrics
-plot(results, split = TRUE, cv = TRUE, save_plots = TRUE, path = getwd())
+plot(results, split = TRUE, cv = TRUE, path = getwd())
 ```
 
 <details>
@@ -852,9 +852,9 @@ nonad.            0.97 ± 0.00 (SD)       0.95 ± 0.02 (SD)       0.96 ± 0.01 (
 plot(
   results,
   models = "xgboost",
-  save_plots = TRUE,
   class_names = "ad.",
-  metrics = c("precision", "recall")
+  metrics = c("precision", "recall"),
+  path = getwd()
 )
 ```
 

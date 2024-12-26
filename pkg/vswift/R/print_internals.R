@@ -154,7 +154,7 @@
 
 # Calculate string length of classes to create a border of dashed lines
 .dashed_lines <- function(classes, return_str = FALSE) {
-  str_len <- sapply(classes, function(x) nchar(x))
+  str_len <- sapply(classes, nchar)
   max_str_len <- max(str_len)
   cat("\n")
   partial_output_names <- "Average Precision:  Average Recall:  Average F1:\n\n"

@@ -1,24 +1,38 @@
-#' Print parameter information and/or model evaluation metrics
+#' Print Parameter Information and/or Model Evaluation Metrics
 #'
 #' @name print
-#' @description Prints model configuration information and/or model evaluation metrics (classification accuracy,
-#' precision, recall, and f1 for each class) from a vswift object.
+#' @description Prints model configuration details and/or model evaluation metrics (classification accuracy, precision,
+#'              recall, and F1 scores) from a vswift object.
 #'
-#' @param x The vswift object.
-#' @param ... Additional arguments to be passed.
-#' @param configs A logical value indicating whether to print model configuration information from the vswift object.
-#'                   Default = \code{TRUE}.
-#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. This will
-#'                display the precision, recall, and f1 for each class, along with the means of each metric (if
-#'                k-fold validation was used). Default = \code{TRUE}.
-#' @param models A character or vector of the model information to be printed. If \code{NULL}, all model
-#'                   information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
-#'                   \code{"qda"} (Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression),
-#'                   \code{"svm"} (Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
-#'                   (Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-#'                   (Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
-#'                   (unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
-#'                   Default = \code{NULL}.
+#' @param x A vswift object.
+#'
+#' @param configs A logical value indicating whether to print model configuration information from the vswift
+#'                object. Default is \code{TRUE}.
+#'
+#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object.
+#'                If \code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along
+#'                with their mean values (if cross-validation was used). Default is \code{TRUE}.
+#'
+#' @param models A character string or a character vector specifying the classification algorithm(s) information to be
+#'               printed. If \code{NULL}, all model information will be printed.
+#'               The following options are available:
+#'               \itemize{
+#'                 \item \code{"lda"}: Linear Discriminant Analysis
+#'                 \item \code{"qda"}: Quadratic Discriminant Analysis
+#'                 \item \code{"logistic"}: Logistic Regression (unregularized)
+#'                 \item \code{"svm"}: Support Vector Machine
+#'                 \item \code{"naivebayes"}: Naive Bayes
+#'                 \item \code{"nnet"}: Neural Network
+#'                 \item \code{"knn"}: K-Nearest Neighbors
+#'                 \item \code{"decisiontree"}: Decision Tree
+#'                 \item \code{"randomforest"}: Random Forest
+#'                 \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
+#'                 \item \code{"xgboost"}: Extreme Gradient Boosting
+#'               }
+#'               Default = \code{NULL}.
+#'
+#' @param ... No additional arguments are currently supported.
+#'
 #' @examples
 #' # Load an example dataset
 #'
@@ -37,10 +51,12 @@
 #' print(result)
 #'
 #' @importFrom utils capture.output
+#'
 #' @author Donisha Smith
+#'
 #' @export
 
-"print.vswift" <- function(x, ..., configs = TRUE, metrics = TRUE, models = NULL) {
+"print.vswift" <- function(x, configs = TRUE, metrics = TRUE, models = NULL, ...) {
   if (inherits(x, "vswift")) {
     # List for model names
     model_list <- list(

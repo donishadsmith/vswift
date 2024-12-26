@@ -373,22 +373,26 @@
   return(out)
 }
 
+# Function to obtain numeric columns
+.filter_cols <- function(df, col_names) {
+  return(colnames(df)[sapply(df, is.numeric)])
+}
+
 # Function to standardize features for train data
 .standardize_train <- function(train, test, standardize = TRUE, target) {
   col_names <- .get_cols(train, standardize, target)
+  filtered_col_names <- .filter_cols(train, col_names)
 
   if (length(col_names) > 0) {
-    for (col in col_names) {
-      if (any(is.numeric(train[, col]), is.integer(train[, col]))) {
-        # Get mean and sample sd of the train data
-        train_col_mean <- mean(as.numeric(train[, col]), na.rm = TRUE)
-        train_col_sd <- sd(as.numeric(train[, col]), na.rm = TRUE)
-        # Scale train and test data using the train mean and sample sd
-        scaled_train_col <- (train[, col] - train_col_mean) / train_col_sd
-        train[, col] <- as.vector(scaled_train_col)
-        scaled_validation_col <- (test[, col] - train_col_mean) / train_col_sd
-        test[, col] <- as.vector(scaled_validation_col)
-      }
+    for (col in filtered_col_names) {
+      # Get mean and sample sd of the train data
+      train_col_mean <- mean(as.numeric(train[, col]), na.rm = TRUE)
+      train_col_sd <- sd(as.numeric(train[, col]), na.rm = TRUE)
+      # Scale train and test data using the train mean and sample sd
+      scaled_train_col <- (train[, col] - train_col_mean) / train_col_sd
+      train[, col] <- as.vector(scaled_train_col)
+      scaled_validation_col <- (test[, col] - train_col_mean) / train_col_sd
+      test[, col] <- as.vector(scaled_validation_col)
     }
   } else {
     warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
@@ -400,14 +404,12 @@
 # Function to standardize features for preprocessed data/data used for final model
 .standardize <- function(preprocessed_data, standardize = TRUE, target) {
   col_names <- .get_cols(preprocessed_data, standardize, target)
+  filtered_col_names <- .filter_cols(preprocessed_data, col_names)
 
   if (length(col_names) > 0) {
-    for (col_name in col_names) {
-      if (any(is.numeric(preprocessed_data[, col_name]), is.integer(preprocessed_data[, col_name]))) {
-        # using scale produces a matrix/array instead of numeric
-        preprocessed_data[, col_name] <- as.vector(scale(preprocessed_data[, col_name], center = TRUE, scale = TRUE))
-      }
-    }
+    preprocessed_data[, filtered_col_names] <- as.data.frame(
+      scale(preprocessed_data[, filtered_col_names], center = TRUE, scale = TRUE)
+    )
   } else {
     warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
     being of class 'numeric'")

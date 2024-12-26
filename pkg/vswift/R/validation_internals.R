@@ -291,7 +291,7 @@
       pred <- ifelse(pred >= thresh, 1, 0)
     },
     "binary:logitraw" = {
-      pred <- sapply(pred, function(x) .logit2prob(x))
+      pred <- sapply(pred, .logit2prob)
       pred <- ifelse(pred >= thresh, 1, 0)
     },
     "multi:softprob" = {

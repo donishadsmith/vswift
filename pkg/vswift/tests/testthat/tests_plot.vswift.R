@@ -8,7 +8,7 @@ test_that("testing plot function", {
 
   expect_no_error(result <- classCV(
     data = data, target = 5, models = c("knn", "randomforest", "nnet", "svm"),
-    train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T),
+    train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T, random_seed = 50),
     model_params = list(map_args = args), save = list(models = T, data = T)
   ))
 
@@ -17,6 +17,13 @@ test_that("testing plot function", {
   )
 
   expect_no_error(
-    plot(result, models = "knn", split = T, cv = T, class_names = "setosa", save_plots = TRUE)
+    plot(result, models = "knn", class_names = "setosa", path = getwd())
   )
+
+  for (png_file in list.files(getwd(), pattern = ".png")) {
+    expect_true(file.size(png_file) > 0)
+    file.remove(png_file)
+  }
+
+  file.remove(list.files(getwd(), pattern = "Rplots.pdf"))
 })

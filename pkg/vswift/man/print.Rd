@@ -3,34 +3,43 @@
 \name{print}
 \alias{print}
 \alias{print.vswift}
-\title{Print parameter information and/or model evaluation metrics}
+\title{Print Parameter Information and/or Model Evaluation Metrics}
 \usage{
-\method{print}{vswift}(x, ..., configs = TRUE, metrics = TRUE, models = NULL)
+\method{print}{vswift}(x, configs = TRUE, metrics = TRUE, models = NULL, ...)
 }
 \arguments{
-\item{x}{The vswift object.}
+\item{x}{A vswift object.}
 
-\item{...}{Additional arguments to be passed.}
+\item{configs}{A logical value indicating whether to print model configuration information from the vswift
+object. Default is \code{TRUE}.}
 
-\item{configs}{A logical value indicating whether to print model configuration information from the vswift object.
-Default = \code{TRUE}.}
+\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object.
+If \code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along
+with their mean values (if cross-validation was used). Default is \code{TRUE}.}
 
-\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. This will
-display the precision, recall, and f1 for each class, along with the means of each metric (if
-k-fold validation was used). Default = \code{TRUE}.}
-
-\item{models}{A character or vector of the model information to be printed. If \code{NULL}, all model
-information will be printed. Available options: \code{"lda"} (Linear Discriminant Analysis),
-\code{"qda"} (Quadratic Discriminant Analysis), \code{"logistic"} (unregularized Logistic Regression),
-\code{"svm"} (Support Vector Machine), \code{"naivebayes"} (Naive Bayes), \code{"nnet"}
-(Neural Network), \code{"knn"} (K-Nearest Neighbors), \code{"decisiontree"}
-(Decision Tree), \code{"randomforest"} (Random Forest), \code{"multinom"}
-(unregularized Multinomial Logistic Regression), \code{"xgboost"} (Extreme Gradient Boosting).
+\item{models}{A character string or a character vector specifying the classification algorithm(s) information to be
+printed. If \code{NULL}, all model information will be printed.
+The following options are available:
+\itemize{
+  \item \code{"lda"}: Linear Discriminant Analysis
+  \item \code{"qda"}: Quadratic Discriminant Analysis
+  \item \code{"logistic"}: Logistic Regression (unregularized)
+  \item \code{"svm"}: Support Vector Machine
+  \item \code{"naivebayes"}: Naive Bayes
+  \item \code{"nnet"}: Neural Network
+  \item \code{"knn"}: K-Nearest Neighbors
+  \item \code{"decisiontree"}: Decision Tree
+  \item \code{"randomforest"}: Random Forest
+  \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
+  \item \code{"xgboost"}: Extreme Gradient Boosting
+}
 Default = \code{NULL}.}
+
+\item{...}{No additional arguments are currently supported.}
 }
 \description{
-Prints model configuration information and/or model evaluation metrics (classification accuracy,
-precision, recall, and f1 for each class) from a vswift object.
+Prints model configuration details and/or model evaluation metrics (classification accuracy, precision,
+             recall, and F1 scores) from a vswift object.
 }
 \examples{
 # Load an example dataset
