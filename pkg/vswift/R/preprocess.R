@@ -354,25 +354,6 @@
   return(iters)
 }
 
-# Function to determine standardization and imputation
-.prep_data <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, train_params, impute_params) {
-  if (is.null(preprocessed_data)) {
-    if (!is.null(impute_params$method)) {
-      out <- .imputation(train = train, test = test, vars = vars, impute_params = impute_params)
-    } else {
-      out <- .standardize_train(train, test, train_params$standardize, vars$target)
-    }
-  } else {
-    if (!is.null(impute_params$method)) {
-      out <- .imputation(preprocessed_data = preprocessed_data, vars = vars, impute_params = impute_params)
-    } else {
-      out <- .standardize(preprocessed_data = preprocessed_data, train_params$standardize, vars$target)
-    }
-  }
-
-  return(out)
-}
-
 # Function to obtain numeric columns
 .filter_cols <- function(df, col_names) {
   return(colnames(df)[sapply(df, is.numeric)])
@@ -418,20 +399,32 @@
   return(list("preprocessed_data" = preprocessed_data))
 }
 
-# Imputation function
-.imputation <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, impute_params) {
+# Function to standardize prior to creating or using the imputation model
+.impute_standardize <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars) {
   # Get data id
   use_data <- ifelse(!is.null(preprocessed_data), "preprocessed", "train")
   # Standardize
   if (use_data == "preprocessed") {
     data <- .standardize(preprocessed_data, target = vars$target)$preprocessed_data
+    return("data" = data)
   } else {
     df_list <- .standardize_train(train, test, target = vars$target)
     data <- df_list$train
     test <- df_list$test
     rm(df_list)
     gc()
+    return("data" = data, "test" = test, "use_data" = use_data)
   }
+}
+
+# Function to obtain the prep model
+.impute_prep <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, impute_params) {
+  # Standardize
+  df_list <- .impute_standardize(preprocessed_data = NULL, train = NULL, test = NULL, vars)
+  # Get data/output
+  use_data <- df_list$use_data
+  data <- df_list$data
+  if (use_data == "train") test <- df_list$test
 
   # Create args list
   step_args <- list(recipe = recipes::recipe(~., data = data[, vars$predictors]))
@@ -449,16 +442,29 @@
     step <- do.call(recipes::step_impute_bag, step_args)
   }
 
-  prep <- recipes::prep(x = step, training = data[, vars$predictors])
+  prep <- recipes::prep(x = step, training = data[, vars$predictors], retain = FALSE)
+
+  return(prep)
+}
+
+# Apply the prep model to data
+.impute_bake <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, prep) {
+  # Standardize
+  df_list <- .impute_standardize(preprocessed_data = NULL, train = NULL, test = NULL, vars)
+  # Get data/output
+  use_data <- df_list$use_data
+  data <- df_list$data
+  if (use_data == "train") test <- df_list$test
+
   data <- cbind(data.frame(recipes::bake(prep, new_data = data[, vars$predictors])), subset(data, select = vars$target))
 
   if (use_data == "preprocessed") {
-    return(list("preprocessed_data" = data, "prep" = prep))
+    return(list("preprocessed_data" = data))
   } else {
     test <- cbind(
       data.frame(recipes::bake(prep, new_data = test[, vars$predictors])),
       subset(test, select = vars$target)
     )
-    return(list("train" = data, "test" = test, "prep" = prep))
+    return(list("train" = data, "test" = test))
   }
 }

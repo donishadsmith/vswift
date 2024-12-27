@@ -341,76 +341,35 @@ classCV <- function(data,
     final_output <- .sampling(preprocessed_data, train_params, vars$target, final_output)
     # Create the empty dataframes for metrics
     final_output$metrics <- .expand_dataframe(train_params, models, final_output$class_summary$classes)
-    # Partition data to ensure no issues with floating point precision or stochastic imputations
-    df_list <- .partition(preprocessed_data, final_output$data_partitions$indices)
   }
 
   # Generate vector for iteration
   iters <- .gen_iterations(train_params, model_params)
 
-  # Impute train and test data
+  # Obtain imputation model, if imputation requested
   if (!is.null(impute_params$method) && perform_imputation) {
+    impute_models <- list()
     for (i in iters) {
-      if (i == "split" && exists("df_list")) {
-        prep_out <- .prep_data(
-          train = df_list$split$train, test = df_list$split$test, vars = vars,
-          train_params = train_params, impute_params = impute_params
+      if (i != "final") {
+        test_indices <- .get_indices(final_output$data_partitions$indices, i)
+        df_list <- .partition(preprocessed_data, test_indices)
+        impute_models[[i]] <- .impute_prep(
+          train = df_list$train, test = df_list$test, vars = vars,
+          impute_params = impute_params
         )
-
-        df_list$split <- prep_out[!names(prep_out) == "prep"]
-        if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$split <- prep_out$prep
-      } else if (startsWith(i, "fold") && exists("df_list")) {
-        prep_out <- .prep_data(
-          train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
-          train_params = train_params, impute_params = impute_params
-        )
-
-        df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
-        if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$cv[[i]] <- prep_out$prep
       } else {
-        prep_out <- .prep_data(
+        impute_models[[i]] <- .impute_prep(
           preprocessed_data = preprocessed_data, vars = vars,
-          train_params = train_params, impute_params = impute_params
+          impute_params = impute_params
         )
-
-        preprocessed_data <- prep_out$preprocessed_data
-        if ("prep" %in% names(prep_out) & save$models == TRUE) final_output$imputation$preprocessed_data <- prep_out$prep
-      }
-    }
-  }
-
-  # Standardize
-  if (train_params$standardize != FALSE && !exists("prep_out")) {
-    for (i in iters) {
-      if (i == "split" && exists("df_list")) {
-        prep_out <- .prep_data(
-          train = df_list$split$train, test = df_list$split$test, vars = vars,
-          train_params = train_params, impute_params = impute_params
-        )
-
-        df_list$split <- prep_out[!names(prep_out) == "prep"]
-      } else if (startsWith(i, "fold") && exists("df_list")) {
-        prep_out <- .prep_data(
-          train = df_list$cv[[i]]$train, test = df_list$cv[[i]]$test, vars = vars,
-          train_params = train_params, impute_params = impute_params
-        )
-
-        df_list$cv[[i]] <- prep_out[!names(prep_out) == "prep"]
-      } else {
-        prep_out <- .prep_data(
-          preprocessed_data = preprocessed_data, vars = vars,
-          train_params = train_params, impute_params = impute_params
-        )
-
-        preprocessed_data <- prep_out$preprocessed_data
       }
     }
   }
 
   # Create kwargs
-  if (exists("df_list")) {
+  if (!is.null(train_params$split) || !is.null(train_params$n_folds)) {
     kwargs <- list(
-      df_list = df_list,
+      preprocessed_data = preprocessed_data,
       formula = final_output$configs$formula,
       model_params = model_params,
       vars = vars,
@@ -418,7 +377,9 @@ classCV <- function(data,
       col_levels = col_levels,
       class_summary = final_output$class_summary,
       save_mods = save$models,
-      met_df = final_output$metrics
+      met_df = final_output$metrics,
+      indices = final_output$data_partitions$indices,
+      impute_models = if (exists("impute_models")) impute_models[!names(impute_models) == "final"] else NULL
     )
   }
 
@@ -428,10 +389,10 @@ classCV <- function(data,
       if (is.null(parallel_configs$n_cores) || parallel_configs$n_cores <= 1) {
         kwargs$iters <- iters[!iters == "final"]
         kwargs$model <- model
-        train_out <- do.call(.train, kwargs)
+        train_out <- do.call(.sequential, kwargs)
       } else {
         kwargs$model <- model
-        train_out <- .train_par(kwargs, parallel_configs, iters[!iters == "final"])
+        train_out <- .parallel(kwargs, parallel_configs, iters[!iters == "final"])
       }
 
 
@@ -456,6 +417,17 @@ classCV <- function(data,
 
     # Generate final model
     if ("final" %in% iters) {
+      preproc_kwargs <- list()
+
+      if (exists("impute_models") & "final" %in% impute_models) {
+        preproc_kwargs$prep <- impute_models$final
+      }
+
+      if (!is.null(preproc_kwargs$impute) || train_params$standardize == TRUE) {
+        preproc_kwargs <- c(preproc_kwargs, list("vars" = vars, "standardize" = train_params$standardize))
+        preprocessed_data <- .prep_data(preprocessed_data = preprocessed_data, preproc_kwargs = preproc_kwargs)
+      }
+
       # Generate model depending on chosen models
       final_output$models[[model]]$final <- .generate_model(
         model = model,
@@ -470,9 +442,37 @@ classCV <- function(data,
 
   # Save data
   if (save$data == TRUE) {
-    if (exists("kwargs")) final_output$data_partitions$dataframes <- df_list
+    if (exists("kwargs")) {
+      for (i in iters[!names(iters) == "final"]) {
+        test_indices <- .get_indices(kwargs$indices, i)
+        # Get training and validation data
+        df_list <- .partition(kwargs$preprocessed_data, test_indices)
+        # Prep data
+        df_list <- .prep_data(i, df_list$train, df_list$test, kwargs)
 
+        # Store data
+        if (i == "split") {
+          final_output$data_partitions$dataframes <- df_list
+        } else {
+          final_output$data_partitions$dataframes$cv <- df_list
+        }
+      }
+    }
+
+    # Will already be standardized and imputed
     if ("final" %in% iters) final_output$data_partitions$dataframes$preprocessed_data <- preprocessed_data
+  }
+
+  # Save imputation models
+  if (save$models && exists("impute_models")) {
+    for (i in names(impute_models)) {
+      if (i %in% c("split", "final")) {
+        id <- ifelse(i == "final", "preprocessed_data", i)
+        final_output$imputation[[id]] <- impute_models[[i]]
+      } else {
+        final_output$imputation$cv[[i]] <- impute_models[[i]]
+      }
+    }
   }
 
   # Make list a vswift class
