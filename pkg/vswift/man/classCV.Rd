@@ -132,15 +132,15 @@ used in conjunction with \code{target}. Default is \code{NULL}.}
                      \itemize{
                        \item \code{method}: A character specifying the imputation method. Options include:
                                             \itemize{
-                                              \item \code{"bag_impute"}: Bagged Trees Imputation
-                                              \item \code{"knn_impute"}: K-Nearest Neighbors Imputation
+                                              \item \code{"impute_bag"}: Bagged Trees Imputation
+                                              \item \code{"impute_knn"}: K-Nearest Neighbors Imputation
                                             }
                                             Default is \code{NULL}.
 
                       \item \code{args}: A list of additional arguments for the chosen imputation method.
                                          \itemize{
-                                           \item \code{"bag_impute"}: \code{neighbors}
-                                           \item \code{"knn_impute"}: \code{trees}, \code{seed_val}
+                                           \item \code{"impute_bag"}: \code{trees}, \code{seed_val}
+                                           \item \code{"impute_knn"}: \code{neighbors}
                                          }
                                          For more details about these arguments, consult the \pkg{recipes}
                                          documentation. Default is \code{NULL}.

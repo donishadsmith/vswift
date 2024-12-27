@@ -67,7 +67,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9000/vswift_0.4.0.9000.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9001/vswift_0.4.0.9001.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -280,7 +280,7 @@ results <- classCV(
     random_seed = 50,
     standardize = TRUE
   ),
-  impute_params = list(method = "bag_impute", args = list(trees = 20, seed_val = 50)),
+  impute_params = list(method = "impute_bag", args = list(trees = 20, seed_val = 50)),
   model_params = list(final_model = FALSE),
   save = list(models = FALSE, data = FALSE)
 )
@@ -316,7 +316,7 @@ Incomplete Labeled Data: 61
 
 Sample Size (Complete + Imputed Incomplete Labeled Data): 379
 
-Imputation Parameters: list(method = "bag_impute", args = list(trees = 20, seed_val = 50))
+Imputation Parameters: list(method = "impute_bag", args = list(trees = 20, seed_val = 50))
 
 Parallel Configs: list(n_cores = NULL, future.seed = NULL)
 
@@ -411,7 +411,7 @@ print(results)
     
     $configs$impute_params
     $configs$impute_params$method
-    [1] "bag_impute"
+    [1] "impute_bag"
     
     $configs$impute_params$args
     $configs$impute_params$args$trees
@@ -703,20 +703,22 @@ print(end_par)
 [1] "Without Parallel Processing:"
 
 Warning message:
-In .create_dictionary(preprocessed_data = preprocessed_data,  :
+In .create_dictionary(preprocessed_data[, vars$target]) :
+  creating keys for target variable due to 'logistic' or 'xgboost' being specified;
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 224.31    4.81  211.69 
+ 232.04    3.70  217.58
 
 [1] "Parallel Processing:"
 
 Warning message:
-In .create_dictionary(preprocessed_data = preprocessed_data,  :
+In .create_dictionary(preprocessed_data[, vars$target]) :
+  creating keys for target variable due to 'logistic' or 'xgboost' being specified;
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   3.77   29.28  122.87 
+   1.96    4.74   97.12
 ```
 
 ```R

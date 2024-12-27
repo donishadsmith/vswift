@@ -14,7 +14,14 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.4.0.9000] - 2024-12-18
+## [0.4.0.9001] - 2024-12-27
+### 🐛 Fixes
+- Internal refactoring to not create all partitions prior to validation to reduce overhead and improve resource utilization especially for parallel processing.
+### ♻ Changed
+- In vswift object, `imputation` changed to `imputation_models`.
+- Changed name of imputation methods: 'bag_impute' -> 'impute_bag' and 'knn_impute' -> 'impute_knn'.
+
+## [0.4.0.9000] - 2024-12-26
 ### ♻ Changed
 - `save_plots` parameter removed in `plot` function, now `path` must be used to save plots.
 - The parameter order in `plot` has been changed to improve organization.

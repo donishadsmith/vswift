@@ -17,3 +17,15 @@
 
   return(class_dict)
 }
+
+# Helper function to convert keys
+.convert_keys <- function(target_vector, keys, direction) {
+  if (direction == "encode") {
+    labels <- sapply(target_vector, function(x) keys[[x]])
+  } else {
+    converted_keys <- as.list(names(keys))
+    names(converted_keys) <- as.character(as.vector(unlist(keys)))
+    labels <- sapply(target_vector, function(x) converted_keys[[as.character(x)]])
+  }
+  return(labels)
+}

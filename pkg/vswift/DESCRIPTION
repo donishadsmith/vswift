@@ -1,7 +1,7 @@
 Package: vswift
 Title: Classification Model Evaluation
-Version: 0.4.0.9000
-Date: 2024-12-26
+Version: 0.4.0.9001
+Date: 2024-12-27
 Authors@R: person(given = "Donisha",
              family = "Smith",
              role = c("aut", "cre"),
@@ -23,7 +23,8 @@ Imports:
     recipes,
     future (>= 1.9.0),
     future.apply,
-    kknn
+    kknn,
+    data.table
 Suggests:
     testthat,
     covr,

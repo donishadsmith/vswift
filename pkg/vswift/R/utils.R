@@ -3,6 +3,26 @@
   return(list("train" = data[-indices, ], "test" = data[indices, ]))
 }
 
+# Function to partition data
+.create_data <- function(data, subsets) {
+  df_list <- list()
+  # Get data for train-test split
+  if ("split" %in% names(subsets)) {
+    df_list$split$train <- data[subsets$split$train, ]
+    df_list$split$test <- data[subsets$split$test, ]
+  }
+
+  # Get train and test partitions for cv
+  if ("cv" %in% names(subsets)) {
+    for (fold in names(subsets$cv)) {
+      df_list$cv[[fold]]$train <- data[-subsets$cv[[fold]], ]
+      df_list$cv[[fold]]$test <- data[subsets$cv[[fold]], ]
+    }
+  }
+
+  return(df_list)
+}
+
 # Get test indices
 .get_indices <- function(obj, id) {
   if (id == "split") {
@@ -69,7 +89,7 @@
       test <- df_list$test
     }
 
-    return("train" = train, "test" = test)
+    return(list("train" = train, "test" = test))
   } else {
     # Impute; determine if impute_models is not NULL or an empty list
     if (!is.null(preproc_kwargs$prep)) {
@@ -88,4 +108,22 @@
 
     return(df_list$preprocessed_data)
   }
+}
+
+
+# Helper function for to remove observations in test set with factors in predictors not observed during train
+.remove_obs <- function(train, test, col_levels, id) {
+  # Iterate over columns and check for the factors that exist in test set but not the train set
+  for (col in names(col_levels)) {
+    delete_rows <- which(!test[, col] %in% train[, col])
+    obs <- row.names(test)[delete_rows]
+    if (length(obs) > 0) {
+      warning(sprintf(
+        "for predictor `%s` in `%s` data partition has at least one class the model has not trained on\n  these observations will be temorarily removed: %s",
+        col, id, paste(obs, collapse = ",")
+      ))
+      test <- test[-delete_rows, ]
+    }
+  }
+  return(list("test" = test))
 }

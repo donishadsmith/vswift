@@ -8,7 +8,7 @@
       "lda", "qda", "logistic", "svm", "naivebayes", "nnet", "knn", "decisiontree",
       "randomforest", "multinom", "xgboost"
     ),
-    imputes = c("knn_impute", "bag_impute")
+    imputes = c("impute_bag", "impute_knn")
   )
 
   # Create list of parameters
@@ -184,8 +184,8 @@
       )
     ),
     "imputation" = list(
-      "knn_impute" = c("neighbors"),
-      "bag_impute" = c("trees", "seed_val")
+      "impute_bag" = c("trees", "seed_val"),
+      "impute_knn" = c("neighbors")
     )
   )
 
@@ -287,22 +287,33 @@
   # Make target factor, could be factor, numeric, or character
   preprocessed_data[, target] <- factor(preprocessed_data[, target])
   # Check for columns that are characters and factors
-  columns <- colnames(preprocessed_data)[as.vector(sapply(
+  cols <- colnames(preprocessed_data)[as.vector(sapply(
     preprocessed_data,
     function(x) is.character(x) | is.factor(x)
   ))]
-  columns <- columns[!columns == target]
-  # Create list to store levels for svm model
-  col_levels <- list()
 
+  # Only retain features
+  cols <- cols[!cols == target]
+
+  # Convert to data.table
+  preprocessed_dt <- data.table(preprocessed_data)
   # Turn character columns into factor
-  for (col in columns) {
-    preprocessed_data[, col] <- factor(preprocessed_data[, col])
-    if ("svm" %in% models || train_params$remove_obs == TRUE) col_levels[[col]] <- levels(preprocessed_data[, col])
+  preprocessed_dt[, (cols) := Map(function(x) factor(x), .SD), .SDcols = cols]
+
+  # Create list to store levels for svm model or to remove observations later
+  if ("svm" %in% models || train_params$remove_obs == TRUE) {
+    # Sapply, though each column and collect levels
+    col_levels <- sapply(preprocessed_dt[, .SD, .SDcols = cols], levels)
   }
 
+  # Revert back to data.frame
+  preprocessed_data <- as.data.frame(preprocessed_dt)
+
   # Return output
-  return(list("data" = preprocessed_data, "col_levels" = if (length(col_levels) > 0) col_levels else NULL))
+  return(list(
+    "data" = preprocessed_data,
+    "col_levels" = if (exists("col_levels") && length(col_levels) > 0) col_levels else NULL
+  ))
 }
 
 # Function to retrieve columns that will be standardized
@@ -360,26 +371,36 @@
 }
 
 # Function to standardize features for train data
-.standardize_train <- function(train, test, standardize = TRUE, target) {
+.standardize_train <- function(train, test = NULL, standardize = TRUE, target, call = "standard") {
   col_names <- .get_cols(train, standardize, target)
   filtered_col_names <- .filter_cols(train, col_names)
 
+  # Convert train to data table for computation
+  train_dt <- data.table(train)
+
   if (length(col_names) > 0) {
-    for (col in filtered_col_names) {
-      # Get mean and sample sd of the train data
-      train_col_mean <- mean(as.numeric(train[, col]), na.rm = TRUE)
-      train_col_sd <- sd(as.numeric(train[, col]), na.rm = TRUE)
-      # Scale train and test data using the train mean and sample sd
-      scaled_train_col <- (train[, col] - train_col_mean) / train_col_sd
-      train[, col] <- as.vector(scaled_train_col)
-      scaled_validation_col <- (test[, col] - train_col_mean) / train_col_sd
-      test[, col] <- as.vector(scaled_validation_col)
+    # Obtain training mean and sd of all numeric columns
+    means <- train_dt[, lapply(.SD, function(x) mean(x, na.rm = TRUE)), .SDcols = filtered_col_names]
+    stdevs <- train_dt[, lapply(.SD, function(x) sd(x, na.rm = TRUE)), .SDcols = filtered_col_names]
+    # Standardize in place
+    train_dt[, (filtered_col_names) := Map(function(x, m, s) (x - m) / s, .SD, means, stdevs), .SDcols = filtered_col_names]
+    # Standardize test
+    if (call != ".impute_prep") {
+      # Convert to data.table
+      test_dt <- data.table(test)
+      # Standardize using training parameters
+      test_dt[, (filtered_col_names) := Map(function(x, m, s) (x - m) / s, .SD, means, stdevs), .SDcols = filtered_col_names]
     }
   } else {
-    warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
+    warning("no standardization has been done; either do to specified features not being in dataframe or no features
     being of class 'numeric'")
   }
-  return(list("train" = train, "test" = test))
+
+  if (call != ".impute_prep") {
+    return(list("train" = as.data.frame(train_dt), "test" = as.data.frame(test_dt)))
+  } else {
+    return(list("train" = as.data.frame(train_dt)))
+  }
 }
 
 # Function to standardize features for preprocessed data/data used for final model
@@ -392,7 +413,7 @@
       scale(preprocessed_data[, filtered_col_names], center = TRUE, scale = TRUE)
     )
   } else {
-    warning("no standardization has been done; either do to specified columns not being in dataframe or no columns
+    warning("no standardization has been done; either do to features columns not being in dataframe or no features
     being of class 'numeric'")
   }
 
@@ -400,31 +421,31 @@
 }
 
 # Function to standardize prior to creating or using the imputation model
-.impute_standardize <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars) {
+.impute_standardize <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, call = "standard") {
   # Get data id
   use_data <- ifelse(!is.null(preprocessed_data), "preprocessed", "train")
   # Standardize
   if (use_data == "preprocessed") {
-    data <- .standardize(preprocessed_data, target = vars$target)$preprocessed_data
-    return("data" = data)
+    data <- .standardize(preprocessed_data = preprocessed_data, target = vars$target)$preprocessed_data
+    return(list("data" = data))
   } else {
-    df_list <- .standardize_train(train, test, target = vars$target)
-    data <- df_list$train
-    test <- df_list$test
-    rm(df_list)
-    gc()
-    return("data" = data, "test" = test, "use_data" = use_data)
+    df_list <- .standardize_train(train = train, test = test, target = vars$target, call = call)
+
+    if (call != ".impute_prep") {
+      return(list("data" = df_list$train, "test" = df_list$test, "use_data" = use_data))
+    } else {
+      return(list("data" = df_list$train))
+    }
   }
 }
 
 # Function to obtain the prep model
-.impute_prep <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, impute_params) {
+.impute_prep <- function(preprocessed_data = NULL, train = NULL, vars, impute_params) {
   # Standardize
-  df_list <- .impute_standardize(preprocessed_data = NULL, train = NULL, test = NULL, vars)
-  # Get data/output
-  use_data <- df_list$use_data
-  data <- df_list$data
-  if (use_data == "train") test <- df_list$test
+  data <- .impute_standardize(
+    preprocessed_data = preprocessed_data, train = train, vars = vars,
+    call = ".impute_prep"
+  )$data
 
   # Create args list
   step_args <- list(recipe = recipes::recipe(~., data = data[, vars$predictors]))
@@ -436,10 +457,10 @@
   }
 
   # Prepare models & impute
-  if (impute_params$method == "knn_impute") {
-    step <- do.call(recipes::step_impute_knn, step_args)
-  } else {
+  if (impute_params$method == "impute_bag") {
     step <- do.call(recipes::step_impute_bag, step_args)
+  } else {
+    step <- do.call(recipes::step_impute_knn, step_args)
   }
 
   prep <- recipes::prep(x = step, training = data[, vars$predictors], retain = FALSE)
@@ -450,7 +471,11 @@
 # Apply the prep model to data
 .impute_bake <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, prep) {
   # Standardize
-  df_list <- .impute_standardize(preprocessed_data = NULL, train = NULL, test = NULL, vars)
+  if (!is.null(preprocessed_data)) {
+    df_list <- .impute_standardize(preprocessed_data = preprocessed_data, vars = vars)
+  } else {
+    df_list <- .impute_standardize(train = train, test = test, vars = vars)
+  }
   # Get data/output
   use_data <- df_list$use_data
   data <- df_list$data
@@ -465,6 +490,7 @@
       data.frame(recipes::bake(prep, new_data = test[, vars$predictors])),
       subset(test, select = vars$target)
     )
+
     return(list("train" = data, "test" = test))
   }
 }

@@ -117,15 +117,15 @@
 #'                      \itemize{
 #'                        \item \code{method}: A character specifying the imputation method. Options include:
 #'                                             \itemize{
-#'                                               \item \code{"bag_impute"}: Bagged Trees Imputation
-#'                                               \item \code{"knn_impute"}: K-Nearest Neighbors Imputation
+#'                                               \item \code{"impute_bag"}: Bagged Trees Imputation
+#'                                               \item \code{"impute_knn"}: K-Nearest Neighbors Imputation
 #'                                             }
 #'                                             Default is \code{NULL}.
 #'
 #'                       \item \code{args}: A list of additional arguments for the chosen imputation method.
 #'                                          \itemize{
-#'                                            \item \code{"bag_impute"}: \code{neighbors}
-#'                                            \item \code{"knn_impute"}: \code{trees}, \code{seed_val}
+#'                                            \item \code{"impute_bag"}: \code{trees}, \code{seed_val}
+#'                                            \item \code{"impute_knn"}: \code{neighbors}
 #'                                          }
 #'                                          For more details about these arguments, consult the \pkg{recipes}
 #'                                          documentation. Default is \code{NULL}.
@@ -267,6 +267,7 @@
 #' @author Donisha Smith
 #'
 #' @importFrom stats as.formula complete.cases glm predict sd
+#' @importFrom data.table := data.table .SD
 #'
 #' @export
 classCV <- function(data,
@@ -319,10 +320,6 @@ classCV <- function(data,
   preprocessed_data <- factored$data
   col_levels <- factored$col_levels
 
-  # Delete data
-  rm(data, factored)
-  gc()
-
   # Store information
   final_output <- .store_parameters(
     formula, missing_info, preprocessed_data, vars, models, model_params, train_params,
@@ -354,8 +351,7 @@ classCV <- function(data,
         test_indices <- .get_indices(final_output$data_partitions$indices, i)
         df_list <- .partition(preprocessed_data, test_indices)
         impute_models[[i]] <- .impute_prep(
-          train = df_list$train, test = df_list$test, vars = vars,
-          impute_params = impute_params
+          train = df_list$train, vars = vars, impute_params = impute_params
         )
       } else {
         impute_models[[i]] <- .impute_prep(
@@ -389,7 +385,7 @@ classCV <- function(data,
       if (is.null(parallel_configs$n_cores) || parallel_configs$n_cores <= 1) {
         kwargs$iters <- iters[!iters == "final"]
         kwargs$model <- model
-        train_out <- do.call(.sequential, kwargs)
+        train_out <- .sequential(kwargs)
       } else {
         kwargs$model <- model
         train_out <- .parallel(kwargs, parallel_configs, iters[!iters == "final"])
@@ -419,7 +415,7 @@ classCV <- function(data,
     if ("final" %in% iters) {
       preproc_kwargs <- list()
 
-      if (exists("impute_models") & "final" %in% impute_models) {
+      if (exists("impute_models") && "final" %in% impute_models) {
         preproc_kwargs$prep <- impute_models$final
       }
 
@@ -443,7 +439,7 @@ classCV <- function(data,
   # Save data
   if (save$data == TRUE) {
     if (exists("kwargs")) {
-      for (i in iters[!names(iters) == "final"]) {
+      for (i in iters[!iters == "final"]) {
         test_indices <- .get_indices(kwargs$indices, i)
         # Get training and validation data
         df_list <- .partition(kwargs$preprocessed_data, test_indices)
@@ -452,9 +448,9 @@ classCV <- function(data,
 
         # Store data
         if (i == "split") {
-          final_output$data_partitions$dataframes <- df_list
+          final_output$data_partitions$dataframes$split <- df_list
         } else {
-          final_output$data_partitions$dataframes$cv <- df_list
+          final_output$data_partitions$dataframes$cv[[i]] <- df_list
         }
       }
     }
@@ -468,9 +464,9 @@ classCV <- function(data,
     for (i in names(impute_models)) {
       if (i %in% c("split", "final")) {
         id <- ifelse(i == "final", "preprocessed_data", i)
-        final_output$imputation[[id]] <- impute_models[[i]]
+        final_output$imputation_models[[id]] <- impute_models[[i]]
       } else {
-        final_output$imputation$cv[[i]] <- impute_models[[i]]
+        final_output$imputation_models$cv[[i]] <- impute_models[[i]]
       }
     }
   }

@@ -66,7 +66,7 @@ genFolds <- function(data,
   final_output <- .sampling(data, train_params, target, final_output)
 
   # Get data partitions
-  if (create_data == TRUE) final_output$data_partitions$dataframes <- .partition(data, final_output$data_partitions$indices)
+  if (create_data == TRUE) final_output$data_partitions$dataframes <- .create_data(data, final_output$data_partitions$indices)
 
   return(final_output)
 }

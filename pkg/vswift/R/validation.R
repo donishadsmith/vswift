@@ -30,10 +30,6 @@
     thresh, obj, n_classes
   )
 
-  # Delete
-  rm(train, test)
-  gc()
-
   # Convert labels back
   if (model %in% c("logistic", "xgboost")) {
     for (name in names(vec$ground)) {
@@ -51,35 +47,6 @@
   } else {
     return(list("met_df" = met_df))
   }
-}
-
-# Helper function to convert keys
-.convert_keys <- function(target_vector, keys, direction) {
-  if (direction == "encode") {
-    labels <- sapply(target_vector, function(x) keys[[x]])
-  } else {
-    converted_keys <- as.list(names(keys))
-    names(converted_keys) <- as.character(as.vector(unlist(keys)))
-    labels <- sapply(target_vector, function(x) converted_keys[[as.character(x)]])
-  }
-  return(labels)
-}
-
-# Helper function for to remove observations in test set with factors in predictors not observed during train
-.remove_obs <- function(train, test, col_levels, id) {
-  # Iterate over columns and check for the factors that exist in test set but not the train set
-  for (col in names(col_levels)) {
-    delete_rows <- which(!test[, col] %in% train[, col])
-    obs <- row.names(test)[delete_rows]
-    if (length(obs) > 0) {
-      warning(sprintf(
-        "for predictor `%s` in `%s` data partition has at least one class the model has not trained on\n  these observations will be temorarily removed: %s",
-        col, id, paste(obs, collapse = ",")
-      ))
-      test <- test[-delete_rows, ]
-    }
-  }
-  return(list("test" = test))
 }
 
 # Helper function for classCV to create model

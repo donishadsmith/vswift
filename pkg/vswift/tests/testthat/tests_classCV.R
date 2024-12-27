@@ -166,7 +166,7 @@ test_that("test final w imputation", {
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
     model_params = list(final_model = TRUE),
-    impute_params = list(method = "knn_impute", args = list("neighbors" = 3)),
+    impute_params = list(method = "impute_knn", args = list("neighbors" = 3)),
     save = list(data = TRUE)
   )))
 
@@ -186,7 +186,7 @@ test_that("test imputation and missing data", {
   expect_warning(expect_warning(result <- classCV(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 4, stratified = TRUE),
-    impute_params = list(method = "knn_impute", args = list(neighbors = 5)),
+    impute_params = list(method = "impute_knn", args = list(neighbors = 5)),
     models = "qda", model_params = list(final_model = TRUE)
   )))
 
@@ -194,7 +194,7 @@ test_that("test imputation and missing data", {
   expect_warning(expect_warning(result <- classCV(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 4, stratified = FALSE),
-    impute_params = list(method = "bag_impute", args = list(trees = 5)),
+    impute_params = list(method = "impute_bag", args = list(trees = 5)),
     models = "multinom", model_params = list(final_model = TRUE)
   )))
 

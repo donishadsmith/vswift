@@ -19,18 +19,15 @@
       test <- df_list$test
     }
 
-    rm(df_list)
-    gc()
-
     out <- .validation_entry(i, df_list$train, df_list$test, kwargs)
 
     # Append metrics and models list
     if (i == "split") {
-      met_list$split <- out$metrics
-      if (kwargs$save_mods) mod_list$split <- out$models
+      met_list$split <- out$metrics$split
+      if (kwargs$save_mods) mod_list$split <- out$models$split
     } else {
       met_list$cv <- c(met_list$cv, out$metrics$cv)
-      if (kwargs$save_mods) mod_list$split <- c(mod_list$cv, out$models$cv)
+      if (kwargs$save_mods) mod_list$cv <- c(mod_list$cv, out$models$cv)
     }
   }
 
@@ -52,7 +49,7 @@
     df_list <- .partition(kwargs$preprocessed_data, test_indices)
     # Remove data; Parallel processing will create copies of data to avoid race conditions if data not shared
     kwargs$preprocessed_data <- NULL
-    gc()
+
     # Get train and test data
     train <- df_list$train
     test <- df_list$test
@@ -63,9 +60,6 @@
       train <- df_list$train
       test <- df_list$test
     }
-
-    rm(df_list)
-    gc()
 
     # Get output
     out <- .validation_entry(i, train, test, kwargs)
