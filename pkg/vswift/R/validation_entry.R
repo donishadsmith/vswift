@@ -12,6 +12,7 @@
     # Get train and test data
     train <- df_list$train
     test <- df_list$test
+
     # Prep data
     if (kwargs$train_params$standardize == TRUE || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
       df_list <- .prep_data(i, train, test, kwargs)
@@ -81,8 +82,8 @@
   name <- ifelse(i == "split", i, "cv")
 
   val_out <- .validation(
-    i, train, test, kwargs$model, kwargs$formula, kwargs$model_params, kwargs$vars,
-    kwargs$train_params$remove_obs, kwargs$col_levels, kwargs$class_summary$classes, kwargs$class_summary$keys,
+    i, train, test, kwargs$model, kwargs$formula, kwargs$model_params, kwargs$vars, kwargs$train_params$remove_obs,
+    kwargs$col_levels, kwargs$train_params$stratified, kwargs$class_summary$classes, kwargs$class_summary$keys,
     kwargs$met_df[[kwargs$model]][[name]], kwargs$train_params$random_seed, kwargs$save_mods
   )
 

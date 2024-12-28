@@ -33,6 +33,24 @@
   }
 }
 
+# Generate foldid
+.get_foldid <- function(cv_indxs, N) {
+  # Replace fold ids with numbers
+  names(cv_indxs) <- 1:length(cv_indxs)
+  # Get the fold number of each observation
+  foldid <- as.vector(sapply(1:N, function(indx) .get_key(indx, cv_indxs)))
+  # Returns vector where each position has an id, corresponding to the fold an observation belongs to
+  return(foldid)
+}
+
+# Obtain key of a value in a sublist
+.get_key <- function(indx, cv_indxs) {
+  # Get a bool vector that indicates which sublist has the indx/observation
+  bool_vec <- sapply(cv_indxs, function(x) indx %in% x)
+  # Return fold id for index
+  return(as.numeric(names(bool_vec)[bool_vec]))
+}
+
 # Unnest parallel list
 .unnest <- function(par_list, iters, saved_mods = NULL) {
   targets <- c("metrics")

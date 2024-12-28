@@ -16,7 +16,9 @@
   secondary = list(
     map_args = c("list", "NULL"),
     logistic_threshold = c("numeric", "NULL"),
+    rule = c("character", "NULL"),
     final_model = c("logical"),
+    verbose = c("logical", "NULL"),
     split = c("numeric", "NULL"),
     n_folds = c("numeric", "NULL"),
     stratified = c("logical"),

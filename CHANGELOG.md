@@ -14,6 +14,16 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.0.9002] - 2024-12-28
+### 🚀 New/Added
+- Added two new models: "regularized_logistic" & "regularized_multinomial" for penalized logistic regression and
+multinomial logistic regression with glmnet.
+### ♻ Changed
+- Cleaned/removed some additional arguments.
+- For the plot title, "Logistic Regression" changed to "Un-Regularized Logistic Regression".
+### 🐛 Fixes
+- Fixed a warning message in stratified sampling that was partially missing some information.
+
 ## [0.4.0.9001] - 2024-12-27
 ### 🐛 Fixes
 - Internal refactoring to not create all partitions prior to validation to reduce overhead and improve resource utilization especially for parallel processing.

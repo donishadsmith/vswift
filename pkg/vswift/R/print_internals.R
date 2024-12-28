@@ -14,9 +14,21 @@
   str <- capture.output(dput(x$configs$train_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Training Parameters: %s\n\n", str))
+
+  # Modify model parameters
   info <- x$configs$model_params
 
-  if (is.null(info$logistic_threshold)) info <- info[!names(info) == "logistic_threshold"]
+  xgboost_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+  check_bool <- info$map_args$xgboost$params$objective %in% xgboost_logistic
+
+  # Only show certain parameters for certain models
+  if (!model %in% c("logistic", "xgboost") || !isTRUE(check_bool)) {
+    info <- info[!names(info) == "logistic_threshold"]
+  }
+
+  if (!startsWith(model, "regularized")) {
+    info <- info[!names(info) == "rule"]
+  }
 
   info$map_args <- info$map_args[!names(info$map_args) != model]
 

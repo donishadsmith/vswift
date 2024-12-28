@@ -10,7 +10,10 @@
   }
 
   default_keys <- list(
-    "model_params" = list("map_args" = NULL, "logistic_threshold" = 0.5, "final_model" = FALSE),
+    "model_params" = list(
+      "map_args" = NULL, "logistic_threshold" = 0.5, "rule" = "min", "final_model" = FALSE,
+      "verbose" = TRUE
+    ),
     "train_params" = train_keys,
     "impute_params" = list("method" = NULL, "args" = NULL),
     "save" = list("models" = FALSE, "data" = FALSE),
@@ -65,6 +68,10 @@
     if (!"logistic" %in% models && !("xgboost" %in% models && isTRUE(check_bool))) {
       # Assigning NULL to logistic_threshold directly will delete this key and leave an empty space
       new_struct <- c(new_struct[!names(new_struct) == "logistic_threshold"], list(logistic_threshold = NULL))
+    }
+
+    if (!any(c("regularized_logistic", "regularized_multinomial") %in% models)) {
+      new_struct <- c(new_struct[!names(new_struct) %in% c("rule", "verbose")], list(rule = NULL, verbose = NULL))
     }
   }
 

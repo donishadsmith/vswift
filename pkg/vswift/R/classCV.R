@@ -3,211 +3,190 @@
 #' @name classCV
 #'
 #' @description Performs train-test splitting and/or cross-validation on classification data using various
-#'              classification algorithms.
+#' classification algorithms.
 #'
 #' @param data A data frame. Default = \code{NULL}
 #'
 #' @param formula A formula specifying the model to use. This argument cannot be used when \code{target}
-#'                (and optionally \code{predictors}) is specified. Default is \code{NULL}.
+#' (and optionally \code{predictors}) is specified. Default is \code{NULL}.
 #'
 #' @param target The name or numerical index of the target (response) variable in \code{data}. This argument cannot be
-#'               used when \code{formula} is specified. Default is \code{NULL}.
+#' used when \code{formula} is specified. Default is \code{NULL}.
 #'
 #' @param predictors A vector of variable names or numerical indices indicating the predictors in \code{data},
-#'                   used in conjunction with \code{target}. Default is \code{NULL}.
+#' used in conjunction with \code{target}. Default is \code{NULL}.
 #'
 #' @param models A character string or a character vector specifying the classification algorithm(s) to use.
-#'               The following options are available:
-#'               \itemize{
-#'                 \item \code{"lda"}: Linear Discriminant Analysis
-#'                 \item \code{"qda"}: Quadratic Discriminant Analysis
-#'                 \item \code{"logistic"}: Logistic Regression (unregularized)
-#'                 \item \code{"svm"}: Support Vector Machine
-#'                 \item \code{"naivebayes"}: Naive Bayes
-#'                 \item \code{"nnet"}: Neural Network
-#'                 \item \code{"knn"}: K-Nearest Neighbors
-#'                 \item \code{"decisiontree"}: Decision Tree
-#'                 \item \code{"randomforest"}: Random Forest
-#'                 \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
-#'                 \item \code{"xgboost"}: Extreme Gradient Boosting
-#'               }
-#'
-#'               \strong{Notes:}
-#'               \itemize{
-#'                 \item \code{"knn"}: The \code{ks} parameter should be set to specify the desired value of \emph{k},
-#'                                     ensuring that the same value is used in all folds. If \code{ks} is not provided,
-#'                                     the optimal \emph{k} is automatically selected using the \pkg{kknn} package.
-#'
-#'                 \item \code{"nnet"}: An additional argument \code{size} must be specified.
-#'
-#'                 \item \code{"xgboost"}: The following \code{objective} functions are supported:
-#'                                       \code{"reg:logistic"}, \code{"binary:logistic"}, \code{"binary:logitraw"},
-#'                                       \code{"binary:hinge"}, and \code{"multi:softprob"}.
-#'               }
+#' The following options are available:
+#' \itemize{
+#'  \item \code{"lda"}: Linear Discriminant Analysis
+#'  \item \code{"qda"}: Quadratic Discriminant Analysis
+#'  \item \code{"logistic"}: Logistic Regression (un-regularized)
+#'  \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+#'  \item \code{"svm"}: Support Vector Machine
+#'  \item \code{"naivebayes"}: Naive Bayes
+#'  \item \code{"nnet"}: Neural Network
+#'  \item \code{"knn"}: K-Nearest Neighbors
+#'  \item \code{"decisiontree"}: Decision Tree
+#'  \item \code{"randomforest"}: Random Forest
+#'  \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
+#'  \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+#'  \item \code{"xgboost"}: Extreme Gradient Boosting
+#'  }
+#'  \strong{Notes:}
+#'  \itemize{
+#'   \item \code{"knn"}: The \code{ks} parameter should be set to specify the desired value of \emph{k}, ensuring that
+#'   the same value is used in all folds. If \code{ks} is not provided, the optimal \emph{k} is automatically selected
+#'   using the \pkg{kknn} package.
+#'   \item \code{"nnet"}: An additional argument \code{size} must be specified.
+#'   \item \code{"regularized_logistic"} and \code{"regularized_multinomial"}: If \code{"lambda"} is specified in the
+#'   additional arguments and is a vector of length > 1, then internal nested cross-validation is done on the training
+#'   set to determine the optimal lambda value. The number of folds for the nested cross-validation can be
+#'   specified by using \code{nfolds} in the additional arguments. If \code{"stratified"} is \code{TRUE}, then the
+#'   relative proportions of the classes in the training set will be retained in each fold.
+#'   \item \code{"xgboost"}: The following \code{objective} functions are supported:
+#'   \code{"reg:logistic"}, \code{"binary:logistic"}, \code{"binary:logitraw"}, \code{"binary:hinge"},
+#'   and \code{"multi:softprob"}.
+#'   }
 #'
 #' @param model_params A list that can include the following elements:
-#'                     \itemize{
-#'                       \item \code{"map_args"}: A list of named sub-lists used when more than one model is specified
-#'                                                in \code{models}. Each sub-list corresponds to a particular model in
-#'                                                the \code{models} parameter and contains the arguments that will be
-#'                                                passed to that model. Default is \code{NULL}. Refer to the
-#'                                                "Additional Model Parameters" section for acceptable arguments.
-#'
-#'                       \item \code{"logistic_threshold"}: A numeric value between 0 and 1, serving as the decision
-#'                                                          boundary for logistic regression. Observations are assigned
-#'                                                          to the class coded as "1" if
-#'                                                          \code{P(Class = 1 | Features) >= logistic_threshold};
-#'                                                          otherwise, they are assigned to the class coded as "0".
-#'                                                          This threshold is used when \code{"logistic"} is included
-#'                                                          in \code{models}, or when \code{"xgboost"} is included in
-#'                                                          \code{models} with one of these objective functions:
-#'                                                          \code{"reg:logistic"}, \code{"binary:logistic"}, or
-#'                                                          \code{"binary:logitraw"}. Default is \code{0.5}.
-#'
-#'                       \item \code{"final_model"}: A logical value indicating whether to use all complete observations
-#'                                                   in the input data for model training. Default is \code{FALSE}.
-#'                     }
+#' \itemize{
+#'  \item \code{"map_args"}: A list of named sub-lists used when more than one model is specified in \code{models}.
+#'  Each sub-list corresponds to a particular model in the \code{models}] parameter and contains the arguments that will
+#'  be passed to that model. Default is \code{NULL}. Refer to the "Additional Model Parameters" section for acceptable
+#'  arguments.
+#'  \item \code{"logistic_threshold"}: A numeric value between 0 and 1, serving as the decision boundary for logistic
+#'  regression. Observations are assigned to the class coded as "1" if
+#'  \code{P(Class = 1 | Features) >= logistic_threshold}; otherwise, they are assigned to the class coded as "0". This
+#'  threshold is used when \code{"logistic"} is included in \code{models}, or when \code{"xgboost"} is included in
+#'  \code{models} with one of these objective functions: \code{"reg:logistic"}, \code{"binary:logistic"}, or
+#'  \code{"binary:logitraw"}. Default is \code{0.5}.
+#'  \item \code{"rule"}: A character that dictates the rule used to select the optimal lambda  when using
+#'  \code{"regularized_logistic"} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
+#'  \code{"1se"}. Default is \code{"min"}.
+#'  \item \code{"verbose"}: A logical value indicating whether to state the optimal lambda based on the nested
+#'  cross-validation. \item \code{"final_model"}: A logical value indicating whether to use all complete observations
+#'  in the input data for model training. Default is \code{FALSE}.
+#'  }
 #'
 #' @param train_params A list that can contain the following parameters:
-#'                     \itemize{
-#'                       \item \code{split}: A numeric value between 0 and 1 indicating the proportion of data to use
-#'                                           for training. The remaining observations are allocated to the test set. If
-#'                                           not specified or set to \code{NULL}, no train-test splitting is performed.
-#'                                           Note that this split is separate from cross-validation. Default is
-#'                                           \code{NULL}.
+#' \itemize{
+#'  \item \code{split}: A numeric value between 0 and 1 indicating the proportion of data to use
+#'  for training. The remaining observations are allocated to the test set. If not specified or set to \code{NULL}, no
+#'  train-test splitting is performed. Note that this split is separate from cross-validation. Default is \code{NULL}.
+#'  \item \code{n_folds}: An integer greater than 2 specifying the number of folds for cross-validation. If \code{NULL},
+#'  no cross-validation is performed. Default is \code{NULL}.
+#'  \item \code{stratified}: A logical value indicating whether stratified sampling should be used during splitting.
+#'  Default is \code{FALSE}.
+#'  \item \code{random_seed}: A numeric value for the random seed to ensure reproducibility of random splitting and any
+#'  model training that relies on random starts. Default is \code{NULL}.
+#'  \item \code{standardize}: A logical or a numeric/character vector. If \code{TRUE}, all numeric columns
+#'  (except the target) are standardized by computing the mean and standard deviation from the training subset and
+#'  applying them to both the training and test/validation sets. This prevents data leakage. A vector of column indices
+#'  or names can also be provided to only standardize specific columns.
+#'  \item \code{remove_obs}: A logical value indicating whether to remove observations in the test/validation set that
+#'  contain levels of categorical predictors not seen in the training data. Some algorithms may produce errors when
+#'  encountering such levels in the validation data during prediction. Default is \code{FALSE}.
+#'  }
 #'
-#'                       \item \code{n_folds}: An integer greater than 2 specifying the number of folds for
-#'                                             cross-validation. If \code{NULL}, no cross-validation is performed.
-#'                                             Default is \code{NULL}.
-#'
-#'                       \item \code{stratified}: A logical value indicating whether stratified sampling should be used
-#'                                                during splitting. Default is \code{FALSE}.
-#'
-#'                       \item \code{random_seed}: A numeric value for the random seed to ensure reproducibility of
-#'                                                 random splitting and any model training that relies on random starts.
-#'                                                 Default is \code{NULL}.
-#'
-#'                       \item \code{standardize}: A logical or a numeric/character vector. If \code{TRUE}, all numeric
-#'                                                 columns (except the target) are standardized by computing the mean
-#'                                                 and standard deviation from the training subset and applying them to
-#'                                                 both the training and test/validation sets. This prevents data
-#'                                                 leakage. A vector of column indices or names can also be provided to
-#'                                                 only standardize specific columns.
-#'
-#'                       \item \code{remove_obs}: A logical value indicating whether to remove observations in the
-#'                                                test/validation set that contain levels of categorical predictors not
-#'                                                seen in the training data. Some algorithms may produce errors when
-#'                                                encountering such levels in the validation data during prediction.
-#'                                                Default is \code{FALSE}.
-#'                     }
-#'
-#' @param impute_params A list defining how to handle missing values among predictors/features.
-#'                      During imputation, the target variable is excluded from both training and
-#'                      test/validation sets. Prior to imputation, unlabeled data (observations with
-#'                      missing targets) are removed, and any specified train-test split or cross-validation
-#'                      folds are created. A separate imputation model is then generated for each training
-#'                      subset (one for the train-test split and one per fold). Each imputation model is
-#'                      applied to both its corresponding training and test/validation subsets to minimize
-#'                      data leakage.
-#'
-#'                      Note that numerical columns are automatically standardized (regardless of
-#'                      \code{train_params$standardize}) before imputation occurs. The \pkg{recipes} package is used for
-#'                      imputation. The following parameters are available:
-#'
-#'                      \itemize{
-#'                        \item \code{method}: A character specifying the imputation method. Options include:
-#'                                             \itemize{
-#'                                               \item \code{"impute_bag"}: Bagged Trees Imputation
-#'                                               \item \code{"impute_knn"}: K-Nearest Neighbors Imputation
-#'                                             }
-#'                                             Default is \code{NULL}.
-#'
-#'                       \item \code{args}: A list of additional arguments for the chosen imputation method.
-#'                                          \itemize{
-#'                                            \item \code{"impute_bag"}: \code{trees}, \code{seed_val}
-#'                                            \item \code{"impute_knn"}: \code{neighbors}
-#'                                          }
-#'                                          For more details about these arguments, consult the \pkg{recipes}
-#'                                          documentation. Default is \code{NULL}.
+#' @param impute_params A list defining how to handle missing values among predictors/features. During imputation, the
+#' target variable is excluded from both training and test/validation sets. Prior to imputation, unlabeled data
+#' (observations with missing targets) are removed, and any specified train-test split or cross-validation folds are
+#' created. A separate imputation model is then generated for each training subset (one for the train-test split and
+#' one per fold). Each imputation model is applied to both its corresponding training and test/validation subsets to
+#' minimize data leakage. Note that numerical columns are automatically standardized (regardless of
+#' \code{train_params$standardize}) before imputation occurs. The \pkg{recipes} package is used for imputation. The
+#' following parameters are available:
+#' \itemize{
+#'  \item \code{method}: A character specifying the imputation method. Options include:
+#'  \itemize{
+#'   \item \code{"impute_bag"}: Bagged Trees Imputation
+#'   \item \code{"impute_knn"}: K-Nearest Neighbors Imputation
 #'   }
+#'   Default is \code{NULL}.
+#'  \item \code{args}: A list of additional arguments for the chosen imputation method.
+#'   \itemize{
+#'   \item \code{"impute_bag"}: \code{trees}, \code{seed_val}
+#'   \item \code{"impute_knn"}: \code{neighbors}
+#'   }
+#'   For more details about these arguments, consult the \pkg{recipes} documentation. Default is \code{NULL}.
+#'  }
 #'
 #' @param save A list that may include the following:
-#'             \itemize{
-#'               \item \code{models}: A logical value indicating whether to save the trained models
-#'                                    (including imputation models) used for train-test splits or cross-validation.
-#'                                    Default is \code{FALSE}.
-#'
-#'               \item \code{data}: A logical value indicating whether to save all training and test/validation sets
-#'                                  used during train-test splitting and/or cross-validation. Default is \code{FALSE}.
-#'             }
+#' \itemize{
+#' \item \code{models}: A logical value indicating whether to save the trained models (including imputation models)
+#' used for train-test splits or cross-validation. Default is \code{FALSE}.
+#' \item \code{data}: A logical value indicating whether to save all training and test/validation sets used during
+#' train-test splitting and/or cross-validation. Default is \code{FALSE}.
+#' }
 #'
 #' @param parallel_configs A list that may include the following:
-#'                         \itemize{
-#'                           \item \code{n_cores}: A numeric value specifying the number of cores for parallel
-#'                                                 processing. Default is \code{NULL}.
+#' \itemize{
+#' \item \code{n_cores}: A numeric value specifying the number of cores for parallel processing. Default is \code{NULL}.
+#' \item \code{future.seed}: A numeric value indicating the seed to use with \pkg{future} for parallel processing.
+#' }
 #'
-#'                           \item \code{future.seed}: A numeric value indicating the seed to use with \pkg{future} for
-#'                                                     parallel processing.
-#'                         }
-#'
-#' @param ... Additional arguments for the chosen classification algorithm. These arguments serve as an alternative
-#'            to specifying model-specific parameters in \code{model_params$map_args} when only a single
-#'            model is specified in \code{models}. If multiple models are specified, then \code{map_args} must be used.
-#'            Refer to each algorithm's documentation for details on additional arguments.
+#' @param ... Additional arguments for the chosen classification algorithm. These arguments serve as an alternative to
+#' specifying model-specific parameters in \code{model_params$map_args} when only a single model is specified in
+#' \code{models}. If multiple models are specified, then \code{map_args} must be used. Refer to each algorithm's
+#' documentation for details on additional arguments.
 #'
 #' @section Additional Model Parameters:
-#'          Each element in \code{models} accepts arguments specific to its underlying classification algorithm.
-#'          Refer to the original package documentation for more information about these arguments.
-#'          Further details on the external package functions used for each model are provided in the
-#'          "Package Dependencies" section. The available arguments for each \code{models} value are:
-#'           \itemize{
-#'             \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}, \code{tol}
-#'             \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
-#'             \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
-#'             \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu},
-#'                                 \code{class.weights}, \code{shrinking}, \code{epsilon}, \code{tolerance},
-#'                                 \code{cachesize}
-#'             \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{bw}, \code{kernel},
-#'                                        \code{adjust}, \code{weights}, \code{give.Rkern}, \code{subdensity},
-#'                                        \code{from}, \code{to}, \code{cut}
-#'             \item \code{"nnet"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax},
-#'                                  \code{entropy}, \code{abstol}, \code{reltol}, \code{Hess}, \code{skip}
-#'             \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
-#'             \item \code{"decisiontree"}: \code{weights}, \code{method},\code{parms}, \code{control}, \code{cost}
-#'             \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize},
-#'                                          \code{importance}, \code{localImp}, \code{nPerm}, \code{proximity},
-#'                                          \code{keep.forest}, \code{norm.votes}
-#'             \item \code{"multinom"}: \code{weights}, \code{Hess}
-#'             \item \code{"xgboost"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval},
-#'                                     \code{verbose}, \code{early_stopping_rounds}, \code{obj}, \code{save_period},
-#'                                     \code{save_name}
-#'           }
+#' Each element in \code{models} accepts arguments specific to its underlying classification algorithm. Refer to the
+#' original package documentation for more information about these arguments. Further details on the external package
+#' functions used for each model are provided in the "Package Dependencies" section.
+#' The available arguments for each \code{models} are:
+#' \itemize{
+#'  \item \code{"lda"}: \code{prior}, \code{method}, \code{nu}, \code{tol}
+#'  \item \code{"qda"}: \code{prior}, \code{method}, \code{nu}
+#'  \item \code{"logistic"}: \code{weights}, \code{singular.ok}, \code{maxit}
+#'  \item \code{"regularized_logistic"}: \code{"alpha"}, \code{"lambda"}, \code{"penalty.factor"}, \code{"maxit"},
+#'  \code{"thresh"}, \code{"nfolds"}
+#'  \item \code{"svm"}: \code{kernel}, \code{degree}, \code{gamma}, \code{cost}, \code{nu}, \code{class.weights},
+#'  \code{shrinking}, \code{epsilon}, \code{tolerance}, \code{cachesize}
+#'  \item \code{"naivebayes"}: \code{prior}, \code{laplace}, \code{usekernel}, \code{usepoisson}
+#'  \item \code{"nnet"}: \code{size}, \code{rang}, \code{decay}, \code{maxit}, \code{softmax}, \code{entropy},
+#'  \code{abstol}, \code{reltol}, \code{Hess}, \code{skip}
+#'  \item \code{"knn"}: \code{kmax}, \code{ks}, \code{distance}, \code{kernel}
+#'  \item \code{"decisiontree"}: \code{parms}, \code{control}, \code{cost}
+#'  \item \code{"randomforest"}: \code{weights}, \code{ntree}, \code{mtry}, \code{nodesize}, \code{importance},
+#'  \code{localImp}, \code{nPerm}, \code{proximity}, \code{keep.forest}, \code{norm.votes}
+#'  \item \code{"multinom"}: \code{Hess}
+#'  \item \code{"regularized_multinomial"}: \code{"alpha"}, \code{"lambda"}, \code{"penalty.factor"}, \code{"maxit"},
+#'  \code{"thresh"}, \code{"nfolds"}
+#'  \item \code{"xgboost"}: \code{params}, \code{nrounds}, \code{print_every_n}, \code{feval}, \code{verbose},
+#'  \code{early_stopping_rounds}, \code{obj}, \code{save_period}, \code{save_name}
+#'  }
 #'
 #' @section Package Dependencies:
-#'          Each option of \code{models} uses the following function from the specified packages:
-#'   \itemize{
-#'     \item \code{"lda"}: \code{lda} from \pkg{MASS} package
-#'     \item \code{"qda"}: \code{qda} from \pkg{MASS} package
-#'     \item \code{"logistic"}: \code{glm} from \pkg{base} package with \code{family = "binomial"}
-#'     \item \code{"svm"}: \code{svm()} from \pkg{e1071} package
-#'     \item \code{"naivebayes"}: \code{naive_bayes} from \pkg{naivebayes} package
-#'     \item \code{"nnet"}: \code{nnet} from \pkg{nnet} package
-#'     \item \code{"knn"}: \code{train.kknn} from \pkg{kknn} package
-#'     \item \code{"decisiontree"}: \code{rpart} from \pkg{rpart} package
-#'     \item \code{"randomforest"}: \code{randomForest} from \pkg{randomForest} package
-#'     \item \code{"multinom"}: \code{multinom} from \pkg{nnet} package
-#'     \item \code{"xgboost"}: \code{xgb.train} from \pkg{xgboost} package
-#'   }
+#' Each option of \code{models} uses the following function from the specified packages:
+#' \itemize{
+#' \item \code{"lda"}: \code{lda} from \pkg{MASS} package
+#' \item \code{"qda"}: \code{qda} from \pkg{MASS} package
+#' \item \code{"logistic"}: \code{glm} from \pkg{base} package with \code{family = "binomial"}
+#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with {family = "binomial"} and using
+#' \code{cv.glmnet} to select the optimal lambda.
+#' \item \code{"svm"}: \code{svm()} from \pkg{e1071} package
+#' \item \code{"naivebayes"}: \code{naive_bayes} from \pkg{naivebayes} package
+#' \item \code{"nnet"}: \code{nnet} from \pkg{nnet} package
+#' \item \code{"knn"}: \code{train.kknn} from \pkg{kknn} package
+#' \item \code{"decisiontree"}: \code{rpart} from \pkg{rpart} package
+#' \item \code{"randomforest"}: \code{randomForest} from \pkg{randomForest} package
+#' \item \code{"multinom"}: \code{multinom} from \pkg{nnet} package
+#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with {family = "multinomial"} and using
+#' \code{cv.glmnet} to select the optimal lambda.
+#' \item \code{"xgboost"}: \code{xgb.train} from \pkg{xgboost} package
+#' }
 #'
 #' @return A list (vswift object) containing:
-#'   \itemize{
-#'     \item Any train-test split or cross-validation results (if specified).
-#'     \item Performance metrics.
-#'     \item Class distribution details for the training set, test set, and folds (if applicable).
-#'     \item Saved models (if requested).
-#'     \item Saved datasets (if requested).
-#'     \item A final model (if requested).
-#'   }
+#' \itemize{
+#'  \item Any train-test split or cross-validation results (if specified).
+#'  \item Performance metrics.
+#'  \item Class distribution details for the training set, test set, and folds (if applicable).
+#'  \item Saved models (if requested).
+#'  \item Saved datasets (if requested).
+#'  \item A final model (if requested).
+#'  }
 #'
 #' @seealso \code{\link{print.vswift}}, \code{\link{plot.vswift}}
 #'
@@ -275,7 +254,10 @@ classCV <- function(data,
                     target = NULL,
                     predictors = NULL,
                     models,
-                    model_params = list("map_args" = NULL, "logistic_threshold" = 0.5, "final_model" = FALSE),
+                    model_params = list(
+                      "map_args" = NULL, "logistic_threshold" = 0.5, "rule" = "min", "verbose" = TRUE,
+                      "final_model" = FALSE
+                    ),
                     train_params = list(
                       "split" = NULL, "n_folds" = NULL, "stratified" = FALSE,
                       "random_seed" = NULL, "standardize" = FALSE, "remove_obs" = FALSE
@@ -332,7 +314,7 @@ classCV <- function(data,
   }
 
   # Sampling data
-  if (!is.null(train_params$split) | !is.null(train_params$n_folds)) {
+  if (!is.null(train_params$split) || !is.null(train_params$n_folds)) {
     # Initialize list to store sample indices
     final_output$data_partitions <- list()
     final_output <- .sampling(preprocessed_data, train_params, vars$target, final_output)
@@ -415,7 +397,7 @@ classCV <- function(data,
     if ("final" %in% iters) {
       preproc_kwargs <- list()
 
-      if (exists("impute_models") && "final" %in% impute_models) {
+      if (exists("impute_models") && "final" %in% names(impute_models)) {
         preproc_kwargs$prep <- impute_models$final
       }
 
@@ -425,14 +407,28 @@ classCV <- function(data,
       }
 
       # Generate model depending on chosen models
-      final_output$models[[model]]$final <- .generate_model(
-        model = model,
-        formula = final_output$configs$formula,
-        vars = vars,
-        data = preprocessed_data,
-        add_args = model_params$mod_args,
-        random_seed = train_params$random_seed
-      )
+      if (startsWith(model, "regularized")) {
+        final_output$models[[model]]$final <- .regularized(
+          id = "Final Model",
+          model = model,
+          vars = vars,
+          data = preprocessed_data,
+          add_args = model_params$mod_args,
+          random_seed = train_params$random_seed,
+          stratified = if (is.null(train_params$stratified)) FALSE else train_params$stratified,
+          rule = if (is.null(model_params$rule)) "min" else model_params$rule,
+          verbose = if (is.null(model_params$verbose)) TRUE else model_params$verbose
+        )
+      } else {
+        final_output$models[[model]]$final <- .generate_model(
+          model = model,
+          formula = final_output$configs$formula,
+          vars = vars,
+          data = preprocessed_data,
+          add_args = model_params$mod_args,
+          random_seed = train_params$random_seed
+        )
+      }
     }
   }
 

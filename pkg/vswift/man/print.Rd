@@ -13,33 +13,34 @@
 \item{configs}{A logical value indicating whether to print model configuration information from the vswift
 object. Default is \code{TRUE}.}
 
-\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object.
-If \code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along
-with their mean values (if cross-validation was used). Default is \code{TRUE}.}
+\item{metrics}{A logical value indicating whether to print model evaluation metrics from the vswift object. If
+\code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along with their mean values
+(if cross-validation was used). Default is \code{TRUE}.}
 
 \item{models}{A character string or a character vector specifying the classification algorithm(s) information to be
-printed. If \code{NULL}, all model information will be printed.
-The following options are available:
+printed. If \code{NULL}, all model information will be printed. The following options are available:
 \itemize{
-  \item \code{"lda"}: Linear Discriminant Analysis
-  \item \code{"qda"}: Quadratic Discriminant Analysis
-  \item \code{"logistic"}: Logistic Regression (unregularized)
-  \item \code{"svm"}: Support Vector Machine
-  \item \code{"naivebayes"}: Naive Bayes
-  \item \code{"nnet"}: Neural Network
-  \item \code{"knn"}: K-Nearest Neighbors
-  \item \code{"decisiontree"}: Decision Tree
-  \item \code{"randomforest"}: Random Forest
-  \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
-  \item \code{"xgboost"}: Extreme Gradient Boosting
-}
-Default = \code{NULL}.}
+ \item \code{"lda"}: Linear Discriminant Analysis
+ \item \code{"qda"}: Quadratic Discriminant Analysis
+ \item \code{"logistic"}: Logistic Regression (un-regularized)
+ \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+ \item \code{"svm"}: Support Vector Machine
+ \item \code{"naivebayes"}: Naive Bayes
+ \item \code{"nnet"}: Neural Network
+ \item \code{"knn"}: K-Nearest Neighbors
+ \item \code{"decisiontree"}: Decision Tree
+ \item \code{"randomforest"}: Random Forest
+ \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
+ \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+ \item \code{"xgboost"}: Extreme Gradient Boosting
+ }
+ Default = \code{NULL}.}
 
 \item{...}{No additional arguments are currently supported.}
 }
 \description{
 Prints model configuration details and/or model evaluation metrics (classification accuracy, precision,
-             recall, and F1 scores) from a vswift object.
+recall, and F1 scores) from a vswift object.
 }
 \examples{
 # Load an example dataset

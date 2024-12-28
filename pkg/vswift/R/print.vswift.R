@@ -1,35 +1,37 @@
 #' Print Parameter Information and/or Model Evaluation Metrics
 #'
 #' @name print
+#'
 #' @description Prints model configuration details and/or model evaluation metrics (classification accuracy, precision,
-#'              recall, and F1 scores) from a vswift object.
+#' recall, and F1 scores) from a vswift object.
 #'
 #' @param x A vswift object.
 #'
 #' @param configs A logical value indicating whether to print model configuration information from the vswift
-#'                object. Default is \code{TRUE}.
+#' object. Default is \code{TRUE}.
 #'
-#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object.
-#'                If \code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along
-#'                with their mean values (if cross-validation was used). Default is \code{TRUE}.
+#' @param metrics A logical value indicating whether to print model evaluation metrics from the vswift object. If
+#' \code{TRUE}, precision, recall, and F1 scores for each class will be displayed, along with their mean values
+#' (if cross-validation was used). Default is \code{TRUE}.
 #'
 #' @param models A character string or a character vector specifying the classification algorithm(s) information to be
-#'               printed. If \code{NULL}, all model information will be printed.
-#'               The following options are available:
-#'               \itemize{
-#'                 \item \code{"lda"}: Linear Discriminant Analysis
-#'                 \item \code{"qda"}: Quadratic Discriminant Analysis
-#'                 \item \code{"logistic"}: Logistic Regression (unregularized)
-#'                 \item \code{"svm"}: Support Vector Machine
-#'                 \item \code{"naivebayes"}: Naive Bayes
-#'                 \item \code{"nnet"}: Neural Network
-#'                 \item \code{"knn"}: K-Nearest Neighbors
-#'                 \item \code{"decisiontree"}: Decision Tree
-#'                 \item \code{"randomforest"}: Random Forest
-#'                 \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
-#'                 \item \code{"xgboost"}: Extreme Gradient Boosting
-#'               }
-#'               Default = \code{NULL}.
+#' printed. If \code{NULL}, all model information will be printed. The following options are available:
+#' \itemize{
+#'  \item \code{"lda"}: Linear Discriminant Analysis
+#'  \item \code{"qda"}: Quadratic Discriminant Analysis
+#'  \item \code{"logistic"}: Logistic Regression (un-regularized)
+#'  \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+#'  \item \code{"svm"}: Support Vector Machine
+#'  \item \code{"naivebayes"}: Naive Bayes
+#'  \item \code{"nnet"}: Neural Network
+#'  \item \code{"knn"}: K-Nearest Neighbors
+#'  \item \code{"decisiontree"}: Decision Tree
+#'  \item \code{"randomforest"}: Random Forest
+#'  \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
+#'  \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+#'  \item \code{"xgboost"}: Extreme Gradient Boosting
+#'  }
+#'  Default = \code{NULL}.
 #'
 #' @param ... No additional arguments are currently supported.
 #'
@@ -63,7 +65,9 @@
       "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
       "svm" = "Support Vector Machine", "nnet" = "Neural Network", "decisiontree" = "Decision Tree",
       "randomforest" = "Random Forest", "xgboost" = "Extreme Gradient Boosting",
-      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+      "multinom" = "Un-Regularized Multinomial Logistic Regression", "logistic" = "Un-Regularized Logistic Regression",
+      "regularized_multinomial" = "Regularized Multinomial Logistic Regression",
+      "regularized_logistic" = "Regularized Logistic Regression",
       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
     )
 

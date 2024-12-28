@@ -2,50 +2,48 @@
 #'
 #' @name plot
 #'
-#' @description Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a
-#'              \code{vswift} object.
+#' @description Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a \code{vswift}
+#' object.
 #'
 #' @param x A \code{vswift} object.
 #'
-#' @param metrics A character vector indicating which metrics to plot. Supported options are
-#'                \code{"accuracy"}, \code{"precision"}, \code{"recall"}, and \code{"f1"}.
-#'                Default is \code{c("accuracy", "precision", "recall", "f1")}.
+#' @param metrics A character vector indicating which metrics to plot. Supported options are \code{"accuracy"},
+#' \code{"precision"}, \code{"recall"}, and \code{"f1"}. Default is \code{c("accuracy", "precision", "recall", "f1")}.
 
 #'
 #' @param models A character string or a character vector specifying the classification algorithm(s) evaluation metrics
-#'               to plot. If \code{NULL}, all models will be plotted.
-#'               The following options are available:
-#'               \itemize{
-#'                 \item \code{"lda"}: Linear Discriminant Analysis
-#'                 \item \code{"qda"}: Quadratic Discriminant Analysis
-#'                 \item \code{"logistic"}: Logistic Regression (unregularized)
-#'                 \item \code{"svm"}: Support Vector Machine
-#'                 \item \code{"naivebayes"}: Naive Bayes
-#'                 \item \code{"nnet"}: Neural Network
-#'                 \item \code{"knn"}: K-Nearest Neighbors
-#'                 \item \code{"decisiontree"}: Decision Tree
-#'                 \item \code{"randomforest"}: Random Forest
-#'                 \item \code{"multinom"}: Multinomial Logistic Regression (unregularized)
-#'                 \item \code{"xgboost"}: Extreme Gradient Boosting
-#'               }
-#'               Default = \code{NULL}.
+#' to plot. If \code{NULL}, all models will be plotted. The following options are available:
+#' \itemize{
+#'  \item \code{"lda"}: Linear Discriminant Analysis
+#'  \item \code{"qda"}: Quadratic Discriminant Analysis
+#'  \item \code{"logistic"}: Logistic Regression (un-regularized)
+#'  \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+#'  \item \code{"svm"}: Support Vector Machine
+#'  \item \code{"naivebayes"}: Naive Bayes
+#'  \item \code{"nnet"}: Neural Network
+#'  \item \code{"knn"}: K-Nearest Neighbors
+#'  \item \code{"decisiontree"}: Decision Tree
+#'  \item \code{"randomforest"}: Random Forest
+#'  \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
+#'  \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+#'  \item \code{"xgboost"}: Extreme Gradient Boosting
+#'  }
+#'  Default = \code{NULL}.
 #'
-#' @param split A logical value indicating whether to plot metrics for the train-test split results.
-#'              Default is \code{TRUE}.
+#' @param split A logical value indicating whether to plot metrics for the train-test split results. Default is
+#' \code{TRUE}.
 #'
-#' @param cv A logical value indicating whether to plot metrics for cross-validation results.
-#'           Default is \code{TRUE}.
+#' @param cv A logical value indicating whether to plot metrics for cross-validation results. Default is \code{TRUE}.
 #'
 #' @param class_names A vector of the specific classes to plot. If \code{NULL}, plots are generated for all classes.
-#'                    Default is \code{NULL}.
+#' Default is \code{NULL}.
 #'
-#' @param path A character string specifying the directory (with a trailing slash) to save the plots.
-#'             If \code{NULL}, the plots are saved to the current working directory.
-#'             Default is \code{NULL}.
+#' @param path A character string specifying the directory (with a trailing slash) to save the plots. If \code{NULL},
+#' the plots are saved to the current working directory. Default is \code{NULL}.
 #'
 #' @param ... Additional arguments passed to the \code{png} function.
 #'
-#' @return lots representing the specified evaluation metrics.
+#' @return Plots representing the specified evaluation metrics.
 #'
 #' @examples
 #' # Load an example dataset
@@ -80,7 +78,9 @@
       "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
       "svm" = "Support Vector Machine", "nnet" = "Neural Network", "decisiontree" = "Decision Tree",
       "randomforest" = "Random Forest", "xgboost" = "Extreme Gradient Boosting",
-      "multinom" = "Multinomial Logistic Regression", "logistic" = "Logistic Regression",
+      "multinom" = "Un-Regularized Multinomial Logistic Regression", "logistic" = "Un-Regularized Logistic Regression",
+      "regularized_multinomial" = "Regularized Multinomial Logistic Regression",
+      "regularized_logistic" = "Regularized Logistic Regression",
       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
     )
 

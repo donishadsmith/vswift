@@ -21,6 +21,8 @@ test_that("testing if split works for genFolds", {
   expect_no_error(
     folds <- genFolds(data = data, target = 5, train_params = list(split = 0.8, stratified = F), create_data = T)
   )
+
+  expect_true(!is.null(folds))
 })
 
 
@@ -32,4 +34,6 @@ test_that("testing if cv works for genFolds", {
   expect_no_error(
     folds <- genFolds(data = data, target = 5, train_params = list(n_folds = 5, stratified = F), create_data = T)
   )
+
+  expect_true(!is.null(folds))
 })

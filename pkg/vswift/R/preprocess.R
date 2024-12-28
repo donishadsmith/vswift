@@ -5,8 +5,8 @@
   # List of valid inputs
   valid_inputs <- list(
     models = c(
-      "lda", "qda", "logistic", "svm", "naivebayes", "nnet", "knn", "decisiontree",
-      "randomforest", "multinom", "xgboost"
+      "lda", "qda", "logistic", "regularized_logistic", "svm", "naivebayes", "nnet", "knn", "decisiontree",
+      "randomforest", "multinom", "regularized_multinomial", "xgboost"
     ),
     imputes = c("impute_bag", "impute_knn")
   )
@@ -29,21 +29,27 @@
   # Check formula and target
   if (inherits(c(formula, target), "NULL")) stop(sprintf("either `formula` or `target` must be specified"))
 
-  if (!is.null(formula) & any(!is.null(target), !is.null(predictors))) {
+  if (!is.null(formula) && any(!is.null(target), !is.null(predictors))) {
     stop(sprintf("`formula` cannot be used when `target` or `predictors` are specified"))
   }
 
   # Check models
   error_msg <- "invalid model specified in `%s`, the following is a list of valid models: '%s'"
 
-  if (!is.null(models) & !all(models %in% valid_inputs$models)) {
+  if (!is.null(models) && !all(models %in% valid_inputs$models)) {
     stop(sprintf(error_msg, "models", paste(valid_inputs$models, collapse = "', '")))
   }
 
   # Check map_args
   map_args_models <- names(model_params$map_args)
-  if (!is.null(map_args_models) & !all(map_args_models %in% valid_inputs$models)) {
+  if (!is.null(map_args_models) && !all(map_args_models %in% valid_inputs$models)) {
     stop(sprintf(error_msg, "model_params$map_args", paste(valid_inputs$models, collapse = "', '")))
+  }
+
+  # Check rule
+  if (any(c("regularized_logistic", "regularized_multinomial") %in% models) && !is.null(model_params$rule)) {
+    intersect_char <- intersect(c("min", "1se"), model_params$rule)
+    if (length(intersect_char) == 0) stop("'min' and '1se' are the only valid options for `model_params$rule`")
   }
 
   # Check vars
@@ -86,7 +92,7 @@
       stop(
         sprintf(
           "invalid method specified in `impute_params$method`, the following is a list of valid methods: '%s'",
-          paste(valid_inputs$models, collapse = "', '")
+          paste(valid_inputs$imputes, collapse = "', '")
         )
       )
     }
@@ -118,7 +124,7 @@
 
   # Check target
   if (inherits(vars$target, c("numeric", "integer"))) {
-    miss_target <- !vars$target %in% 1:ncol(data)
+    miss_target <- !vars$target %in% seq_len(ncol(data))
   } else {
     miss_target <- !vars$target %in% colnames(data)
   }
@@ -128,7 +134,7 @@
   # Check predictors
   if (!is.null(vars$predictors)) {
     if (inherits(vars$predictors, c("numeric", "integer"))) {
-      pred_diff <- setdiff(vars$predictors, 1:ncol(data))
+      pred_diff <- setdiff(vars$predictors, seq_len(ncol(data)))
     } else {
       pred_diff <- setdiff(vars$predictors, colnames(data)[!colnames(data) == vars$target])
     }
@@ -154,30 +160,35 @@
   }
 
   # List of valid arguments for each model type
+  glmnet_args <- c(
+    "alpha", "lambda", "penalty.factor", "maxit", "thresh", "nfolds"
+  )
+
   valid_args <- list(
     "model" = list(
       "lda" = c("prior", "method", "nu", "tol"),
       "qda" = c("prior", "method", "nu"),
       "logistic" = c("weights", "singular.ok", "maxit"),
+      "regularized_logistic" = glmnet_args,
       "svm" = c(
         "kernel", "degree", "gamma", "cost", "nu", "class.weights", "shrinking",
         "epsilon", "tolerance", "cachesize"
       ),
       "naivebayes" = c(
-        "prior", "laplace", "usekernel", "bw", "kernal", "adjust", "weights",
-        "give.Rkern", "subdensity", "from", "to", "cut"
+        "prior", "laplace", "usekernel", "usepoisson"
       ),
       "nnet" = c(
         "size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol", "Hess",
         "skip"
       ),
       "knn" = c("kmax", "ks", "distance", "kernel"),
-      "decisiontree" = c("weights", "method", "parms", "control", "cost"),
+      "decisiontree" = c("method", "parms", "control", "cost"),
       "randomforest" = c(
-        "weights", "classwt", "ntree", "mtry", "nodesize", "importance", "localImp",
+        "classwt", "ntree", "mtry", "nodesize", "importance", "localImp",
         "nPerm", "proximity", "keep.forest", "norm.votes"
       ),
-      "multinom" = c("weights", "Hess"),
+      "multinom" = c("Hess"),
+      "regularized_multinomial" = glmnet_args,
       "xgboost" = c(
         "params", "nrounds", "print_every_n", "feval", "verbose",
         "early_stopping_rounds", "obj", "save_period", "save_name"
@@ -198,7 +209,7 @@
     invalid_args <- user_args[!user_args %in% valid_args[[call]][[method]]]
 
     # Special case
-    if (method == "knn" & !"ks" %in% user_args) {
+    if (method == "knn" && !"ks" %in% user_args) {
       warning("if `ks` not specified, knn may select a different optimal k for each fold")
     }
 
@@ -427,7 +438,7 @@
   # Standardize
   if (use_data == "preprocessed") {
     data <- .standardize(preprocessed_data = preprocessed_data, target = vars$target)$preprocessed_data
-    return(list("data" = data))
+    return(list("data" = data, "use_data" = use_data))
   } else {
     df_list <- .standardize_train(train = train, test = test, target = vars$target, call = call)
 
@@ -476,9 +487,11 @@
   } else {
     df_list <- .impute_standardize(train = train, test = test, vars = vars)
   }
+
   # Get data/output
   use_data <- df_list$use_data
   data <- df_list$data
+
   if (use_data == "train") test <- df_list$test
 
   data <- cbind(data.frame(recipes::bake(prep, new_data = data[, vars$predictors])), subset(data, select = vars$target))

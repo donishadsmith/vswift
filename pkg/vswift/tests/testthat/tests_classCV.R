@@ -26,7 +26,7 @@ test_that("test new formula method", {
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
 })
 
-test_that("k-fold CV no stratified sampling", {
+test_that("CV no stratified sampling", {
   data <- iris
   expect_no_error(result <- classCV(data = data, target = "Species", models = "svm", train_params = list(n_folds = 3)))
   # Ensure values are greater than or equal to 0 and less than or equal to one
@@ -35,12 +35,13 @@ test_that("k-fold CV no stratified sampling", {
 })
 
 
-test_that("k-fold CV with stratified", {
+test_that("CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
     data = data, target = "Species", models = "nnet", size = 5,
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 50)
   ))
+  expect_true(all(c("proportions", "indices") %in% names(result$class_summary)))
 })
 
 
@@ -146,6 +147,8 @@ test_that("test final", {
     model_params = list(final_model = TRUE)
   ))
 
+  expect_true(all(!is.na(result$models$multinom$final)))
+
   # Should stop
   expect_error(result <- classCV(
     data = data, target = "Species", models = "multinom",
@@ -162,6 +165,7 @@ test_that("test final w imputation", {
     data[sample(1:nrow(data), size = round(nrow(data) * .10)), i] <- NA
   }
 
+  # Without folds
   expect_warning(expect_warning(result <- classCV(
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
@@ -170,7 +174,16 @@ test_that("test final w imputation", {
     save = list(data = TRUE)
   )))
 
+  expect_true(all(!is.na(result$data_partitions$dataframes$final)))
 
+  # With folds
+  expect_warning(expect_warning(result <- classCV(
+    data = data, target = "Species", models = "multinom",
+    train_params = list(n_folds = 3),
+    model_params = list(final_model = TRUE),
+    impute_params = list(method = "impute_knn", args = list("neighbors" = 3)),
+    save = list(data = TRUE)
+  )))
 
   expect_true(all(!is.na(result$data_partitions$dataframes$final)))
 })
@@ -406,6 +419,7 @@ test_that("objectives-multi", {
       model_params = list(map_args = args)
     )
 
+    expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 
@@ -424,6 +438,7 @@ test_that("objectives-multi", {
       model_params = list(map_args = args)
     )
 
+    expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
 })
@@ -449,6 +464,7 @@ test_that("binary target", {
       model_params = list(map_args = args)
     )
 
+    expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
 
 
@@ -460,6 +476,40 @@ test_that("binary target", {
       model_params = list(map_args = args)
     )
 
+    expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
   }
+})
+
+
+test_that("test regularized", {
+  df <- iris
+
+  df$Species <- ifelse(df$Species == "setosa", "setosa", "not setosa")
+
+  map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3))
+
+  result <- classCV(
+    data = df,
+    target = "Species",
+    models = c("regularized_logistic", "regularized_multinomial"),
+    train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+    model_params = list(map_args = map_args)
+  )
+
+  expect_true(all(!is.na(result$metrics$regularized_logistic$split)))
+  expect_true(all(!is.na(result$metrics$regularized_multinomial$split)))
+
+  expect_true(all(!is.na(result$metrics$regularized_logistic$cv)))
+  expect_true(all(!is.na(result$metrics$regularized_multinomial$cv)))
+
+
+  # With final
+  result <- classCV(
+    data = df,
+    target = "Species",
+    models = c("regularized_logistic", "regularized_multinomial"),
+    train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+    model_params = list(map_args = map_args, final_model = TRUE)
+  )
 })

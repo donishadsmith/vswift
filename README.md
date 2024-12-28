@@ -14,14 +14,16 @@ The following classification algorithms are available through their respective R
 
   - `lda` from MASS package for Linear Discriminant Analysis
   - `qda` from MASS package for Quadratic Discriminant Analysis
-  - `glm` from base package with `family = "binomial"` for Logistic Regression (unregularized)
+  - `glm` from base package with `family = "binomial"` for Logistic Regression (un-regularized)
+  - `glmnet` from `glmnet` package with `family = "binomial"` or `family = "multinomial"`and using `cv.glmnet` to select the optimal lambda for
+  Logistic Regression (regularized) and Multinomial Logistic Regression (regularized).
   - `svm` from e1071 package for Support Vector Machine
   - `naive_bayes` from naivebayes package for Naive Bayes
   - `nnet` from nnet package for Neural Network
   - `train.kknn` from kknn package for K-Nearest Neighbors
   - `rpart` from rpart package for Decision Trees
   - `randomForest` from randomForest package for Random Forest
-  - `multinom` from nnet package for Multinomial Regression (unregularized)
+  - `multinom` from nnet package for Multinomial Regression (un-regularized)
   - `xgb.train` from xgboost package for Extreme Gradient Boosting
 
 ## Features
@@ -62,12 +64,13 @@ help(package = "vswift")
 ```
 
 ### Github release:
+
 ```R
 # Install 'remotes' to install packages from Github
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9001/vswift_0.4.0.9001.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9002/vswift_0.4.0.9002.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -80,19 +83,24 @@ Acceptable inputs for the `models` parameter includes:
 
   - "lda" for Linear Discriminant Analysis
   - "qda" for Quadratic Discriminant Analysis
-  - "logistic" for Logistic Regression (unregularized)
+  - "logistic" for Logistic Regression (un-regularized)
+  - "regularized_logistic" for Logistic Regression (regularized)
   - "svm" for Support Vector Machine
   - "naivebayes" for Naive Bayes
   - "nnet" for Neural Network 
   - "knn" for K-Nearest Neighbors
   - "decisiontree" for Decision Trees
   - "randomforest" for Random Forest
-  - "multinom" for Multinomial Regression (unregularized)
+  - "multinom" for Multinomial Regression (un-regularized)
+  - "regularized_multinomial" for Multinomial Regression (regularized)
   - "xgboost" for Extreme Gradient Boosting
 
 ### Using a single model:
 
-*Note*: This example uses the [Differentiated Thyroid Cancer Recurrence data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/915/differentiated+thyroid+cancer+recurrence).
+*Note*: This example uses the [Differentiated Thyroid Cancer Recurrence data from the UCI Machine Learning Repository](https://archive.ics.uci.edu/dataset/915/differentiated+thyroid+cancer+recurrence). Additionally,
+if stratification is requested and one of the regularized models is used, then stratification will also be performed
+on the training data used for `cv.glmnet`. In this case, the `foldid` parameter in `cv.glmnet` will be used to retain
+the relative proportions in the target variable.
 
 ```R
 # Set url for Thyroid Recurrence data from UCI Machine Learning Repository. This data has 383 instances and 16 features
@@ -112,44 +120,67 @@ thyroid_data <- read.csv("Thyroid_Diff.csv")
 # Load the package
 library(vswift)
 
+# Model arguments; nfolds is the number of folds for `cv.glmnet`
+map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3))
+
 # Perform train-test split and k-fold cross-validation with stratified sampling
 results <- classCV(
   data = thyroid_data,
   target = "Recurred",
-  models = "logistic",
+  models = "regularized_logistic",
+  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE), # rule can be "min" or "1se"
   train_params = list(
     split = 0.8,
     n_folds = 5,
+    standardize = TRUE,
     stratified = TRUE,
     random_seed = 50
-  )
+  ),
+  save = list(models = TRUE) # Saves both `cv.glmnet` and `glmnet` model
 )
 
 # Also valid, the target variable can refer to the column index
 results <- classCV(
   data = thyroid_data,
   target = 17,
-  models = "logistic",
+  models = "regularized_logistic",
+  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE),
   train_params = list(
     split = 0.8,
     n_folds = 5,
+    standardize = TRUE,
     stratified = TRUE,
     random_seed = 50
-  )
+  ),
+  save = list(models = TRUE)
 )
 
 # Formula method can be used
 results <- classCV(
   formula = Recurred ~ .,
   data = thyroid_data,
-  models = "logistic",
+  models = "regularized_logistic",
+  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE),
   train_params = list(
     split = 0.8,
     n_folds = 5,
+    standardize = TRUE,
     stratified = TRUE,
     random_seed = 50
-  )
+  ),
+  save = list(models = TRUE)
 )
+
+```
+
+**Output Message**
+```
+Model: regularized_logistic | Partition: Train-Test Split | Optimal lambda: 0.06556 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Fold 1 | Optimal lambda: 0.01357 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Fold 2 | Optimal lambda: 0.04880 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Fold 3 | Optimal lambda: 0.01226 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Fold 4 | Optimal lambda: 0.06464 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Fold 5 | Optimal lambda: 0.00847 (nested 3-fold cross-validation) 
 ```
 
 `classCV` produces a vswift object which can be used for custom printing and plotting of performance metrics by using
@@ -174,7 +205,7 @@ print(results, parameters = TRUE, metrics = TRUE)
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
-Model: Logistic Regression 
+Model: Regularized Logistic Regression 
 
 Formula: Recurred ~ .
 
@@ -182,9 +213,9 @@ Number of Features: 16
 
 Classes: No, Yes
 
-Training Parameters: list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50, standardize = FALSE, remove_obs = FALSE)
+Training Parameters: list(split = 0.8, n_folds = 5, standardize = TRUE, stratified = TRUE, random_seed = 50, remove_obs = FALSE)
 
-Model Parameters: list(map_args = NULL, logistic_threshold = 0.5, final_model = FALSE)
+Model Parameters: list(map_args = list(regularized_logistic = list(alpha = 1, nfolds = 3)), rule = "1se", final_model = FALSE, verbose = TRUE)
 
 Unlabeled Data: 0
 
@@ -201,34 +232,34 @@ Parallel Configs: list(n_cores = NULL, future.seed = NULL)
  Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  0.97 
+Classification Accuracy:  0.95 
 
 Class:   Precision:  Recall:       F1:
 
-No             0.98     0.99      0.98 
-Yes            0.96     0.94      0.95 
+No             0.94     1.00      0.96 
+Yes            0.99     0.83      0.90 
 
 
  Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  0.95 
+Classification Accuracy:  0.94 
 
 Class:   Precision:  Recall:       F1:
 
-No             0.96     0.96      0.96 
-Yes            0.91     0.91      0.91 
+No             0.93     0.98      0.96 
+Yes            0.95     0.82      0.88 
 
 
  Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Average Classification Accuracy:  0.89 ± 0.06 (SD) 
+Average Classification Accuracy:  0.95 ± 0.01 (SD) 
 
 Class:       Average Precision:        Average Recall:            Average F1:
 
-No             0.95 ± 0.03 (SD)       0.90 ± 0.07 (SD)       0.92 ± 0.04 (SD) 
-Yes            0.79 ± 0.12 (SD)       0.87 ± 0.07 (SD)       0.82 ± 0.08 (SD) 
+No             0.94 ± 0.01 (SD)       0.99 ± 0.01 (SD)       0.97 ± 0.01 (SD) 
+Yes            0.98 ± 0.03 (SD)       0.84 ± 0.04 (SD)       0.91 ± 0.02 (SD) 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
@@ -242,20 +273,20 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
   
   <summary>Plots</summary>
   
-  ![image](assets/thyroid/logistic_regression_cv_classification_accuracy.png)
-  ![image](assets/thyroid/logistic_regression_cv_f1_No.png)
-  ![image](assets/thyroid/logistic_regression_cv_f1_Yes.png)
-  ![image](assets/thyroid/logistic_regression_cv_precision_No.png)
-  ![image](assets/thyroid/logistic_regression_cv_precision_Yes.png)
-  ![image](assets/thyroid/logistic_regression_cv_recall_No.png)
-  ![image](assets/thyroid/logistic_regression_cv_recall_Yes.png)
-  ![image](assets/thyroid/logistic_regression_train_test_classification_accuracy.png)
-  ![image](assets/thyroid/logistic_regression_train_test_f1_No.png)
-  ![image](assets/thyroid/logistic_regression_train_test_f1_Yes.png)
-  ![image](assets/thyroid/logistic_regression_train_test_precision_No.png)
-  ![image](assets/thyroid/logistic_regression_train_test_precision_Yes.png)
-  ![image](assets/thyroid/logistic_regression_train_test_recall_No.png)
-  ![image](assets/thyroid/logistic_regression_train_test_recall_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_classification_accuracy.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_f1_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_f1_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_precision_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_precision_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_recall_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_cv_recall_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_classification_accuracy.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_f1_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_f1_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_precision_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_precision_Yes.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_recall_No.png)
+  ![image](assets/thyroid/regularized_logistic_regression_train_test_recall_Yes.png)
 
 </details>
 
@@ -627,7 +658,7 @@ ad_data <- read.csv("ad.data")
 library(vswift)
 
 # Create arguments variable to tune parameters for multiple models
-args <- list(
+map_args <- list(
   "knn" = list(ks = 5),
   "xgboost" = list(
     params = list(
@@ -657,7 +688,7 @@ results <- classCV(
     n_folds = 5,
     random_seed = 50
   ),
-  model_params = list(map_args = args)
+  model_params = list(map_args = map_args)
 )
 
 # Get end time
@@ -684,7 +715,7 @@ results <- classCV(
     n_folds = 5,
     random_seed = 50
   ),
-  model_params = list(map_args = args),
+  model_params = list(map_args = map_args),
   parallel_configs = list(
     n_cores = 6,
     future.seed = 100

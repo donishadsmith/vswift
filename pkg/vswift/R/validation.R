@@ -1,6 +1,6 @@
 # Helper function for classCV that performs validation
-.validation <- function(id, train, test, model, formula, model_params, vars, remove_obs, col_levels, classes, keys,
-                        met_df, random_seed, save) {
+.validation <- function(id, train, test, model, formula, model_params, vars, remove_obs, col_levels, stratified,
+                        classes, keys, met_df, random_seed, save) {
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(col_levels)) {
     train[, names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(train[, col], levels = col_levels[[col]])))
@@ -11,16 +11,26 @@
   if (model %in% c("logistic", "xgboost")) {
     train[, vars$target] <- .convert_keys(train[, vars$target], keys, "encode")
   }
+
   # Train model
-  train_mod <- .generate_model(
-    model = model, data = train, formula = formula, vars = vars,
-    add_args = model_params$map_args[[model]], random_seed = random_seed
-  )
+  if (startsWith(model, "regularized")) {
+    train_mod <- .regularized(
+      id = id, model = model, data = train, vars = vars,
+      add_args = model_params$map_args[[model]], random_seed = random_seed,
+      stratified = if (is.null(stratified)) FALSE else stratified,
+      rule = if (is.null(model_params$rule)) "min" else model_params$rule
+    )
+  } else {
+    train_mod <- .generate_model(
+      model = model, data = train, formula = formula, vars = vars,
+      add_args = model_params$map_args[[model]], random_seed = random_seed
+    )
+  }
 
   # Remove observations where certain categorical levels in the predictors were not seen during training
   if (remove_obs && !is.null(col_levels)) test <- .remove_obs(train, test, col_levels, id)$test
 
-  thresh <- if (model %in% c("logistic", "xgboost")) model_params$logistic_threshold else NULL
+  thresh <- if (endsWith(model, "logistic") | model == "xgboost") model_params$logistic_threshold else NULL
   obj <- if (model == "xgboost") model_params$map_args$xgboost$params$objective else NULL
   n_classes <- length(classes)
 
@@ -108,6 +118,81 @@
   return(model)
 }
 
+# Helper function to perform regularized logistic or multinomial regression
+.regularized <- function(id, model, data, vars = NULL, add_args = NULL, random_seed = NULL, stratified = FALSE,
+                         rule = "min", verbose = TRUE) {
+  # Set seed
+  if (!is.null(random_seed)) set.seed(random_seed)
+
+  mod_args <- list()
+  cv_args <- list()
+
+  base_kwargs <- list()
+  # Create x and y matrices
+  base_kwargs$x <- model.matrix(~ . - 1, data = data[, vars$predictors])
+  base_kwargs$y <- as.matrix(data[, vars$target])
+
+  # Family
+  base_kwargs$family <- ifelse(model == "regularized_logistic", "binomial", "multinomial")
+
+  # Prevent default scaling
+  base_kwargs$standardize <- FALSE
+
+  # Classification measure
+  base_kwargs$type.measure <- "class"
+
+  # Append base_kwargs
+  cv_args <- c(cv_args, base_kwargs)
+  mod_args <- c(mod_args, base_kwargs)
+
+  # Additional arguments
+  if (!is.null(add_args)) {
+    cv_args <- c(mod_args, add_args)
+    mod_args <- c(mod_args, add_args[!add_args %in% c("nfolds", "lambda")])
+  }
+
+  # If lambda is NULL or greater then one, use CV to identify optimal lambda
+  if (length(mod_args) == 0 || length(mod_args) > 1) {
+    # Attempt to retain a similar stratification that is in the training sample if train_params$stratified is TRUE
+    if (stratified) {
+      class_info <- .get_class_info(data[, vars$target])
+      nfolds <- if (inherits(cv_args$nfolds, "numeric")) cv_args$nfolds else 10
+      cv_indxs <- .stratified_cv(
+        names(class_info$proportions), class_info$indices, class_info$proportions, nrow(data),
+        nfolds, random_seed, "nested cross-validation (glmnet)"
+      )
+      cv_args$n_folds <- NULL
+      cv_args$foldid <- .get_foldid(cv_indxs, nrow(data))
+    }
+
+    # Perform internal cross validation on data; default n_folds is 10
+    cv.fit <- do.call(glmnet::cv.glmnet, cv_args)
+
+    # Select optimal lambda based on rule
+    mod_args$lambda <- ifelse(rule == "min", cv.fit$lambda.min, cv.fit$lambda.1se)
+
+    # State optimal lambda
+    if (verbose) {
+      if (id != "Final Model") {
+        id <- ifelse(id == "split", "Train-Test Split", paste("Fold", unlist(strsplit(id, split = "fold"))[2]))
+      }
+      num <- ifelse(!is.null(mod_args$nfolds), mod_args$nfolds, 10)
+      msg <- sprintf(
+        "Model: %s | Partition: %s | Optimal lambda: %.5f (nested %s-fold cross-validation)",
+        model, id, mod_args$lambda, num
+      )
+      cat(msg, "\n")
+    }
+  } else {
+    mod_args$lambda <- add_args$lambda
+  }
+
+  # Get model
+  model <- do.call(glmnet::glmnet, mod_args)
+
+  return(list("model" = model, "cv.fit" = cv.fit))
+}
+
 # Helper function for classCV to predict
 .prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes) {
   # vec to store ground truth and predicted data
@@ -147,6 +232,15 @@
         mat <- data.matrix(df_list[[i]])
         xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
         vec$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes)
+      },
+      "regularized_logistic" = {
+        X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
+        vec$pred[[i]] <- predict(train_mod$model, newx = X, s = train_mod$model$lambda, type = "class")
+      },
+      "regularized_multinomial" = {
+        X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
+        mat <- predict(train_mod$model, newx = X, s = train_mod$model$lambda, type = "response")
+        vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
       },
       # Default for svm, knn, randomforest, and multinom
       vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])

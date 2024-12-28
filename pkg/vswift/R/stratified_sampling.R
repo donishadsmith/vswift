@@ -71,7 +71,7 @@
 }
 
 # Function for stratified cv
-.stratified_cv <- function(classes, class_indxs, class_props, N, n_folds, random_seed) {
+.stratified_cv <- function(classes, class_indxs, class_props, N, n_folds, random_seed, strategy = "cross validation") {
   if (!is.null(random_seed)) set.seed(random_seed)
   # Initialize list
   cv_indxs <- list()
@@ -86,7 +86,7 @@
     # Assign class indices to each fold
     for (class in classes) {
       # Check if sampling possible
-      .stratified_check(class, class_indxs[[class]], class_props[[class]], fold_n, "cross validation")
+      .stratified_check(class, class_indxs[[class]], class_props[[class]], fold_n, strategy)
       sampled_indxs <- sample(class_indxs[[class]], size = floor(fold_n * class_props[[class]]), replace = F)
       fold_indxs <- c(fold_indxs, sampled_indxs)
       # Remove already selected indices
@@ -129,15 +129,15 @@
   have <- length(class_indx)
 
   if (strategy == "train-test splitting") {
-    msg <- sprintf("Need %s for %s but only have %s", need, id, have)
+    msg <- sprintf("need %s for %s but only have %s", need, id, have)
   } else {
-    msg <- sprintf("Need %s for each fold but only have %s", need, have)
+    msg <- sprintf("need %s for each fold but only have %s", need, have)
   }
 
   if (need > length(class_indx)) {
     stop(sprintf(
-      "not enough samples of %s class for %s using stratified sampling; Need %s for %s but only have %s",
-      class, strategy
+      "not enough samples of %s class for %s using stratified sampling; %s",
+      class, strategy, msg
     ))
   }
 }

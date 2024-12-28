@@ -15,40 +15,33 @@ genFolds(
 \arguments{
 \item{data}{A data frame.}
 
-\item{target}{A numeric or character value specifying the target variable. Only required if
-\code{stratified = TRUE}. Default is \code{NULL}.}
+\item{target}{A numeric or character value specifying the target variable. Only required if\code{stratified = TRUE}.
+Default is \code{NULL}.}
 
 \item{train_params}{A list that can contain the following parameters:
-                    \itemize{
-                      \item \code{split}: A numeric value between 0 and 1 indicating the proportion of data to use
-                                          for training. The remaining observations are allocated to the test set. If
-                                          not specified or set to \code{NULL}, no train-test splitting is performed.
-                                          Note that this split is separate from cross-validation. Default is
-                                          \code{NULL}.
+\itemize{
+ \item \code{split}: A numeric value between 0 and 1 indicating the proportion of data to use
+ for training. The remaining observations are allocated to the test set. If not specified or set to \code{NULL}, no
+ train-test splitting is performed. Note that this split is separate from cross-validation. Default is \code{NULL}.
+ \item \code{n_folds}: An integer greater than 2 specifying the number of folds for cross-validation. If \code{NULL},
+ no cross-validation is performed. Default is \code{NULL}.
+ \item \code{stratified}: A logical value indicating whether stratified sampling should be used during splitting.
+ Default is \code{FALSE}.
+ \item \code{random_seed}: A numeric value for the random seed to ensure reproducibility of random splitting and any
+ model training that relies on random starts. Default is \code{NULL}.
+ }}
 
-                      \item \code{n_folds}: An integer greater than 2 specifying the number of folds for
-                                            cross-validation. If \code{NULL}, no cross-validation is performed.
-                                            Default is \code{NULL}.
-
-                      \item \code{stratified}: A logical value indicating whether stratified sampling should be used
-                                               during splitting. Default is \code{FALSE}.
-
-                      \item \code{random_seed}: A numeric value for the random seed to ensure reproducibility of
-                                                random splitting and any model training that relies on random starts.
-                                                Default is \code{NULL}.
-                     }}
-
-\item{create_data}{A logical value indicating whether to create all training and test/validation
-data frames. Default is \code{FALSE}.}
+\item{create_data}{A logical value indicating whether to create all training and test/validation data frames.
+Default is \code{FALSE}.}
 }
 \value{
-A list containing the indices for train-test splitting and/or cross-validation,
-        with information on class distribution in the training, test sets, and folds (if applicable).
-        It also includes the generated split datasets and folds based on those indices.
+A list containing the indices for train-test splitting and/or cross-validation, with information on class
+distribution in the training, test sets, and folds (if applicable). It also includes the generated split datasets
+and folds based on those indices.
 }
 \description{
-A standalone function to generate train-test split datasets and/or cross-validation folds,
-             optionally performing stratified sampling based on class distribution.
+A standalone function to generate train-test split datasets and/or cross-validation folds, optionally
+performing stratified sampling based on class distribution.
 }
 \examples{
 # Load example dataset
