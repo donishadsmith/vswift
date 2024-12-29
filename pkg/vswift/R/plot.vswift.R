@@ -16,16 +16,16 @@
 #' \itemize{
 #'  \item \code{"lda"}: Linear Discriminant Analysis
 #'  \item \code{"qda"}: Quadratic Discriminant Analysis
-#'  \item \code{"logistic"}: Logistic Regression (un-regularized)
-#'  \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+#'  \item \code{"logistic"}: Unregularized Logistic Regression
+#'  \item \code{"regularized_logistic"}: Regularized Logistic Regression
 #'  \item \code{"svm"}: Support Vector Machine
 #'  \item \code{"naivebayes"}: Naive Bayes
 #'  \item \code{"nnet"}: Neural Network
 #'  \item \code{"knn"}: K-Nearest Neighbors
 #'  \item \code{"decisiontree"}: Decision Tree
 #'  \item \code{"randomforest"}: Random Forest
-#'  \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
-#'  \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+#'  \item \code{"multinom"}: Unregularized Multinomial Logistic Regression
+#'  \item \code{"regularized_multinomial"}: Regularized Multinomial Logistic Regression
 #'  \item \code{"xgboost"}: Extreme Gradient Boosting
 #'  }
 #'  Default = \code{NULL}.
@@ -78,7 +78,7 @@
       "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
       "svm" = "Support Vector Machine", "nnet" = "Neural Network", "decisiontree" = "Decision Tree",
       "randomforest" = "Random Forest", "xgboost" = "Extreme Gradient Boosting",
-      "multinom" = "Un-Regularized Multinomial Logistic Regression", "logistic" = "Un-Regularized Logistic Regression",
+      "multinom" = "Unregularized Multinomial Logistic Regression", "logistic" = "Unegularized Logistic Regression",
       "regularized_multinomial" = "Regularized Multinomial Logistic Regression",
       "regularized_logistic" = "Regularized Logistic Regression",
       "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"

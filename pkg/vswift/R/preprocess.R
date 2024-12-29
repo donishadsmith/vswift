@@ -313,7 +313,7 @@
 
   # Create list to store levels for svm model or to remove observations later
   if ("svm" %in% models || train_params$remove_obs == TRUE) {
-    # Sapply, though each column and collect levels
+    # Sapply through each column and collect levels
     col_levels <- sapply(preprocessed_dt[, .SD, .SDcols = cols], levels)
   }
 

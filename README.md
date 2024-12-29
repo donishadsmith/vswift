@@ -70,7 +70,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9002/vswift_0.4.0.9002.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9003/vswift_0.4.0.9003.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -83,16 +83,16 @@ Acceptable inputs for the `models` parameter includes:
 
   - "lda" for Linear Discriminant Analysis
   - "qda" for Quadratic Discriminant Analysis
-  - "logistic" for Logistic Regression (un-regularized)
-  - "regularized_logistic" for Logistic Regression (regularized)
+  - "logistic" for Unregularized Logistic Regression
+  - "regularized_logistic" for Regularized Logistic Regression
   - "svm" for Support Vector Machine
   - "naivebayes" for Naive Bayes
   - "nnet" for Neural Network 
   - "knn" for K-Nearest Neighbors
   - "decisiontree" for Decision Trees
   - "randomforest" for Random Forest
-  - "multinom" for Multinomial Regression (un-regularized)
-  - "regularized_multinomial" for Multinomial Regression (regularized)
+  - "multinom" for Unregularized Multinomial Regression
+  - "regularized_multinomial" for Regularized Multinomial Regression
   - "xgboost" for Extreme Gradient Boosting
 
 ### Using a single model:
@@ -739,7 +739,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 232.04    3.70  217.58
+ 227.53    4.24  214.43
 
 [1] "Parallel Processing:"
 
@@ -749,7 +749,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   1.96    4.74   97.12
+   1.64    4.67   96.27
 ```
 
 ```R

@@ -15,6 +15,13 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
 ## [0.4.0.9002] - 2024-12-28
+### 📖 Documentation
+- Name changes in documentation
+### ♻ Changed
+- For the plot title, "Logistic Regression" changed to "Unregularized Logistic Regression".
+- For the plot title, "Multinomial Logistic Regression" changed to "Unregularized Multinomial Logistic Regression".
+
+## [0.4.0.9002] - 2024-12-28
 ### 🚀 New/Added
 - Added two new models: "regularized_logistic" & "regularized_multinomial" for penalized logistic regression and
 multinomial logistic regression with glmnet.

@@ -21,16 +21,16 @@
 #' \itemize{
 #'  \item \code{"lda"}: Linear Discriminant Analysis
 #'  \item \code{"qda"}: Quadratic Discriminant Analysis
-#'  \item \code{"logistic"}: Logistic Regression (un-regularized)
-#'  \item \code{"regularized_logistic"}: Logistic Regression (regularized)
+#'  \item \code{"logistic"}: Unregularized Logistic Regression
+#'  \item \code{"regularized_logistic"}: Regularized Logistic Regression
 #'  \item \code{"svm"}: Support Vector Machine
 #'  \item \code{"naivebayes"}: Naive Bayes
 #'  \item \code{"nnet"}: Neural Network
 #'  \item \code{"knn"}: K-Nearest Neighbors
 #'  \item \code{"decisiontree"}: Decision Tree
 #'  \item \code{"randomforest"}: Random Forest
-#'  \item \code{"multinom"}: Multinomial Logistic Regression (un-regularized)
-#'  \item \code{"regularized_multinomial"}: Multinomial Logistic Regression (regularized)
+#'  \item \code{"multinom"}: Unregularized Multinomial Logistic Regression
+#'  \item \code{"regularized_multinomial"}: Regularized Multinomial Logistic Regression
 #'  \item \code{"xgboost"}: Extreme Gradient Boosting
 #'  }
 #'  \strong{Notes:}
