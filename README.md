@@ -14,16 +14,16 @@ The following classification algorithms are available through their respective R
 
   - `lda` from MASS package for Linear Discriminant Analysis
   - `qda` from MASS package for Quadratic Discriminant Analysis
-  - `glm` from base package with `family = "binomial"` for Logistic Regression (un-regularized)
+  - `glm` from base package with `family = "binomial"` for Unregularized Logistic Regression
   - `glmnet` from `glmnet` package with `family = "binomial"` or `family = "multinomial"`and using `cv.glmnet` to select the optimal lambda for
-  Logistic Regression (regularized) and Multinomial Logistic Regression (regularized).
+  Regularized Logistic Regression and Regularized Multinomial Logistic Regression.
   - `svm` from e1071 package for Support Vector Machine
   - `naive_bayes` from naivebayes package for Naive Bayes
   - `nnet` from nnet package for Neural Network
   - `train.kknn` from kknn package for K-Nearest Neighbors
   - `rpart` from rpart package for Decision Trees
   - `randomForest` from randomForest package for Random Forest
-  - `multinom` from nnet package for Multinomial Regression (un-regularized)
+  - `multinom` from nnet package for Unregularized Multinomial Regression
   - `xgb.train` from xgboost package for Extreme Gradient Boosting
 
 ## Features
