@@ -62,9 +62,9 @@
 #'  \code{models} with one of these objective functions: \code{"reg:logistic"}, \code{"binary:logistic"}, or
 #'  \code{"binary:logitraw"}. Default is \code{0.5}.
 #'  \item \code{"rule"}: A character that dictates the rule used to select the optimal lambda  when using
-#'  \code{"regularized_logistic"} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
+#'  \code{regularized_logistic} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
 #'  \code{"1se"}. Default is \code{"min"}.
-#'  \item \code{"verbose"}: A logical value indicating whether to state the optimal lambda based on the nested
+#'  \item \code{verbose}: A logical value indicating whether to state the optimal lambda based on the nested
 #'  cross-validation. \item \code{"final_model"}: A logical value indicating whether to use all complete observations
 #'  in the input data for model training. Default is \code{FALSE}.
 #'  }
@@ -226,13 +226,13 @@
 #'
 #'
 #' # Perform 5-fold cross-validation a train-test split w/multiple models
-#' args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
+#' map_args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
 #' result <- classCV(
 #'   data = iris,
 #'   target = 5,
 #'   predictors = c(1:3),
 #'   models = c("decisiontree", "knn", "nnet", "svm"),
-#'   model_params = list(map_args = args),
+#'   model_params = list(map_args = map_args),
 #'   train_params = list(
 #'     n_folds = 5,
 #'     stratified = TRUE,
@@ -245,7 +245,7 @@
 #'
 #' @author Donisha Smith
 #'
-#' @importFrom stats as.formula complete.cases glm predict sd
+#' @importFrom stats as.formula complete.cases glm model.matrix predict sd
 #' @importFrom data.table := data.table .SD
 #'
 #' @export
@@ -373,7 +373,6 @@ classCV <- function(data,
         train_out <- .parallel(kwargs, parallel_configs, iters[!iters == "final"])
       }
 
-
       # Add metrics information and model information
       if ("split" %in% iters) {
         final_output$metrics[[model]]$split <- train_out$metrics$split
@@ -391,6 +390,8 @@ classCV <- function(data,
       }
 
       if ("models" %in% names(train_out)) final_output$models[[model]] <- train_out$models
+
+      if ("optimal_lambdas" %in% names(train_out)) final_output$metrics[[model]]$optimal_lambdas <- train_out$optimal_lambdas
     }
 
     # Generate final model
@@ -408,7 +409,7 @@ classCV <- function(data,
 
       # Generate model depending on chosen models
       if (startsWith(model, "regularized")) {
-        final_output$models[[model]]$final <- .regularized(
+        final_out <- .regularized(
           id = "Final Model",
           model = model,
           vars = vars,
@@ -419,6 +420,14 @@ classCV <- function(data,
           rule = if (is.null(model_params$rule)) "min" else model_params$rule,
           verbose = if (is.null(model_params$verbose)) TRUE else model_params$verbose
         )
+
+        if ("optimal_lambda" %in% names(final_out)) {
+          vec <- c("final" = final_out$optimal_lambda)
+          final_output$metrics[[model]]$optimal_lambdas <- c(final_output$metrics[[model]]$optimal_lambdas, vec)
+          final_out$optimal_lambda <- NULL
+        }
+
+        final_output$models[[model]]$final <- final_out
       } else {
         final_output$models[[model]]$final <- .generate_model(
           model = model,

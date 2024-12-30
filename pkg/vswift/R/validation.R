@@ -20,6 +20,12 @@
       stratified = if (is.null(stratified)) FALSE else stratified,
       rule = if (is.null(model_params$rule)) "min" else model_params$rule
     )
+
+    # Get optimal lambda
+    if ("optimal_lambda" %in% names(train_mod)) {
+      optimal_lambda <- train_mod$optimal_lambda
+      train_mod$optimal_lambda <- NULL
+    }
   } else {
     train_mod <- .generate_model(
       model = model, data = train, formula = formula, vars = vars,
@@ -50,13 +56,16 @@
     }
   }
 
-  met_df <- .populate_metrics_df(id, classes, vec, met_df)
+  metrics <- .populate_metrics_df(id, classes, vec, met_df)
 
-  if (save) {
-    return(list("met_df" = met_df, "train_mod" = train_mod))
-  } else {
-    return(list("met_df" = met_df))
-  }
+  # Output
+  out <- list("metrics" = metrics)
+
+  if (save) out$train_mod <- train_mod
+
+  if (exists("optimal_lambda")) out$optimal_lambda <- optimal_lambda
+
+  return(out)
 }
 
 # Helper function for classCV to create model
@@ -126,6 +135,7 @@
 
   mod_args <- list()
   cv_args <- list()
+  cv_flag <- FALSE
 
   base_kwargs <- list()
   # Create x and y matrices
@@ -152,7 +162,7 @@
   }
 
   # If lambda is NULL or greater then one, use CV to identify optimal lambda
-  if (length(mod_args) == 0 || length(mod_args) > 1) {
+  if (length(mod_args$lambda) == 0 || length(mod_args$lambda) > 1) {
     # Attempt to retain a similar stratification that is in the training sample if train_params$stratified is TRUE
     if (stratified) {
       class_info <- .get_class_info(data[, vars$target])
@@ -171,6 +181,8 @@
     # Select optimal lambda based on rule
     mod_args$lambda <- ifelse(rule == "min", cv.fit$lambda.min, cv.fit$lambda.1se)
 
+    cv_flag <- TRUE
+
     # State optimal lambda
     if (verbose) {
       if (id != "Final Model") {
@@ -178,8 +190,8 @@
       }
       num <- ifelse(!is.null(mod_args$nfolds), mod_args$nfolds, 10)
       msg <- sprintf(
-        "Model: %s | Partition: %s | Optimal lambda: %.5f (nested %s-fold cross-validation)",
-        model, id, mod_args$lambda, num
+        "Model: %s | Partition: %s | Optimal lambda: %.5f (nested %s-fold cross-validation using '%s' rule)",
+        model, id, mod_args$lambda, num, rule
       )
       cat(msg, "\n")
     }
@@ -190,7 +202,13 @@
   # Get model
   model <- do.call(glmnet::glmnet, mod_args)
 
-  return(list("model" = model, "cv.fit" = cv.fit))
+  out <- list("model" = model)
+
+  if (cv_flag) {
+    out <- c(out, list("cv.fit" = cv.fit, "optimal_lambda" = mod_args$lambda))
+  }
+
+  return(out)
 }
 
 # Helper function for classCV to predict

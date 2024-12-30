@@ -70,7 +70,7 @@ help(package = "vswift")
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9003/vswift_0.4.0.9003.tar.gz")
+remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9004/vswift_0.4.0.9004.tar.gz")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -175,12 +175,22 @@ results <- classCV(
 
 **Output Message**
 ```
-Model: regularized_logistic | Partition: Train-Test Split | Optimal lambda: 0.06556 (nested 3-fold cross-validation) 
-Model: regularized_logistic | Partition: Fold 1 | Optimal lambda: 0.01357 (nested 3-fold cross-validation) 
-Model: regularized_logistic | Partition: Fold 2 | Optimal lambda: 0.04880 (nested 3-fold cross-validation) 
-Model: regularized_logistic | Partition: Fold 3 | Optimal lambda: 0.01226 (nested 3-fold cross-validation) 
-Model: regularized_logistic | Partition: Fold 4 | Optimal lambda: 0.06464 (nested 3-fold cross-validation) 
-Model: regularized_logistic | Partition: Fold 5 | Optimal lambda: 0.00847 (nested 3-fold cross-validation) 
+Model: regularized_logistic | Partition: Train-Test Split | Optimal lambda: 0.06556 (nested 3-fold cross-validation using '1se' rule) 
+Model: regularized_logistic | Partition: Fold 1 | Optimal lambda: 0.01357 (nested 3-fold cross-validation using '1se' rule) 
+Model: regularized_logistic | Partition: Fold 2 | Optimal lambda: 0.04880 (nested 3-fold cross-validation using '1se' rule) 
+Model: regularized_logistic | Partition: Fold 3 | Optimal lambda: 0.01226 (nested 3-fold cross-validation using '1se' rule) 
+Model: regularized_logistic | Partition: Fold 4 | Optimal lambda: 0.06464 (nested 3-fold cross-validation using '1se' rule) 
+Model: regularized_logistic | Partition: Fold 5 | Optimal lambda: 0.00847 (nested 3-fold cross-validation using '1se' rule)
+```
+
+Print optimal lambda values.
+```R
+print(results$metrics$regularized_logistic$optimal_lambdas)
+```
+**Output Message**
+```
+      split       fold1       fold2       fold3       fold4       fold5
+0.065562223 0.013572555 0.048797016 0.012261040 0.064639632 0.008467439
 ```
 
 `classCV` produces a vswift object which can be used for custom printing and plotting of performance metrics by using

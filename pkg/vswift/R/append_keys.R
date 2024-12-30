@@ -70,7 +70,10 @@
       new_struct <- c(new_struct[!names(new_struct) == "logistic_threshold"], list(logistic_threshold = NULL))
     }
 
-    if (!any(c("regularized_logistic", "regularized_multinomial") %in% models)) {
+    has_lambda <- length(new_struct$map_args$regularized_logistic$lambda == 1)
+    has_lambda <- length(new_struct$map_args$regularized_multinomial$lambda == 1)
+
+    if (!any(c("regularized_logistic", "regularized_multinomial") %in% models) || has_lambda) {
       new_struct <- c(new_struct[!names(new_struct) %in% c("rule", "verbose")], list(rule = NULL, verbose = NULL))
     }
   }

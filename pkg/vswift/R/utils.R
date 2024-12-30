@@ -52,13 +52,19 @@
 }
 
 # Unnest parallel list
-.unnest <- function(par_list, iters, saved_mods = NULL) {
+.unnest <- function(par_list, iters, model, saved_mods) {
   targets <- c("metrics")
   metrics <- list()
+  lambdas <- c()
 
   if (saved_mods == TRUE) {
     targets <- c("metrics", "models")
     models <- list()
+  }
+
+  # Append the optimal lambdas; use c() to retain names
+  if (startsWith(model, "regularized")) {
+    for (i in seq_along(iters)) lambdas <- c(lambdas, par_list[[i]]$optimal_lambda)
   }
 
   for (target in targets) {
@@ -79,11 +85,13 @@
     }
   }
 
-  if (saved_mods == TRUE) {
-    return(list("metrics" = metrics, "models" = models))
-  } else {
-    return(list("metrics" = metrics))
-  }
+  out <- list("metrics" = metrics)
+
+  if (isTRUE(saved_mods)) out$models <- models
+
+  if (length(lambdas) > 0) out$optimal_lambdas <- lambdas
+
+  return(out)
 }
 
 
@@ -101,7 +109,7 @@
     }
 
     # Standardize
-    if (is_standardized == FALSE && kwargs$train_params$standardize == TRUE) {
+    if (is_standardized == FALSE && isTRUE(kwargs$train_params$standardize)) {
       df_list <- .standardize_train(train, test, kwargs$train_params$standardize, target = kwargs$vars$target)
       train <- df_list$train
       test <- df_list$test
@@ -120,7 +128,7 @@
     }
 
     # Standardize
-    if (is_standardized == FALSE && preproc_kwargs$standardize == TRUE) {
+    if (is_standardized == FALSE && isTRUE(preproc_kwargs$standardize)) {
       df_list <- .standardize(preprocessed_data, standardize = TRUE, preproc_kwargs$vars$target)
     }
 

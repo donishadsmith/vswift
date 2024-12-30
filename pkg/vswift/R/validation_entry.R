@@ -3,6 +3,8 @@
   # Create lists
   met_list <- list()
   mod_list <- list()
+  # Lambda vector
+  lambda_vec <- c()
 
   for (i in kwargs$iters) {
     # Get indices
@@ -30,13 +32,18 @@
       met_list$cv <- c(met_list$cv, out$metrics$cv)
       if (kwargs$save_mods) mod_list$cv <- c(mod_list$cv, out$models$cv)
     }
+
+    # Append vector
+    if ("optimal_lambda" %in% names(out)) lambda_vec <- c(lambda_vec, out$optimal_lambda)
   }
 
-  if (length(mod_list) > 0) {
-    return(list("metrics" = met_list, "models" = mod_list))
-  } else {
-    return(list("metrics" = met_list))
-  }
+  final_out <- list("metrics" = met_list)
+
+  if (length(mod_list) > 0) final_out$models <- mod_list
+
+  if (length(lambda_vec) > 0) final_out$optimal_lambdas <- lambda_vec
+
+  return(final_out)
 }
 
 # Function to perform validation of split and folds using parallel processing while combining outputs
@@ -69,7 +76,7 @@
   # Close the background workers
   future::plan(future::sequential)
 
-  par_unnest <- .unnest(par_out, iters, kwargs$save_mods)
+  par_unnest <- .unnest(par_out, iters, kwargs$model, kwargs$save_mods)
   return(par_unnest)
 }
 
@@ -87,17 +94,23 @@
     kwargs$met_df[[kwargs$model]][[name]], kwargs$train_params$random_seed, kwargs$save_mods
   )
 
+  # Nested list structure to ensure that "metrics" and "models" in the classCV output contains "split" and "cv"
   if (name == "split") {
-    met_list$split <- val_out$met_df
+    met_list$split <- val_out$metrics
     if (kwargs$save_mods == TRUE) mod_list$split <- val_out$train_mod
   } else {
-    met_list$cv[[i]] <- val_out$met_df
+    met_list$cv[[i]] <- val_out$metrics
     if (kwargs$save_mods == TRUE) mod_list$cv[[i]] <- val_out$train_mod
   }
 
-  if (kwargs$save_mods == FALSE) {
-    return(list("metrics" = met_list))
-  } else {
-    return(list("metrics" = met_list, "models" = mod_list))
+  out <- list("metrics" = met_list)
+
+  if (isTRUE(kwargs$save_mods)) out$models <- mod_list
+  # Optimal lambda will be a vector where each element is associated with the partition name
+  if ("optimal_lambda" %in% names(val_out)) {
+    names(val_out$optimal_lambda) <- i
+    out$optimal_lambda <- val_out$optimal_lambda
   }
+
+  return(out)
 }

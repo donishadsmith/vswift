@@ -26,8 +26,8 @@
     info <- info[!names(info) == "logistic_threshold"]
   }
 
-  if (!startsWith(model, "regularized")) {
-    info <- info[!names(info) == "rule"]
+  if (!startsWith(model, "regularized") || (startsWith(model, "regularized") && is.null(info$rule))) {
+    info <- info[!names(info) %in% c("rule", "verbose")]
   }
 
   info$map_args <- info$map_args[!names(info$map_args) != model]
@@ -93,13 +93,19 @@
       # Add spacing
       padding <- nchar(paste("Class:", "", "Pre"))
 
-      if (class_met[1] == "NaN") {
-        class_met <- c(class_met[1], rep("", 5), class_met[2], rep("", 5), class_met[3])
-      } else {
-        class_met <- c(class_met[1], rep("", 4), class_met[2], rep("", 5), class_met[3])
+      # Pad output with strings
+      formatted_class_met <- c()
+
+      for (i in seq_along(class_met)) {
+        formatted_class_met <- c(formatted_class_met, class_met[i])
+        if (i != length(class_met)) {
+          if (i == 1) space <- if (class_met[i] != "NaN") rep("", 4) else rep("", 5)
+          if (i == 2) space <- if (class_met[i] != "NaN") rep("", 5) else rep("", 6)
+          formatted_class_met <- c(formatted_class_met, space)
+        }
       }
 
-      cat(class, rep("", (padding + str_diff[class_pos])), paste(class_met, collapse = " "), "\n")
+      cat(class, rep("", (padding + str_diff[class_pos])), paste(formatted_class_met, collapse = " "), "\n")
       class_pos <- class_pos + 1
     }
   }
@@ -146,19 +152,21 @@
     class_met <- c()
 
     for (metric in mean_met) {
-      class_met <- c(class_met, sprintf("%s \U00B1 %s (SD)", metric, sd_met[sd_met_pos]))
+      class_met <- c(class_met, sprintf("%s \u00B1 %s (SD)", metric, sd_met[sd_met_pos]))
       sd_met_pos <- sd_met_pos + 1
     }
 
-    if (class_met[1] == "NaN (NA)") {
-      class_met <- c(rep("", 3), class_met[1], rep("", 6), class_met[2], rep("", 6), class_met[3])
-    } else {
-      class_met <- c(class_met[1], rep("", 6), class_met[2], rep("", 6), class_met[3])
+    # Pad output with strings
+    formatted_class_met <- c()
+    for (i in seq_along(class_met)) {
+      formatted_class_met <- c(formatted_class_met, class_met[i])
+      space <- if (class_met[i] == "NaN \u00B1 NA (SD)") rep("", 9) else rep("", 6)
+      if (i != length(class_met)) formatted_class_met <- c(formatted_class_met, space)
     }
 
     # Add spacing
     padding <- nchar(paste("Class:", "", "Ave"))
-    cat(class, rep("", (padding + str_diff[class_pos])), paste(class_met), "\n")
+    cat(class, rep("", (padding + str_diff[class_pos])), paste(formatted_class_met), "\n")
     # Update variable
     class_pos <- class_pos + 1
   }

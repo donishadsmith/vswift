@@ -14,7 +14,18 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.4.0.9002] - 2024-12-28
+
+## [0.4.0.9004] - 2024-12-30
+### 🚀 New/Added
+- Added optimal lambdas to the final output if lambdas are a range of values or are NULL and the optimal lambda must
+be selected using `cv.glmnet`.
+### ♻ Changed
+- To the console output specifying the optimal lambda, the specific rule used is mentioned.
+### 🐛 Fixes
+- Fixed error if lambda is only a single value.
+- Better alignment in command-line output if their are NaN values.
+
+## [0.4.0.9003] - 2024-12-28
 ### 📖 Documentation
 - Name changes in documentation
 ### ♻ Changed

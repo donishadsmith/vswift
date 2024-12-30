@@ -78,9 +78,9 @@ The following options are available:
  \code{models} with one of these objective functions: \code{"reg:logistic"}, \code{"binary:logistic"}, or
  \code{"binary:logitraw"}. Default is \code{0.5}.
  \item \code{"rule"}: A character that dictates the rule used to select the optimal lambda  when using
- \code{"regularized_logistic"} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
+ \code{regularized_logistic} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
  \code{"1se"}. Default is \code{"min"}.
- \item \code{"verbose"}: A logical value indicating whether to state the optimal lambda based on the nested
+ \item \code{verbose}: A logical value indicating whether to state the optimal lambda based on the nested
  cross-validation. \item \code{"final_model"}: A logical value indicating whether to use all complete observations
  in the input data for model training. Default is \code{FALSE}.
  }}
@@ -249,13 +249,13 @@ result
 
 
 # Perform 5-fold cross-validation a train-test split w/multiple models
-args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
+map_args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
 result <- classCV(
   data = iris,
   target = 5,
   predictors = c(1:3),
   models = c("decisiontree", "knn", "nnet", "svm"),
-  model_params = list(map_args = args),
+  model_params = list(map_args = map_args),
   train_params = list(
     n_folds = 5,
     stratified = TRUE,
