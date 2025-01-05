@@ -61,4 +61,3 @@ You can also output specific results using the *plot* function
 ```{r}
 plot(result3, models = "knn", split = FALSE, cv = TRUE, class_names = c("setosa", "virginica"), metrics = "precision")
 ```
-

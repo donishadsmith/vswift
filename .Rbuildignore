@@ -1,0 +1,11 @@
+^CHANGELOG\.md$
+^LICENSE\.md$
+^\.Rproj$
+^\.Rproj\.user$
+^\.github$
+^\.inst$
+^\.pre-commit-config\.yaml$
+^assets$
+^renv$
+^renv\.lock$
+^vswift\.Rproj$

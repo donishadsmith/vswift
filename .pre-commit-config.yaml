@@ -5,7 +5,7 @@ repos:
     rev: v0.4.3.9003
     hooks:
     -   id: style-files
-        args: [--style_pkg=styler, --style_fun=tidyverse_style]    
+        args: [--style_pkg=styler, --style_fun=tidyverse_style]   
     -   id: roxygenize
     # codemeta must be above use-tidy-description when both are used
     # -   id: codemeta-description-updated
@@ -42,7 +42,7 @@ repos:
     -   id: parsable-R
     -   id: no-browser-statement
     -   id: no-print-statement
-        exclude: '.*tests_print.*'
+        exclude: '(.*tests_print.*|.*^renv.*\.R$)'
     -   id: no-debug-statement
     -   id: pkgdown
 -   repo: https://github.com/pre-commit/pre-commit-hooks

@@ -58,7 +58,7 @@ The following classification algorithms are available through their respective R
 install.packages("remotes")
 
 # Install 'vswift' package
-remotes::install_github("donishadsmith/vswift/pkg/vswift", ref="main")
+remotes::install_github("donishadsmith/vswift", ref="main")
  
 # Display documentation for the 'vswift' package
 help(package = "vswift")

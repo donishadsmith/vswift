@@ -37,7 +37,6 @@ jobs:
 
       - name: Install dependencies
         run: Rscript -e 'install.packages("pak"); pak::local_install(dependencies = TRUE)'
-        working-directory: pkg/vswift
 
       - name: Build tar & CRAN check for Mac & Ubuntu
         if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
@@ -45,7 +44,6 @@ jobs:
           R CMD build .
           R CMD check --as-cran *vswift*.tar.gz
         shell: bash
-        working-directory: pkg/vswift
 
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
@@ -53,14 +51,12 @@ jobs:
           R CMD build --no-build-vignettes .
           R CMD check --no-manual --as-cran vswift_0.4.0.9004.tar.gz
         shell: cmd
-        working-directory: pkg/vswift
 
       - name: Run MacOS and get coverage
         if: ${{ matrix.os == 'macos-latest' && matrix.r == '4.4.0' }}
         run: |
           Rscript -e 'install.packages("xml2"); cov <- covr::package_coverage(); covr::to_cobertura(cov, filename = "coverage.xml")'
         shell: bash
-        working-directory: pkg/vswift
       
       - name: Upload coverage to Codecov
         if: ${{ matrix.os == 'macos-latest' && matrix.r == '4.4.0' }}
