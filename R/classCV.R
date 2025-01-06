@@ -164,7 +164,7 @@
 #' \item \code{"lda"}: \code{lda} from \pkg{MASS} package
 #' \item \code{"qda"}: \code{qda} from \pkg{MASS} package
 #' \item \code{"logistic"}: \code{glm} from \pkg{base} package with \code{family = "binomial"}
-#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with {family = "binomial"} and using
+#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with \code{family = "binomial"} and using
 #' \code{cv.glmnet} to select the optimal lambda.
 #' \item \code{"svm"}: \code{svm()} from \pkg{e1071} package
 #' \item \code{"naivebayes"}: \code{naive_bayes} from \pkg{naivebayes} package
@@ -173,7 +173,7 @@
 #' \item \code{"decisiontree"}: \code{rpart} from \pkg{rpart} package
 #' \item \code{"randomforest"}: \code{randomForest} from \pkg{randomForest} package
 #' \item \code{"multinom"}: \code{multinom} from \pkg{nnet} package
-#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with {family = "multinomial"} and using
+#' \item \code{"regularized_logistic"}: \code{glmnet} from \pkg{glmnet} package with \code{family = "multinomial"} and using
 #' \code{cv.glmnet} to select the optimal lambda.
 #' \item \code{"xgboost"}: \code{xgb.train} from \pkg{xgboost} package
 #' }
