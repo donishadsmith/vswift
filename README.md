@@ -54,11 +54,11 @@ The following classification algorithms are available through their respective R
 ### From the "main" branch:
 
 ```R
-# Install 'remotes' to install packages from Github
-install.packages("remotes")
+# Install 'devtools' to install packages from Github
+install.packages("devtools")
 
 # Install 'vswift' package
-remotes::install_github("donishadsmith/vswift", ref="main")
+devtools::install_github("donishadsmith/vswift")
  
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -67,11 +67,12 @@ help(package = "vswift")
 ### Github release:
 
 ```R
-# Install 'remotes' to install packages from Github
-install.packages("remotes")
-
 # Install 'vswift' package
-remotes::install_url("https://github.com/donishadsmith/vswift/releases/download/0.4.0.9004/vswift_0.4.0.9004.tar.gz")
+install.packages(
+  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9004/vswift_0.4.0.9004.tar.gz",
+  repos = NULL,
+  type = "source"
+)
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
