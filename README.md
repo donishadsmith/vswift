@@ -2,7 +2,7 @@
 ![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4-blue)
 [![Test Status](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml)
 [![Codecov](https://codecov.io/gh/donishadsmith/vswift/graph/badge.svg?token=7DYAPU2M0G)](https://codecov.io/gh/donishadsmith/vswift)
-[![Code Style: styler](https://img.shields.io/badge/Code%20Style-styler-CBAACB)](https://github.com/r-lib/styler)
+[![Code Style: styler](https://img.shields.io/badge/Code%20Style-styler-a18595)](https://github.com/r-lib/styler)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![Platform Support](https://img.shields.io/badge/OS-Ubuntu%20|%20macOS%20|%20Windows-blue)
 
