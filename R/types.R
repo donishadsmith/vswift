@@ -1,5 +1,4 @@
 # Parameter type list
-# Param list
 .param_types <- list(
   primary = list(
     data = c("data.frame"),
