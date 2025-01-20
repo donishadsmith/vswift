@@ -14,6 +14,13 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.0.9005] - 2025-01-20
+### 🚀 New/Added
+- Implemented ROC-AUC for binary classification problems.
+### 🐛 Fixes
+- Fixed a class name parsing issue where the print function incorrectly handled class names that were substrings of
+other class names. For instance, when classes were named "setosa" and "not setosa", the output for "setosa"
+included data from both classes in the printed output.
 
 ## [0.4.0.9004] - 2024-12-30
 ### 🚀 New/Added
