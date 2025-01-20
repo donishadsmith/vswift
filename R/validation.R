@@ -3,8 +3,12 @@
                         classes, keys, met_df, random_seed, save) {
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(col_levels)) {
-    train[, names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(train[, col], levels = col_levels[[col]])))
-    test[, names(col_levels)] <- data.frame(lapply(names(col_levels), function(col) factor(test[, col], levels = col_levels[[col]])))
+    train[, names(col_levels)] <- data.frame(
+      lapply(names(col_levels), function(col) factor(train[, col], levels = col_levels[[col]]))
+    )
+    test[, names(col_levels)] <- data.frame(
+      lapply(names(col_levels), function(col) factor(test[, col], levels = col_levels[[col]]))
+    )
   }
 
   # Convert to numerical
@@ -81,23 +85,28 @@
 
   if (model == "logistic") mod_args$family <- "binomial"
 
+  if (model == "svm") mod_args$probability <- TRUE
+
   if (!is.null(add_args)) mod_args <- c(mod_args, add_args)
 
   # Prevent default internal scaling for models with the scale parameter
   if (!model %in% c("decisiontree", "xgboost", "logistic")) mod_args$scale <- FALSE
 
   switch(model,
+    "decisiontree" = {
+      model <- do.call(rpart::rpart, mod_args)
+    },
+    "knn" = {
+      model <- do.call(kknn::train.kknn, mod_args)
+    },
     "lda" = {
       model <- do.call(MASS::lda, mod_args)
-    },
-    "qda" = {
-      model <- do.call(MASS::qda, mod_args)
     },
     "logistic" = {
       model <- do.call(glm, mod_args)
     },
-    "svm" = {
-      model <- do.call(e1071::svm, mod_args)
+    "multinom" = {
+      model <- do.call(nnet::multinom, mod_args)
     },
     "naivebayes" = {
       model <- do.call(naivebayes::naive_bayes, mod_args)
@@ -105,17 +114,14 @@
     "nnet" = {
       model <- do.call(nnet::nnet.formula, mod_args)
     },
-    "knn" = {
-      model <- do.call(kknn::train.kknn, mod_args)
-    },
-    "decisiontree" = {
-      model <- do.call(rpart::rpart, mod_args)
+    "qda" = {
+      model <- do.call(MASS::qda, mod_args)
     },
     "randomforest" = {
       model <- do.call(randomForest::randomForest, mod_args)
     },
-    "multinom" = {
-      model <- do.call(nnet::multinom, mod_args)
+    "svm" = {
+      model <- do.call(e1071::svm, mod_args)
     },
     "xgboost" = {
       mat_data <- data.matrix(data)
@@ -212,9 +218,10 @@
 }
 
 # Helper function for classCV to predict
-.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes) {
+.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, keep_probs = FALSE) {
   # vec to store ground truth and predicted data
   vec <- list("ground" = list(), "pred" = list())
+
   # Only get predictions for training set if train-test split
   if (id == "split") {
     vec$ground$train <- as.vector(df_list$train[, vars$target])
@@ -226,69 +233,95 @@
 
   for (i in names(df_list)) {
     switch(mod,
-      "lda" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+      "decisiontree" = {
+        mat <- predict(train_mod, newdata = df_list[[i]])
+        if (!keep_probs) {
+          vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
+        } else {
+          vec$pred[[i]] <- mat
+        }
       },
-      "qda" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+      "knn" = {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "prob", "raw"))
       },
       "logistic" = {
         vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
-        vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
+        if (!keep_probs) vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
+      },
+      "multinom" = {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "probs", "class"))
       },
       "naivebayes" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]][, vars$predictors])
+        vec$pred[[i]] <- predict(train_mod,
+          newdata = df_list[[i]][, vars$predictors],
+          type = ifelse(keep_probs, "prob", "class")
+        )
       },
       "nnet" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "class")
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "raw", "class"))
       },
-      "decisiontree" = {
-        mat <- predict(train_mod, newdata = df_list[[i]])
-        vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
-      },
-      "xgboost" = {
-        mat <- data.matrix(df_list[[i]])
-        xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
-        vec$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes)
+      "randomforest" = {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "prob", "response"))
       },
       "regularized_logistic" = {
         X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
-        vec$pred[[i]] <- predict(train_mod$model, newx = X, s = train_mod$model$lambda, type = "class")
+        vec$pred[[i]] <- predict(train_mod$model,
+          newx = X, s = train_mod$model$lambda,
+          type = ifelse(keep_probs, "response", "class")
+        )
       },
       "regularized_multinomial" = {
         X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
         mat <- predict(train_mod$model, newx = X, s = train_mod$model$lambda, type = "response")
-        vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
+        if (!keep_probs) {
+          vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
+        } else {
+          vec$pred[[i]] <- mat[, , 1]
+        }
       },
-      # Default for svm, knn, randomforest, and multinom
-      vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])
+      "svm" = {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], probability = if (keep_probs) TRUE else FALSE)
+        if (keep_probs) vec$pred[[i]] <- attr(vec$pred[[i]], "probabilities")
+      },
+      "xgboost" = {
+        mat <- data.matrix(df_list[[i]])
+        xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
+        vec$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, keep_probs)
+      },
+      # Default for lda and qda
+      if (keep_probs) {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$posterior
+      } else {
+        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+      }
     )
-    vec$pred[[i]] <- as.vector(vec$pred[[i]])
+    if (!keep_probs) vec$pred[[i]] <- as.vector(vec$pred[[i]])
   }
 
   return(vec)
 }
 
 # Handle different xgboost objective functions
-.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes) {
+.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, keep_probs) {
   # produces probability
   bin_prob <- c("reg:logistic", "binary:logistic")
 
   obj <- ifelse(obj %in% bin_prob, "binary_prob", obj)
 
-  pred <- predict(train_mod, newdata = xgb_mat)
+  pred <- predict(train_mod, newdata = xgb_mat, type = "prob")
 
   # Special cases that need to be converted to labels
   switch(obj,
     "binary_prob" = {
-      pred <- ifelse(pred >= thresh, 1, 0)
+      if (!keep_probs) pred <- ifelse(pred >= thresh, 1, 0)
     },
     "binary:logitraw" = {
       pred <- sapply(pred, .logit2prob)
-      pred <- ifelse(pred >= thresh, 1, 0)
+      if (!keep_probs) pred <- ifelse(pred >= thresh, 1, 0)
     },
     "multi:softprob" = {
-      pred <- max.col(matrix(pred, ncol = n_classes, byrow = TRUE)) - 1
+      pred <- matrix(pred, ncol = n_classes, byrow = TRUE)
+      if (!keep_probs) pred <- max.col(pred) - 1
     }
   )
 

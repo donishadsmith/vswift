@@ -292,13 +292,16 @@ classCV <- function(data,
   # Get information on unlabeled data and labeled data with missing features
   missing_info <- .missing_summary(data, vars$target)
 
+  # Ensure data row names have an enforced order
+  rownames(data) <- seq(nrow(data))
+
   # Clean data; Unlabeled data dropped and labeled missing data dropped if imputation is not requested
   clean_outputs <- .clean_data(data, missing_info, !is.null(impute_params$method))
   preprocessed_data <- clean_outputs$cleaned_data
   perform_imputation <- clean_outputs$perform_imputation
 
   # Ensure target is factored and get all levels of character columns obtained if svm in models
-  factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params)
+  factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params$remove_obs)
   preprocessed_data <- factored$data
   col_levels <- factored$col_levels
 
