@@ -294,7 +294,7 @@
 }
 
 # Helper function to turn character data into factors
-.convert_to_factor <- function(preprocessed_data, target, models, train_params) {
+.convert_to_factor <- function(preprocessed_data, target, models, remove_obs = FALSE) {
   # Make target factor, could be factor, numeric, or character
   preprocessed_data[, target] <- factor(preprocessed_data[, target])
   # Check for columns that are characters and factors
@@ -312,7 +312,7 @@
   preprocessed_dt[, (cols) := Map(function(x) factor(x), .SD), .SDcols = cols]
 
   # Create list to store levels for svm model or to remove observations later
-  if ("svm" %in% models || train_params$remove_obs == TRUE) {
+  if ("svm" %in% models || remove_obs == TRUE) {
     # Sapply through each column and collect levels
     col_levels <- sapply(preprocessed_dt[, .SD, .SDcols = cols], levels)
   }

@@ -75,21 +75,11 @@
     # For loop to obtain vector of values for each class
 
     for (class in x$class_summary$classes) {
-      # Empty class_col or initialize variable
-      class_col <- c()
-
-      # Go through column names, split the colnames and class name to see if the column name is the metric for that class
-      for (colname in colnames(df)) {
-        split_colname <- unlist(strsplit(colname, split = " "))
-        split_classname <- unlist(strsplit(class, split = " "))
-        if (all(split_classname %in% split_colname)) {
-          # Store colnames for the class is variable
-          class_col <- c(class_col, colname)
-        }
-      }
+      # Get class specific columns
+      class_cols <- .split_colnames(class, df)
 
       # Print metric corresponding to class
-      class_met <- sapply(df[df$Set == set, class_col], function(x) format(round(x, 2), nsmall = 2))
+      class_met <- sapply(df[df$Set == set, class_cols], function(x) format(round(x, 2), nsmall = 2))
       # Add spacing
       padding <- nchar(paste("Class:", "", "Pre"))
 
@@ -106,6 +96,7 @@
       }
 
       cat(class, rep("", (padding + str_diff[class_pos])), paste(formatted_class_met, collapse = " "), "\n")
+
       class_pos <- class_pos + 1
     }
   }
@@ -133,21 +124,12 @@
 
   # Go through column names, split the colnames and class name to see if the column name is the metric for that class
   for (class in x$class_summary$classes) {
-    # Empty class_col or initialize variable
-    class_col <- c()
-
-    for (colname in colnames(df)) {
-      split_colname <- unlist(strsplit(colname, split = " "))
-      split_classname <- unlist(strsplit(class, split = " "))
-      if (all(split_classname %in% split_colname)) {
-        # Store colnames for the class is variable
-        class_col <- c(class_col, colname)
-      }
-    }
+    # Get class specific columns
+    class_cols <- .split_colnames(class, df)
 
     # Print metric corresponding to class
-    mean_met <- sapply(df[((n_folds + 1)), class_col], function(x) format(round(x, 2), nsmall = 2))
-    sd_met <- sapply(df[((n_folds + 2)), class_col], function(x) format(round(x, 2), nsmall = 2))
+    mean_met <- sapply(df[((n_folds + 1)), class_cols], function(x) format(round(x, 2), nsmall = 2))
+    sd_met <- sapply(df[((n_folds + 2)), class_cols], function(x) format(round(x, 2), nsmall = 2))
     sd_met_pos <- 1
     class_met <- c()
 
@@ -170,6 +152,22 @@
     # Update variable
     class_pos <- class_pos + 1
   }
+}
+
+.split_colnames <- function(class, df) {
+  class_cols <- c()
+  for (colname in colnames(df)) {
+    split_colname <- unlist(strsplit(colname, split = " "))
+    # Remove the first and last element, corresponds to "Class:" and some metric name
+    split_colname <- split_colname[-c(1, length(split_colname))]
+    split_classname <- unlist(strsplit(class, split = " "))
+    if (all(split_classname %in% split_colname) && length(setdiff(split_colname, split_classname)) == 0) {
+      # Store colnames for the class is variable
+      class_cols <- c(class_cols, colname)
+    }
+  }
+
+  return(class_cols)
 }
 
 # Calculate string length of classes to create a border of dashed lines
