@@ -38,16 +38,13 @@
 #' @param class_names A vector of the specific classes to plot. If \code{NULL}, plots are generated for all classes.
 #' Default is \code{NULL}.
 #'
-#' @param path A character string specifying the directory (with a trailing slash) to save the plots. If \code{NULL},
-#' the plots are saved to the current working directory. Default is \code{NULL}.
+#' @param path A character string specifying the directory (with a trailing slash) to save the plots.
+#' Default is \code{NULL}.
 #'
 #' @param ... Additional arguments passed to the \code{png} function.
 #'
-#' @return Plots representing the specified evaluation metrics.
-#'
 #' @examples
 #' # Load an example dataset
-#'
 #' data(iris)
 #'
 #' # Perform a train-test split with an 80% training set and stratified sampling using QDA
@@ -56,7 +53,8 @@
 #'   data = iris,
 #'   target = "Species",
 #'   models = "qda",
-#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
+#'   save = list(models = TRUE)
 #' )
 #'
 #'
@@ -73,17 +71,6 @@
 "plot.vswift" <- function(x, metrics = c("accuracy", "precision", "recall", "f1"), models = NULL, split = TRUE,
                           cv = TRUE, class_names = NULL, path = NULL, ...) {
   if (inherits(x, "vswift")) {
-    # Create list
-    model_list <- list(
-      "lda" = "Linear Discriminant Analysis", "qda" = "Quadratic Discriminant Analysis",
-      "svm" = "Support Vector Machine", "nnet" = "Neural Network", "decisiontree" = "Decision Tree",
-      "randomforest" = "Random Forest", "xgboost" = "Extreme Gradient Boosting",
-      "multinom" = "Unregularized Multinomial Logistic Regression", "logistic" = "Unegularized Logistic Regression",
-      "regularized_multinomial" = "Regularized Multinomial Logistic Regression",
-      "regularized_logistic" = "Regularized Logistic Regression",
-      "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
-    )
-
     # Lowercase and intersect common names
     metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy", "precision", "recall", "f1"))
     if (length(metrics) == 0) {
@@ -98,28 +85,12 @@
     }
 
     # Get models
-    if (is.null(models)) {
-      models <- x$configs$models
-    } else {
-      # Make lowercase
-      models <- sapply(models, function(x) tolower(x))
-      models <- intersect(models, x$configs$models)
-      if (length(models) == 0) stop("no valid models specified in `models`")
-
-      # Warning when invalid models specified
-      invalid_models <- models[which(!models %in% models)]
-      if (length(invalid_models) > 0) {
-        warning(sprintf(
-          "invalid model in models or information for specified model not present in vswift x: %s",
-          paste(unlist(invalid_models), collapse = ", ")
-        ))
-      }
-    }
+    models <- .intersect_models(x, models)
 
     # Iterate over models
     for (model in models) {
       .plot_internal(
-        x = x, metrics = metrics, model = model, plot_title = model_list[[model]], split = split, cv = cv,
+        x = x, metrics = metrics, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
         class_names = class_names, path = path, ...
       )
     }

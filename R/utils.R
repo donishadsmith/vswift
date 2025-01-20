@@ -1,9 +1,9 @@
-# Function to partition data; indices is always the test set
+# Helper function to partition data; indices is always the test set
 .partition <- function(data, indices) {
   return(list("train" = data[-indices, ], "test" = data[indices, ]))
 }
 
-# Function to partition data
+# Helper function to generate all dataframes; primarily used if save$data = TRUE
 .create_data <- function(data, subsets) {
   df_list <- list()
   # Get data for train-test split
@@ -23,7 +23,7 @@
   return(df_list)
 }
 
-# Get test indices
+# Helper function to get test indices
 .get_indices <- function(obj, id) {
   if (id == "split") {
     return(obj[[id]]$test)
@@ -33,7 +33,7 @@
   }
 }
 
-# Generate foldid
+# Helper function to generate foldid
 .get_foldid <- function(cv_indxs, N) {
   # Replace fold ids with numbers
   names(cv_indxs) <- 1:length(cv_indxs)
@@ -43,7 +43,7 @@
   return(foldid)
 }
 
-# Obtain key of a value in a sublist
+# Helper function to obtain key of a value in a sublist
 .get_key <- function(indx, cv_indxs) {
   # Get a bool vector that indicates which sublist has the indx/observation
   bool_vec <- sapply(cv_indxs, function(x) indx %in% x)
@@ -51,13 +51,13 @@
   return(as.numeric(names(bool_vec)[bool_vec]))
 }
 
-# Unnest parallel list
+# Helper function to unnest parallel list
 .unnest <- function(par_list, iters, model, saved_mods) {
   targets <- c("metrics")
   metrics <- list()
   lambdas <- c()
 
-  if (saved_mods == TRUE) {
+  if (isTRUE(saved_mods)) {
     targets <- c("metrics", "models")
     models <- list()
   }
@@ -95,7 +95,7 @@
 }
 
 
-# Function to prep the data for validation
+# Helper function to prep the data for validation
 .prep_data <- function(i = NULL, train = NULL, test = NULL, kwargs = NULL, preprocessed_data = NULL, preproc_kwargs = NULL) {
   is_standardized <- FALSE
 
@@ -109,7 +109,7 @@
     }
 
     # Standardize
-    if (is_standardized == FALSE && isTRUE(kwargs$train_params$standardize)) {
+    if (isFALSE(is_standardized) && isTRUE(kwargs$train_params$standardize)) {
       df_list <- .standardize_train(train, test, kwargs$train_params$standardize, target = kwargs$vars$target)
       train <- df_list$train
       test <- df_list$test
@@ -128,7 +128,7 @@
     }
 
     # Standardize
-    if (is_standardized == FALSE && isTRUE(preproc_kwargs$standardize)) {
+    if (isFALSE(is_standardized) && isTRUE(preproc_kwargs$standardize)) {
       df_list <- .standardize(preprocessed_data, standardize = TRUE, preproc_kwargs$vars$target)
     }
 
@@ -151,5 +151,30 @@
       test <- test[-delete_rows, ]
     }
   }
+
   return(list("test" = test))
+}
+
+# Helper function to get models present in vswift object
+.intersect_models <- function(x, models) {
+  # Get models
+  if (is.null(models)) {
+    models <- x$configs$models
+  } else {
+    # Make lowercase
+    models <- sapply(models, function(x) tolower(x))
+    models <- intersect(models, x$configs$models)
+    if (length(models) == 0) stop("no valid models specified in `models`")
+
+    # Warning when invalid models specified
+    invalid_models <- models[which(!models %in% models)]
+    if (length(invalid_models) > 0) {
+      warning(sprintf(
+        "invalid model in models or information for specified model not present in vswift x: %s",
+        paste(unlist(invalid_models), collapse = ", ")
+      ))
+    }
+  }
+
+  return(models)
 }

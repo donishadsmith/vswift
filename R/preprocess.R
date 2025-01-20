@@ -75,7 +75,7 @@
   }
 
   # Check split, n_folds, final_model
-  if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model) || model_params$final_model == FALSE)) {
+  if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model) || isFALSE(model_params$final_model))) {
     stop("neither `split`, `n_folds`, or `final_model` specified")
   }
 
@@ -294,7 +294,7 @@
 }
 
 # Helper function to turn character data into factors
-.convert_to_factor <- function(preprocessed_data, target, models, train_params) {
+.convert_to_factor <- function(preprocessed_data, target, models, remove_obs = FALSE) {
   # Make target factor, could be factor, numeric, or character
   preprocessed_data[, target] <- factor(preprocessed_data[, target])
   # Check for columns that are characters and factors
@@ -312,7 +312,7 @@
   preprocessed_dt[, (cols) := Map(function(x) factor(x), .SD), .SDcols = cols]
 
   # Create list to store levels for svm model or to remove observations later
-  if ("svm" %in% models || train_params$remove_obs == TRUE) {
+  if ("svm" %in% models || isTRUE(remove_obs)) {
     # Sapply through each column and collect levels
     col_levels <- sapply(preprocessed_dt[, .SD, .SDcols = cols], levels)
   }
@@ -371,7 +371,7 @@
 
   if (!is.null(train_params$n_folds)) iters <- c(iters, paste0("fold", 1:train_params$n_folds))
 
-  if (model_params$final_model == TRUE) iters <- c(iters, "final")
+  if (isTRUE(model_params$final_model)) iters <- c(iters, "final")
 
   return(iters)
 }

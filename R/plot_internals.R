@@ -37,7 +37,7 @@
   }
 
   # Plot train-test split evaluation metrics
-  if (all(is.data.frame(df$split), split == TRUE)) {
+  if (all(is.data.frame(df$split), isTRUE(split))) {
     .plot_split(df, classes, metrics, metrics_list, plot_title, path,
       os.sep = if (exists("os.sep")) os.sep else NULL,
       png_name = if (exists("png_name")) png_name else NULL,
@@ -46,7 +46,7 @@
   }
 
   # Plot cross-validation evaluation metrics
-  if (all(is.data.frame(df$cv), cv == TRUE)) {
+  if (all(is.data.frame(df$cv), isTRUE(cv))) {
     .plot_cv(df, classes, metrics, metrics_list, plot_title, path,
       os.sep = if (exists("os.sep")) os.sep else NULL,
       png_name = if (exists("png_name")) png_name else NULL, ...

@@ -49,13 +49,10 @@ to plot. If \code{NULL}, all models will be plotted. The following options are a
 \item{class_names}{A vector of the specific classes to plot. If \code{NULL}, plots are generated for all classes.
 Default is \code{NULL}.}
 
-\item{path}{A character string specifying the directory (with a trailing slash) to save the plots. If \code{NULL},
-the plots are saved to the current working directory. Default is \code{NULL}.}
+\item{path}{A character string specifying the directory (with a trailing slash) to save the plots.
+Default is \code{NULL}.}
 
 \item{...}{Additional arguments passed to the \code{png} function.}
-}
-\value{
-Plots representing the specified evaluation metrics.
 }
 \description{
 Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a \code{vswift}
@@ -63,7 +60,6 @@ object.
 }
 \examples{
 # Load an example dataset
-
 data(iris)
 
 # Perform a train-test split with an 80\% training set and stratified sampling using QDA
@@ -72,7 +68,8 @@ result <- classCV(
   data = iris,
   target = "Species",
   models = "qda",
-  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50)
+  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
+  save = list(models = TRUE)
 )
 
 

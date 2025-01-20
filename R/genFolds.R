@@ -47,7 +47,7 @@ genFolds <- function(data,
                      train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL),
                      create_data = FALSE) {
   # Append train_params
-  train_params <- .append_keys("train_params", train_params, call = "genFolds")
+  train_params <- .append_param_keys("train_params", train_params, call = "genFolds")
   # Check validity of inputs
   .error_handling(data = data, target = target, train_params = train_params, create_data = create_data, call = "genFolds")
 
@@ -60,7 +60,7 @@ genFolds <- function(data,
   final_output <- .sampling(data, train_params, target, final_output)
 
   # Get data partitions
-  if (create_data == TRUE) final_output$data_partitions$dataframes <- .create_data(data, final_output$data_partitions$indices)
+  if (isTRUE(create_data)) final_output$data_partitions$dataframes <- .create_data(data, final_output$data_partitions$indices)
 
   return(final_output)
 }
@@ -70,7 +70,7 @@ genFolds <- function(data,
   # Base args
   base_args <- list(N = nrow(data), random_seed = train_params$random_seed)
 
-  if (train_params$stratified == TRUE) {
+  if (isTRUE(train_params$stratified)) {
     # Create args list
     strat_args <- list(
       classes = final_output$class_summary$classes,

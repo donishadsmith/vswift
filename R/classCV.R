@@ -273,11 +273,11 @@ classCV <- function(data,
   models <- unique(models)
 
   # Append arguments; append missing so that default arguments appear in the output list and in order
-  model_params <- .append_keys("model_params", model_params, models, ...)
-  train_params <- .append_keys("train_params", train_params)
-  impute_params <- .append_keys("impute_params", impute_params)
-  save <- .append_keys("save", save)
-  parallel_configs <- .append_keys("parallel_configs", parallel_configs)
+  model_params <- .append_param_keys("model_params", model_params, models, ...)
+  train_params <- .append_param_keys("train_params", train_params)
+  impute_params <- .append_param_keys("impute_params", impute_params)
+  save <- .append_param_keys("save", save)
+  parallel_configs <- .append_param_keys("parallel_configs", parallel_configs)
 
   # Checking if inputs are valid
   .error_handling(
@@ -292,13 +292,16 @@ classCV <- function(data,
   # Get information on unlabeled data and labeled data with missing features
   missing_info <- .missing_summary(data, vars$target)
 
+  # Ensure data row names have an enforced order
+  rownames(data) <- seq(nrow(data))
+
   # Clean data; Unlabeled data dropped and labeled missing data dropped if imputation is not requested
   clean_outputs <- .clean_data(data, missing_info, !is.null(impute_params$method))
   preprocessed_data <- clean_outputs$cleaned_data
   perform_imputation <- clean_outputs$perform_imputation
 
   # Ensure target is factored and get all levels of character columns obtained if svm in models
-  factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params)
+  factored <- .convert_to_factor(preprocessed_data, vars$target, models, train_params$remove_obs)
   preprocessed_data <- factored$data
   col_levels <- factored$col_levels
 
@@ -402,7 +405,7 @@ classCV <- function(data,
         preproc_kwargs$prep <- impute_models$final
       }
 
-      if (!is.null(preproc_kwargs$impute) || train_params$standardize == TRUE) {
+      if (!is.null(preproc_kwargs$impute) || isTRUE(train_params$standardize)) {
         preproc_kwargs <- c(preproc_kwargs, list("vars" = vars, "standardize" = train_params$standardize))
         preprocessed_data <- .prep_data(preprocessed_data = preprocessed_data, preproc_kwargs = preproc_kwargs)
       }
@@ -442,7 +445,7 @@ classCV <- function(data,
   }
 
   # Save data
-  if (save$data == TRUE) {
+  if (isTRUE(save$data)) {
     if (exists("kwargs")) {
       for (i in iters[!iters == "final"]) {
         test_indices <- .get_indices(kwargs$indices, i)

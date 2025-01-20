@@ -16,7 +16,7 @@
     test <- df_list$test
 
     # Prep data
-    if (kwargs$train_params$standardize == TRUE || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
+    if (isTRUE(kwargs$train_params$standardize) || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
       df_list <- .prep_data(i, train, test, kwargs)
       train <- df_list$train
       test <- df_list$test
@@ -63,7 +63,7 @@
     test <- df_list$test
 
     # Prep data
-    if (kwargs$train_params$standardize == TRUE || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
+    if (isTRUE(kwargs$train_params$standardize) || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
       df_list <- .prep_data(i, train, test, kwargs)
       train <- df_list$train
       test <- df_list$test
@@ -97,10 +97,10 @@
   # Nested list structure to ensure that "metrics" and "models" in the classCV output contains "split" and "cv"
   if (name == "split") {
     met_list$split <- val_out$metrics
-    if (kwargs$save_mods == TRUE) mod_list$split <- val_out$train_mod
+    if (isTRUE(kwargs$save_mods)) mod_list$split <- val_out$train_mod
   } else {
     met_list$cv[[i]] <- val_out$metrics
-    if (kwargs$save_mods == TRUE) mod_list$cv[[i]] <- val_out$train_mod
+    if (isTRUE(kwargs$save_mods)) mod_list$cv[[i]] <- val_out$train_mod
   }
 
   out <- list("metrics" = met_list)
