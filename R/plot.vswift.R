@@ -1,11 +1,10 @@
 #' Plot Model Evaluation Metrics
 #'
-#' @name plot
+#' @aliases plot.vswift
 #'
-#' @description Plots classification metrics (accuracy, precision, recall, and f1 for each class) from a \code{vswift}
-#' object.
+#' @description Plots classification metrics (accuracy, precision, recall, and f1 for each class).
 #'
-#' @param x A \code{vswift} object.
+#' @param x A list object of class \code{"vswift"}.
 #'
 #' @param metrics A character vector indicating which metrics to plot. Supported options are \code{"accuracy"},
 #' \code{"precision"}, \code{"recall"}, and \code{"f1"}. Default is \code{c("accuracy", "precision", "recall", "f1")}.
@@ -66,33 +65,32 @@
 #' @importFrom  graphics axis abline legend
 #'
 #' @author Donisha Smith
+#' @method plot vswift
 #'
 #' @export
 "plot.vswift" <- function(x, metrics = c("accuracy", "precision", "recall", "f1"), models = NULL, split = TRUE,
                           cv = TRUE, class_names = NULL, path = NULL, ...) {
-  if (inherits(x, "vswift")) {
-    # Lowercase and intersect common names
-    metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy", "precision", "recall", "f1"))
-    if (length(metrics) == 0) {
-      stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy", "precision", "recall", "f1"), collapse = ", ")))
+  # Lowercase and intersect common names
+  metrics <- intersect(unlist(lapply(metrics, function(x) tolower(x))), c("accuracy", "precision", "recall", "f1"))
+  if (length(metrics) == 0) {
+    stop(sprintf("no metrics specified, available metrics: %s", paste(c("accuracy", "precision", "recall", "f1"), collapse = ", ")))
+  }
+  # intersect common names
+  if (!is.null(class_names)) {
+    class_names <- intersect(class_names, x$class_summary$classes)
+    if (length(class_names) == 0) {
+      stop(sprintf("no classes specified, available classes: %s", paste(x$class_summary$classes, collapse = ", ")))
     }
-    # intersect common names
-    if (!is.null(class_names)) {
-      class_names <- intersect(class_names, x$class_summary$classes)
-      if (length(class_names) == 0) {
-        stop(sprintf("no classes specified, available classes: %s", paste(x$class_summary$classes, collapse = ", ")))
-      }
-    }
+  }
 
-    # Get models
-    models <- .intersect_models(x, models)
+  # Get models
+  models <- .intersect_models(x, models)
 
-    # Iterate over models
-    for (model in models) {
-      .plot_internal(
-        x = x, metrics = metrics, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
-        class_names = class_names, path = path, ...
-      )
-    }
+  # Iterate over models
+  for (model in models) {
+    .plot_internal(
+      x = x, metrics = metrics, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
+      class_names = class_names, path = path, ...
+    )
   }
 }

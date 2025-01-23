@@ -14,12 +14,10 @@
   # Create list of parameters
   if (call == "classCV") {
     params_list <- list(
-      data = data, formula = formula, target = target, predictors = predictors, models = models,
-      model_params = model_params, train_params = train_params, impute_params = impute_params,
-      save = save
+      data = data, formula = formula, target = target, predictors = predictors, models = models
     )
   } else {
-    params_list <- list(data = data, train_params = train_params, create_data = create_data)
+    params_list <- list(data = data, create_data = create_data)
     return(0)
   }
 

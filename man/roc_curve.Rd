@@ -16,7 +16,7 @@ roc_curve(
 )
 }
 \arguments{
-\item{x}{A vswift object. Note that the preprocessed data and models must be saved using
+\item{x}{A list object of class \code{"vswift"}. Note that the preprocessed data and models must be saved using
 \code{save = list("models" = TRUE, "data" = TRUE)} in \code{classCV} for this function to work.}
 
 \item{models}{A character string or a character vector specifying the classification algorithm(s) to plot ROC curves
@@ -77,7 +77,6 @@ result <- classCV(
   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
   save = list(data = TRUE, models = TRUE)
 )
-
 
 # Get ROC curve
 roc_curve(result, return_output = FALSE)

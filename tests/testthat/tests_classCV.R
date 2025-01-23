@@ -1,7 +1,26 @@
 # Testing classCV function
 library(vswift)
 library(testthat)
-# Test that each model works with train-test splitting alone
+
+test_that("Fail due to `train_params` not being list", {
+  data <- iris
+  expect_error(result <- classCV(
+    data = data, target = "Species", models = "lda",
+    train_params = NULL
+  ), "`train_params` must be a list")
+})
+
+test_that("Fail due to lack of nesting for `train_params`", {
+  data <- iris
+  expect_error(
+    result <- classCV(
+      data = data, target = "Species", models = "lda",
+      train_params = list()
+    ),
+    "`train_params` must be a nested list containing one of the following valid keys: 'split', 'n_folds', 'stratified', 'random_seed', 'standardize', 'remove_obs'"
+  )
+})
+
 test_that("test train-test split and no stratified sampling", {
   data <- iris
   expect_no_error(result <- classCV(
@@ -13,9 +32,23 @@ test_that("test train-test split and no stratified sampling", {
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
 })
 
+test_that("test train-test split and no stratified sampling w/ invalid key", {
+  data <- iris
+  expect_warning(result <- classCV(
+    data = data, target = "Species", models = "lda",
+    train_params = list(split = 0.8, standardize = TRUE, invalid_key = "1")
+  ))
+  # Ensure values are greater than or equal to 0 and less than or equal to one
+  split_df <- result$metrics$lda$split
+  expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
+})
+
 test_that("test new formula method", {
   data <- iris
-  result1 <- classCV(data = data, target = "Species", models = "qda", train_params = list(split = 0.8, random_seed = 50))
+  result1 <- classCV(
+    data = data, target = "Species", models = "qda",
+    train_params = list(split = 0.8, random_seed = 50)
+  )
   expect_no_error(result2 <- classCV(
     formula = Species ~ ., data = data, models = "qda",
     train_params = list(split = 0.8, random_seed = 50)

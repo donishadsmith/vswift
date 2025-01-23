@@ -10,7 +10,7 @@
   if (is.null(names(struct))) {
     stop(
       sprintf(
-        "`%s` must be a nested list containing a valid key: '%s'", param,
+        "`%s` must be a nested list containing one of the following valid keys: '%s'", param,
         paste(names(default_keys), collapse = "', '")
       )
     )

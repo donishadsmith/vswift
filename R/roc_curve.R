@@ -5,7 +5,7 @@
 #' @description Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
 #' Currently only works for binary classification tasks.
 #'
-#' @param x A vswift object. Note that the preprocessed data and models must be saved using
+#' @param x A list object of class \code{"vswift"}. Note that the preprocessed data and models must be saved using
 #' \code{save = list("models" = TRUE, "data" = TRUE)} in \code{classCV} for this function to work.
 #'
 #' @param models A character string or a character vector specifying the classification algorithm(s) to plot ROC curves
@@ -62,7 +62,6 @@
 #'   save = list(data = TRUE, models = TRUE)
 #' )
 #'
-#'
 #' # Get ROC curve
 #' roc_curve(result, return_output = FALSE)
 #'
@@ -70,6 +69,7 @@
 #'
 #' @importFrom grDevices rainbow
 #' @importFrom graphics lines
+#'
 #' @export
 roc_curve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
                       path = NULL, ...) {
@@ -105,5 +105,7 @@ roc_curve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NU
     if (isTRUE(return_output)) {
       return(roc_output)
     }
+  } else {
+    stop("`x` must be an object of class 'vswift'")
   }
 }

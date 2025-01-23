@@ -1,11 +1,11 @@
 #' Print Parameter Information and/or Model Evaluation Metrics
 #'
-#' @name print
+#' @aliases print.vswift
 #'
 #' @description Prints model configuration details and/or model evaluation metrics (classification accuracy, precision,
-#' recall, and F1 scores) from a vswift object.
+#' recall, and F1 scores).
 #'
-#' @param x A vswift object.
+#' @param x A list object of class \code{"vswift"}.
 #'
 #' @param configs A logical value indicating whether to print model configuration information from the vswift
 #' object. Default is \code{TRUE}.
@@ -55,27 +55,25 @@
 #' @importFrom utils capture.output
 #'
 #' @author Donisha Smith
+#' @method print vswift
 #'
 #' @export
-
 "print.vswift" <- function(x, configs = TRUE, metrics = TRUE, models = NULL, ...) {
-  if (inherits(x, "vswift")) {
-    # Get models
-    models <- .intersect_models(x, models)
+  # Get models
+  models <- .intersect_models(x, models)
 
-    # Calculate string length of classes
-    str_list <- .dashed_lines(x$class_summary$classes, TRUE)
-    for (model in models) {
-      cat(paste("Model:", .MODEL_LIST[[model]]), "\n\n")
-      # Print parameter information
-      if (configs) .print_configs(x, model)
+  # Calculate string length of classes
+  str_list <- .dashed_lines(x$class_summary$classes, TRUE)
+  for (model in models) {
+    cat(paste("Model:", .MODEL_LIST[[model]]), "\n\n")
+    # Print parameter information
+    if (configs) .print_configs(x, model)
 
-      if (metrics) {
-        if (is.data.frame(x$metrics[[model]]$split)) .print_metrics_split(x, x$metrics[[model]]$split, str_list$max, str_list$diff)
-        if (is.data.frame(x$metrics[[model]]$cv)) .print_metrics_cv(x, x$metrics[[model]]$cv, str_list$max, str_list$diff)
-      }
-      # Add dashed line to separate each model
-      .dashed_lines(x$class_summary$classes)
+    if (metrics) {
+      if (is.data.frame(x$metrics[[model]]$split)) .print_metrics_split(x, x$metrics[[model]]$split, str_list$max, str_list$diff)
+      if (is.data.frame(x$metrics[[model]]$cv)) .print_metrics_cv(x, x$metrics[[model]]$cv, str_list$max, str_list$diff)
     }
+    # Add dashed line to separate each model
+    .dashed_lines(x$class_summary$classes)
   }
 }

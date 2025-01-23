@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.0.9006] - 2025-01-23
+### 🐛 Fixes
+- Fixes the vignette and duplicate man files for S3 methods.
+
 ## [0.4.0.9005] - 2025-01-20
 ### 🚀 New/Added
 - Implemented ROC-AUC for binary classification problems.

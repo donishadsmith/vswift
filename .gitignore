@@ -1,2 +1,4 @@
-inst/doc
 .Rproj.user
+inst/doc
+/doc/
+/Meta/

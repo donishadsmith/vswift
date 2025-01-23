@@ -24,7 +24,7 @@ The following classification algorithms are available through their respective R
   - `train.kknn` from kknn package for K-Nearest Neighbors
   - `rpart` from rpart package for Decision Trees
   - `randomForest` from randomForest package for Random Forest
-  - `multinom` from nnet package for Unregularized Multinomial Regression
+  - `multinom` from nnet package for Unregularized Multinomial Logistic Regression
   - `xgb.train` from xgboost package for Extreme Gradient Boosting
 
 ## Features
@@ -44,8 +44,10 @@ The following classification algorithms are available through their respective R
 - **Missing Data Imputation**: Select either Bagged Tree Imputation or KNN Imputation, implemented using the recipes package. Imputation uses only feature data from the training set to prevent leakage.
 - **Automatic Numerical Encoding**: Target variable classes are automatically encoded numerically for algorithms requiring numerical inputs.
 
-### Performance & Efficiency
+### Model Evaluation
 - **Comprehensive Metrics**: Generate and save performance metrics including classification accuracy, precision, recall, and F1 for each class. For binary classification tasks, produce ROC (Receiver Operating Characteristic) curves and calculate ROC-AUC (Area Under Curve) scores.
+
+### Performance & Efficiency
 - **Parallel Processing**: Utilize multi-core processing for cross-validation through the future package, configurable via `n_cores` and `future.seed` keys in the `parallel_configs` parameter.
 - **Minimal Code Requirement**: Access all functionality efficiently with just a few lines of code.
 
@@ -58,7 +60,7 @@ The following classification algorithms are available through their respective R
 install.packages("devtools")
 
 # Install 'vswift' package
-devtools::install_github("donishadsmith/vswift")
+devtools::install_github("donishadsmith/vswift", build_manual = TRUE, build_vignettes = TRUE)
  
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -69,7 +71,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9005/vswift_0.4.0.9005.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9006/vswift_0.4.0.9006.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -93,8 +95,8 @@ Acceptable inputs for the `models` parameter includes:
   - "knn" for K-Nearest Neighbors
   - "decisiontree" for Decision Trees
   - "randomforest" for Random Forest
-  - "multinom" for Unregularized Multinomial Regression
-  - "regularized_multinomial" for Regularized Multinomial Regression
+  - "multinom" for Unregularized Multinomial Logistic Regression
+  - "regularized_multinomial" for Regularized Multinomial Logistic Regression
   - "xgboost" for Extreme Gradient Boosting
 
 ### Using a single model

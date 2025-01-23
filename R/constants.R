@@ -33,19 +33,15 @@
   return(keys)
 }
 
-# A list mapping parameters to certain types
+# A list mapping parameters to certain types; The %s_params parameters not included since their class is checked
+# by .append_param_keys
 .PARAM_TYPES <- list(
   primary = list(
     data = c("data.frame"),
     formula = c("formula", "NULL"),
     target = c("character", "numeric", "integer", "NULL"),
     predictors = c("character", "numeric", "integer", "NULL"),
-    models = c("character"),
-    model_params = c("list"),
-    train_params = c("list"),
-    impute_params = c("list"),
-    save = c("list"),
-    parallel_configs = c("list")
+    models = c("character")
   ),
   secondary = list(
     map_args = c("list", "NULL"),
