@@ -214,7 +214,7 @@ class(results)
 print(results, parameters = TRUE, metrics = TRUE)
 ```
 
-**Output:**
+**Output**
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -285,7 +285,7 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
 
 <details>
   
-  <summary>Plots</summary>
+  <summary><strong>Plots</strong></summary>
   
   ![image](assets/thyroid/regularized_logistic_regression_cv_classification_accuracy.png)
   ![image](assets/thyroid/regularized_logistic_regression_cv_f1_No.png)
@@ -330,7 +330,7 @@ output <- roc_curve(results, return_output = TRUE, thresholds = NULL, path = get
 
 ```
 
-**Output:**
+**Output**
 
 ```
 Warning message:
@@ -350,7 +350,7 @@ True Positive Rates, Area Under The Curve (AUC), and Youdin's Index for all trai
 print(output)
 ```
 <details>
-    <summary>Output</summary>
+    <summary><strong>Output</strong></summary>
 
     $naivebayes
     $naivebayes$split
@@ -768,7 +768,7 @@ results <- classCV(
 print(results)
 ```
 
-**Output:**
+**Output**
 ```
 Warning messages:
 1: In .clean_data(data, missing_info, !is.null(impute_params$method)) :
@@ -846,7 +846,7 @@ print(results)
 ```
 
 <details>
-    <summary>Output</summary>
+    <summary><strong>Output</strong></summary>
 
     ```
     $configs
@@ -1179,7 +1179,7 @@ end_par <- proc.time() - start_par
 print(end_par)
 ```
 
-**Output:**
+**Output**
 ```
 [1] "Without Parallel Processing:"
 
@@ -1207,7 +1207,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
 print(results, models = c("xgboost", "knn"))
 ```
 
-**Output:**
+**Output**
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -1343,7 +1343,7 @@ plot(
 
 <details>
   
-  <summary>Plots</summary>
+  <summary><strong>Plots</strong></summary>
 
   ![image](assets/ads/extreme_gradient_boosting_cv_precision_ad..png)
   ![image](assets/ads/extreme_gradient_boosting_cv_recall_ad..png)
