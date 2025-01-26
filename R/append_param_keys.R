@@ -62,5 +62,5 @@
   }
 
   # Order
-  return(new_struct)
+  return(new_struct[names(default_keys)])
 }
