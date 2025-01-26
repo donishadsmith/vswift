@@ -141,7 +141,7 @@
     if (!(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost"))) {
       # Return the column corresponding to one in keys
       if (model != "xgboost") {
-        pred_list$pred[[name]] <- pred_list$pred[[name]][, names(info$keys)[which(info$keys == 1)]]
+        pred_list$pred[[name]] <- pred_list$pred[[name]][, names(info$keys)[info$keys == 1]]
       } else {
         pred_list$pred[[name]] <- pred_list$pred[[name]][, 1]
       }
@@ -218,7 +218,7 @@
   # sensitivity - (1 - specificity) = sensitivity + specificity - 1 = tpr - fpr
   j <- tpr - fpr
   max_diff <- max(j)
-  optimal_threshold <- thresholds[which(j == max_diff)]
+  optimal_threshold <- thresholds[j == max_diff]
 
   return(optimal_threshold)
 }
