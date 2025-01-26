@@ -16,8 +16,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.4.0.9007] - 2025-01-26
 ### 🐛 Fixes
-- Fixes ordering of the output configurations
-
+- Fixes ordering of the output list configurations
 
 ## [0.4.0.9006] - 2025-01-23
 ### 🐛 Fixes
