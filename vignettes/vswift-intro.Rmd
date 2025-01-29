@@ -81,5 +81,5 @@ result <- classCV(
   save = list(data = TRUE, models = TRUE)
 )
 
-output <- roc_curve(result)
+output <- rocCurve(result)
 ```

@@ -49,7 +49,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           R CMD build --no-build-vignettes .
-          R CMD check --no-manual --as-cran vswift_0.4.0.9007.tar.gz
+          R CMD check --no-manual --as-cran vswift_0.4.0.9008.tar.gz
         shell: cmd
 
       - name: Run MacOS and get coverage

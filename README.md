@@ -39,6 +39,7 @@ The following classification algorithms are available through their respective R
 - **Model Saving Capabilities**: Save all models utilized for training and testing for both train-test splitting and cross-validation.
 - **Final Model Creation**: Easily create and save final models for future use.
 - **Dataset Saving Options**: Preserve split datasets and folds for reproducibility.
+- **Parallel Processing**: Utilize multi-core processing for cross-validation through the future package, configurable via `n_cores` and `future.seed` keys in the `parallel_configs` parameter.
 
 ### Data Preprocessing
 - **Missing Data Imputation**: Select either Bagged Tree Imputation or KNN Imputation, implemented using the recipes package. Imputation uses only feature data from the training set to prevent leakage.
@@ -46,10 +47,6 @@ The following classification algorithms are available through their respective R
 
 ### Model Evaluation
 - **Comprehensive Metrics**: Generate and save performance metrics including classification accuracy, precision, recall, and F1 for each class. For binary classification tasks, produce ROC (Receiver Operating Characteristic) curves and calculate ROC-AUC (Area Under Curve) scores.
-
-### Performance & Efficiency
-- **Parallel Processing**: Utilize multi-core processing for cross-validation through the future package, configurable via `n_cores` and `future.seed` keys in the `parallel_configs` parameter.
-- **Minimal Code Requirement**: Access all functionality efficiently with just a few lines of code.
 
 ## Installation
 
@@ -71,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9007/vswift_0.4.0.9007.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9008/vswift_0.4.0.9008.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -326,7 +323,7 @@ results <- classCV(
 )
 
 # Will derive thresholds from the probabilities
-output <- roc_curve(results, return_output = TRUE, thresholds = NULL, path = getwd())
+output <- rocCurve(results, return_output = TRUE, thresholds = NULL, path = getwd())
 
 ```
 
@@ -335,7 +332,7 @@ output <- roc_curve(results, return_output = TRUE, thresholds = NULL, path = get
 ```
 Warning message:
 In .create_dictionary(x$class_summary$classes, TRUE) :
-  creating keys for target variable for `roc_curve`;
+  creating keys for target variable for `rocCurve`;
   classes are now encoded: No = 0, Yes = 1
 ```
 

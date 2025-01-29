@@ -45,7 +45,7 @@ test_that("test roc curve", {
   )
 
   # With thresholds derived from models
-  output <- roc_curve(results, path = getwd())
+  output <- rocCurve(results, path = getwd())
 
   for (png_file in list.files(getwd(), pattern = ".png")) {
     expect_true(file.size(png_file) > 0)
@@ -57,7 +57,7 @@ test_that("test roc curve", {
   expect_true(length(output) == "13")
 
   # With specified thresholds
-  output <- roc_curve(results, path = getwd(), thresholds = seq(0, 0.9, 0.1))
+  output <- rocCurve(results, path = getwd(), thresholds = seq(0, 0.9, 0.1))
 
   for (png_file in list.files(getwd(), pattern = ".png")) {
     expect_true(file.size(png_file) > 0)

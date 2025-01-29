@@ -1,12 +1,12 @@
 # Helper function to perform checks to ensure information needed is available and to obtain information needed for plotting
 .perform_checks <- function(x) {
   if (is.null(x$models)) {
-    stop("models must be saved in order to use `roc_curve`")
+    stop("models must be saved in order to use `rocCurve`")
   }
 
   # Check if data is available
   if (is.null(x$data_partitions$dataframes)) {
-    stop("dataframes must be saved by `classCV` to use `roc_curve`")
+    stop("dataframes must be saved by `classCV` to use `rocCurve`")
   }
 
   # Check if target is binary
@@ -15,7 +15,7 @@
   vars <- .get_var_names(formula = x$configs$formula, data = df)
 
   if (length(x$class_summary$classes) != 2) {
-    stop("`roc_curve` currently only supports binary targets")
+    stop("`rocCurve` currently only supports binary targets")
   }
 
   # Convert target
@@ -59,7 +59,7 @@
   return(out)
 }
 
-.roc_curve_internal <- function(x, model, plot_title, split, cv, thresholds, info, path, ...) {
+.rocCurve_internal <- function(x, model, plot_title, split, cv, thresholds, info, path, ...) {
   out <- list()
 
   if (isTRUE(split) && !is.null(x$configs$train_params$split)) {
