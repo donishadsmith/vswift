@@ -1,6 +1,6 @@
 #' Plot Receiver Operating Characteristic (ROC) Curves for Binary Classification Tasks
 #'
-#' @name roc_curve
+#' @name rocCurve
 #'
 #' @description Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
 #' Currently only works for binary classification tasks.
@@ -63,7 +63,7 @@
 #' )
 #'
 #' # Get ROC curve
-#' roc_curve(result, return_output = FALSE)
+#' rocCurve(result, return_output = FALSE)
 #'
 #' @author Donisha Smith
 #'
@@ -71,8 +71,8 @@
 #' @importFrom graphics lines
 #'
 #' @export
-roc_curve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
-                      path = NULL, ...) {
+rocCurve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
+                     path = NULL, ...) {
   if (inherits(x, "vswift")) {
     # Perform checks and get dictionary class keys and variables
     info <- .perform_checks(x)
@@ -94,7 +94,7 @@ roc_curve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NU
     roc_output <- list()
 
     for (model in models) {
-      roc_output[[model]] <- .roc_curve_internal(
+      roc_output[[model]] <- .rocCurve_internal(
         x = x, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
         thresholds = thresholds, info = info, path = path, ...
       )

@@ -10,7 +10,7 @@
     counter <- counter + 1
   }
 
-  msg <- if (!alternate_warning) "due to 'logistic' or 'xgboost' being specified" else "for `roc_curve`"
+  msg <- if (!alternate_warning) "due to 'logistic' or 'xgboost' being specified" else "for `rocCurve`"
 
   warning(sprintf(
     "creating keys for target variable %s;\n  classes are now encoded: %s",
