@@ -22,7 +22,7 @@
       test <- df_list$test
     }
 
-    out <- .validation_entry(i, df_list$train, df_list$test, kwargs)
+    out <- .setup(i, df_list$train, df_list$test, kwargs)
 
     # Append metrics and models list
     if (i == "split") {
@@ -70,7 +70,7 @@
     }
 
     # Get output
-    out <- .validation_entry(i, train, test, kwargs)
+    out <- .setup(i, train, test, kwargs)
   }, future.seed = if (!is.null(parallel_configs$future.seed)) parallel_configs$future.seed else TRUE)
 
   # Close the background workers
@@ -81,7 +81,7 @@
 }
 
 # Entry point for validation
-.validation_entry <- function(i, train, test, kwargs) {
+.setup <- function(i, train, test, kwargs) {
   # Create lists
   met_list <- list()
   mod_list <- list()

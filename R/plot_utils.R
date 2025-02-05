@@ -12,7 +12,7 @@
 }
 
 # Entry point for plotting train-test split and cross-validation evaluation metrics
-.plot_internal <- function(x, metrics, model, plot_title, split, cv, class_names, path, ...) {
+.plot <- function(x, metrics, model, plot_title, split, cv, class_names, path, ...) {
   # Get dataframe
   df <- x$metrics[[model]]
 

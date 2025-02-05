@@ -88,7 +88,7 @@
 
   # Iterate over models
   for (model in models) {
-    .plot_internal(
+    .plot(
       x = x, metrics = metrics, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
       class_names = class_names, path = path, ...
     )
