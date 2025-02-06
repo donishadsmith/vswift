@@ -1232,7 +1232,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
- 227.53    4.24  214.43
+ 231.08    3.50  217.13 
 
 [1] "Parallel Processing:"
 
@@ -1242,7 +1242,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
   classes are now encoded: ad. = 0, nonad. = 1
 
    user  system elapsed 
-   1.64    4.67   96.27
+   2.06    5.89  103.59 
 ```
 
 ```R
@@ -1263,7 +1263,7 @@ Number of Features: 1558
 
 Classes: ad., nonad.
 
-Training Parameters: list(split = 0.8, n_folds = 5, random_seed = 123, stratified = FALSE, standardize = FALSE, remove_obs = FALSE)
+Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_seed = 123, standardize = FALSE, remove_obs = FALSE)
 
 Model Parameters: list(map_args = list(xgboost = list(params = list(booster = "gbtree", objective = "reg:logistic", lambda = 3e-04, alpha = 3e-04, eta = 0.8, max_depth = 6), nrounds = 10)), logistic_threshold = 0.5, final_model = FALSE)
 
@@ -1286,7 +1286,7 @@ Classification Accuracy:  0.99
 
 Class:      Precision:  Recall:       F1:
 
-ad.               0.99     0.93      0.96 
+ad.               0.98     0.93      0.96 
 nonad.            0.99     1.00      0.99 
 
 
@@ -1297,8 +1297,8 @@ Classification Accuracy:  0.98
 
 Class:      Precision:  Recall:       F1:
 
-ad.               0.97     0.89      0.93 
-nonad.            0.98     0.99      0.99 
+ad.               0.99     0.85      0.91 
+nonad.            0.97     1.00      0.99 
 
 
  Cross-validation (CV) 
@@ -1308,7 +1308,7 @@ Average Classification Accuracy:  0.98 ± 0.01 (SD)
 
 Class:          Average Precision:        Average Recall:            Average F1:
 
-ad.               0.95 ± 0.02 (SD)       0.88 ± 0.04 (SD)       0.91 ± 0.03 (SD) 
+ad.               0.95 ± 0.02 (SD)       0.88 ± 0.04 (SD)       0.91 ± 0.02 (SD) 
 nonad.            0.98 ± 0.01 (SD)       0.99 ± 0.00 (SD)       0.99 ± 0.00 (SD) 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1322,9 +1322,9 @@ Number of Features: 1558
 
 Classes: ad., nonad.
 
-Training Parameters: list(split = 0.8, n_folds = 5, random_seed = 123, stratified = FALSE, standardize = FALSE, remove_obs = FALSE)
+Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_seed = 123, standardize = FALSE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = list(knn = list(ks = 5)), logistic_threshold = 0.5, final_model = FALSE)
+Model Parameters: list(map_args = list(knn = list(ks = 5)), final_model = FALSE)
 
 Unlabeled Data: 0
 
@@ -1341,23 +1341,23 @@ Parallel Configs: list(n_cores = 6, future.seed = 100)
  Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  1.00 
+Classification Accuracy:  0.99 
 
 Class:      Precision:  Recall:       F1:
 
-ad.               1.00     0.99      1.00 
-nonad.            1.00     1.00      1.00 
+ad.               0.90     1.00      0.95 
+nonad.            1.00     0.98      0.99 
 
 
  Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  0.96 
+Classification Accuracy:  0.91 
 
 Class:      Precision:  Recall:       F1:
 
-ad.               0.89     0.80      0.84 
-nonad.            0.97     0.98      0.98 
+ad.               0.67     0.80      0.73 
+nonad.            0.96     0.93      0.95 
 
 
  Cross-validation (CV) 
@@ -1367,8 +1367,8 @@ Average Classification Accuracy:  0.93 ± 0.01 (SD)
 
 Class:          Average Precision:        Average Recall:            Average F1:
 
-ad.               0.71 ± 0.07 (SD)       0.82 ± 0.01 (SD)       0.76 ± 0.04 (SD) 
-nonad.            0.97 ± 0.00 (SD)       0.95 ± 0.02 (SD)       0.96 ± 0.01 (SD) 
+ad.               0.73 ± 0.06 (SD)       0.82 ± 0.05 (SD)       0.77 ± 0.03 (SD) 
+nonad.            0.97 ± 0.01 (SD)       0.95 ± 0.01 (SD)       0.96 ± 0.01 (SD) 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
