@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ```
 
 
-### Import **vswift** into the current R session
+### Import **vswift** into the current R session.
 ```{r setup}
 library(vswift)
 
@@ -29,7 +29,7 @@ help(package = "vswift")
 ```
 
 
-### The main function of the **vswift** package is `classCV`
+### The main function of the **vswift** package is `classCV`.
 ```{r}
 result1 <- classCV(
   data = iris, target = "Species",
@@ -57,18 +57,18 @@ result3 <- classCV(
 )
 ```
 
-### `print` can be used to produce command-line output of the performance metrics
+### `print` can be used to produce command-line output of the performance metrics.
 ```{r}
 print(result3, models = "knn")
 ```
 
 
-### `plot` function can be used to visualize performance metrics
+### `plot` function can be used to visualize performance metrics.
 ```{r}
 plot(result3, models = "knn", split = FALSE, cv = TRUE, class_names = c("setosa", "virginica"), metrics = "precision")
 ```
 
-### `roc_curve` can be used to generate ROC curves and ROC-AUC scores for binary classification targets. The model and preprocessed dataset must be saved.
+### `rocCurve`` can be used to generate ROC curves and ROC-AUC scores for binary classification targets. The model and preprocessed dataset must be saved.
 ```{r}
 data <- iris
 data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
@@ -78,7 +78,7 @@ result <- classCV(
   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
   models = c("decisiontree", "randomforest"),
   model_params = list(map_args = args),
-  save = list(data = TRUE)
+  save = list(models = TRUE)
 )
 
 output <- rocCurve(result, data)

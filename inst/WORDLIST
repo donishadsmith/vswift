@@ -42,6 +42,7 @@ randomforest
 randomForest
 reproducibility
 rmarkdown
+rocCurve
 roxygen
 RoxygenNote
 rpart
