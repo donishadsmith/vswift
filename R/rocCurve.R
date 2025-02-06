@@ -3,10 +3,13 @@
 #' @name rocCurve
 #'
 #' @description Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
-#' Currently only works for binary classification tasks.
+#' Only works for binary classification tasks.
 #'
-#' @param x A list object of class \code{"vswift"}. Note that the preprocessed data and models must be saved using
-#' \code{save = list("models" = TRUE, "data" = TRUE)} in \code{classCV} for this function to work.
+#' @param x A list object of class \code{"vswift"}. Note that the models must be saved using
+#' \code{save = list("models" = TRUE)} in \code{classCV} for this function to work.
+#'
+#' @param data A data frame. If \code{NULL}, then the preprocessed data muse be saved using
+#' \code{save = list("data" = TRUE)} in \code{classCV} Default = \code{NULL}.
 #'
 #' @param models A character string or a character vector specifying the classification algorithm(s) to plot ROC curves
 #' for. If \code{NULL}, all models will be plotted. The following options are available:
@@ -58,7 +61,7 @@
 #'   data = data,
 #'   target = "Species",
 #'   models = "qda",
-#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 123),
 #'   save = list(data = TRUE, models = TRUE)
 #' )
 #'
@@ -71,11 +74,11 @@
 #' @importFrom graphics lines
 #'
 #' @export
-rocCurve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
+rocCurve <- function(x, data = NULL, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
                      path = NULL, ...) {
   if (inherits(x, "vswift")) {
     # Perform checks and get dictionary class keys and variables
-    info <- .perform_checks(x)
+    info <- .perform_checks(x, data)
 
     # Unlist keys to turn into a named vector
     info$keys <- unlist(info$keys)
@@ -94,9 +97,8 @@ rocCurve <- function(x, models = NULL, split = TRUE, cv = TRUE, thresholds = NUL
     roc_output <- list()
 
     for (model in models) {
-      roc_output[[model]] <- .rocCurve_internal(
-        x = x, model = model, plot_title = .MODEL_LIST[[model]], split = split, cv = cv,
-        thresholds = thresholds, info = info, path = path, ...
+      roc_output[[model]] <- .computeROC(
+        x, data, model, .MODEL_LIST[[model]], split, cv, thresholds, info, path, ...
       )
 
       if (!isTRUE(return_output)) roc_output[[model]] <- NULL

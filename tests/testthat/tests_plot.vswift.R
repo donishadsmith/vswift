@@ -8,7 +8,7 @@ test_that("testing plot function", {
 
   expect_no_error(result <- classCV(
     data = data, target = 5, models = c("knn", "randomforest", "nnet", "svm"),
-    train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T),
     model_params = list(map_args = args), save = list(models = T, data = T)
   ))
 

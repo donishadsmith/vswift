@@ -6,6 +6,7 @@
 \usage{
 rocCurve(
   x,
+  data = NULL,
   models = NULL,
   split = TRUE,
   cv = TRUE,
@@ -16,8 +17,11 @@ rocCurve(
 )
 }
 \arguments{
-\item{x}{A list object of class \code{"vswift"}. Note that the preprocessed data and models must be saved using
-\code{save = list("models" = TRUE, "data" = TRUE)} in \code{classCV} for this function to work.}
+\item{x}{A list object of class \code{"vswift"}. Note that the models must be saved using
+\code{save = list("models" = TRUE)} in \code{classCV} for this function to work.}
+
+\item{data}{A data frame. If \code{NULL}, then the preprocessed data muse be saved using
+\code{save = list("data" = TRUE)} in \code{classCV} Default = \code{NULL}.}
 
 \item{models}{A character string or a character vector specifying the classification algorithm(s) to plot ROC curves
 for. If \code{NULL}, all models will be plotted. The following options are available:
@@ -60,7 +64,7 @@ for each model
 }
 \description{
 Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
-Currently only works for binary classification tasks.
+Only works for binary classification tasks.
 }
 \examples{
 # Load an example dataset
@@ -74,7 +78,7 @@ result <- classCV(
   data = data,
   target = "Species",
   models = "qda",
-  train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
+  train_params = list(split = 0.8, stratified = TRUE, random_seed = 123),
   save = list(data = TRUE, models = TRUE)
 )
 

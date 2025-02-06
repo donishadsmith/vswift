@@ -52,7 +52,7 @@
 #'   data = iris,
 #'   target = "Species",
 #'   models = "qda",
-#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 50),
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 123),
 #'   save = list(models = TRUE)
 #' )
 #'

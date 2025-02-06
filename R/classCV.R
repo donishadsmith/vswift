@@ -5,7 +5,7 @@
 #' @description Performs train-test splitting and/or cross-validation on classification data using various
 #' classification algorithms.
 #'
-#' @param data A data frame. Default = \code{NULL}
+#' @param data A data frame.
 #'
 #' @param formula A formula specifying the model to use. This argument cannot be used when \code{target}
 #' (and optionally \code{predictors}) is specified. Default is \code{NULL}.
@@ -211,7 +211,7 @@
 #'   data = iris,
 #'   formula = Species ~ .,
 #'   models = "xgboost",
-#'   train_params = list(n_folds = 5, random_seed = 50),
+#'   train_params = list(n_folds = 5, random_seed = 123),
 #'   params = list(
 #'     objective = "multi:softprob",
 #'     num_class = 3,
@@ -236,7 +236,7 @@
 #'   train_params = list(
 #'     n_folds = 5,
 #'     stratified = TRUE,
-#'     random_seed = 50
+#'     random_seed = 123
 #'   )
 #' )
 #'

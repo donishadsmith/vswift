@@ -1,16 +1,16 @@
 # Helper function to perform checks to ensure information needed is available and to obtain information needed for plotting
-.perform_checks <- function(x) {
+.perform_checks <- function(x, data) {
   if (is.null(x$models)) {
     stop("models must be saved in order to use `rocCurve`")
   }
 
   # Check if data is available
-  if (is.null(x$data_partitions$dataframes)) {
-    stop("dataframes must be saved by `classCV` to use `rocCurve`")
+  if (!is.data.frame(data) && is.null(x$data_partitions$dataframes)) {
+    stop("data cannot be NULL if dataframes were not saved by `classCV`")
   }
 
   # Check if target is binary
-  df <- .get_data(x)$data
+  df <- .get_data(x, data)$data
 
   vars <- .get_var_names(formula = x$configs$formula, data = df)
 
@@ -25,7 +25,9 @@
 }
 
 # Helper function to get data, indices, and models
-.get_data <- function(x, id = NULL, foldid = NULL, get_indices = FALSE) {
+.get_data <- function(x, data, id = NULL, foldid = NULL, get_indices = FALSE, vars = NULL, model = NULL,
+                      discard_labels = TRUE) {
+  preprocess <- ifelse(is.data.frame(data), TRUE, FALSE)
   # Get information for indexing for either dataframes or the test set indices
   id <- ifelse(is.null(id), names(x$data_partitions$indices)[1], id)
 
@@ -34,21 +36,39 @@
   }
 
   # Get data
-  if (id == "split") {
-    df <- rbind(
-      x$data_partitions$dataframes$split$train, x$data_partitions$dataframes$split$test
-    )
+  if (is.data.frame(data)) {
+    df <- data
+    rownames(df) <- seq(nrow(df))
+    # Discard missing labels
+    if (discard_labels) {
+      target <- which(is.na(df[, all.vars(x$configs$formula)[1]]))
+      df <- df[-unique(target), ]
+    }
   } else {
-    df <- rbind(
-      x$data_partitions$dataframes$cv[[foldid]]$train, x$data_partitions$dataframes$cv[[foldid]]$test
-    )
+    if (id == "split") {
+      df <- rbind(
+        x$data_partitions$dataframes$split$train, x$data_partitions$dataframes$split$test
+      )
+    } else {
+      df <- rbind(
+        x$data_partitions$dataframes$cv[[foldid]]$train, x$data_partitions$dataframes$cv[[foldid]]$test
+      )
+    }
   }
 
-  # Order rows
-  df <- df[order(rownames(df)), ]
+  # Sort rows if data extracted from vswift object
+  if (!is.data.frame(data)) df <- df[order(as.numeric(rownames(df))), ]
 
   # Ensure all characters are factors
-  out <- list("data" = df)
+  if (isTRUE(preprocess) && !is.null(vars)) {
+    out <- .convert_to_factor(df, vars$target, model, remove_obs = FALSE)
+    missing_info <- .missing_summary(out$data, vars$target)
+    impute <- ifelse(!is.null(x$imputation_models), TRUE, FALSE)
+    cleaned_data <- .clean_data(df, missing_info, impute, FALSE)
+    out$data <- cleaned_data$cleaned_data
+  } else {
+    out <- list("data" = df)
+  }
 
   # Get the test set
   if (get_indices) {
@@ -59,11 +79,32 @@
   return(out)
 }
 
-.rocCurve_internal <- function(x, model, plot_title, split, cv, thresholds, info, path, ...) {
+.quick_prep <- function(x, df_list, id, foldid, info, preprocess) {
+  # Check imputation first
+  if (!is.null(x$imputation_models) && isTRUE(preprocess)) {
+    prep <- if (id == "split") x$imputation_models$split else x$imputation_models$cv[[foldid]]
+    df_list <- .impute_bake(train = df_list$train, test = df_list$test, vars = info$vars, prep = prep)
+  }
+
+  # Determine if standardizing is needed
+  standardize <- ((isTRUE(x$configs$train_params$standardize) || is.numeric(x$configs$train_params$standardize)) &&
+    is.null(x$imputation_models))
+  # Check if standardized need standardized
+  if (standardize) {
+    df_list <- .standardize_train(
+      df_list$train, df_list$test,
+      standardize = x$configs$train_params$standardize, info$vars$target
+    )
+  }
+
+  return(df_list)
+}
+
+.computeROC <- function(x, data, model, plot_title, split, cv, thresholds, info, path, ...) {
   out <- list()
 
   if (isTRUE(split) && !is.null(x$configs$train_params$split)) {
-    out$split <- .get_thresholds(x, "split", NULL, model, thresholds, info)
+    out$split <- .get_thresholds(x, data, "split", NULL, model, thresholds, info)
 
     for (i in c("train", "test")) {
       # Get fpr and tpr
@@ -84,7 +125,7 @@
 
   if (isTRUE(cv) && !is.null(x$configs$train_params$n_folds)) {
     for (foldid in paste0("fold", seq(x$configs$train_params$n_folds))) {
-      out$cv[[foldid]] <- .get_thresholds(x, "cv", foldid, model, thresholds, info)
+      out$cv[[foldid]] <- .get_thresholds(x, data, "cv", foldid, model, thresholds, info)
 
       # Get fpr and tpr
       out$cv[[foldid]]$metrics <- .compute_scores(
@@ -106,7 +147,8 @@
 }
 
 # Helper function to obtain thresholds used for ROC curve
-.get_thresholds <- function(x, id, foldid = NULL, model, thresholds, info) {
+.get_thresholds <- function(x, data, id, foldid = NULL, model, thresholds, info) {
+  preprocess <- ifelse(is.data.frame(data), TRUE, FALSE)
   # Get training model
   if (id == "split") {
     train_mod <- x$models[[model]]$split
@@ -115,10 +157,12 @@
   }
 
   # Get data
-  out <- .get_data(x, id, foldid, TRUE)
+  out <- .get_data(x, data, id, foldid, TRUE, info$vars, model, FALSE)
 
   # Partition training and test data
   df_list <- .partition(out$data, out$indices)
+
+  if (preprocess) df_list <- .quick_prep(x, df_list, id, foldid, info, preprocess)
 
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(out$col_levels)) {
@@ -194,11 +238,16 @@
 # Helper function to compute area under the curve
 .integrate <- function(fpr, tpr) {
   paired_list <- Map(list, "fpr" = fpr, "tpr" = tpr)
-  # Order by fpr value
-  paired_list <- paired_list[order(sapply(paired_list, function(x) x$fpr))]
-  N <- length(paired_list) - 1
+  # Order by decreasing to ascending for fpr and the reverse of tpr; Each first instance of duplicate fpr is the max tpr
+  paired_list_ordered <- paired_list[order(
+    sapply(paired_list, function(x) x$fpr),
+    -sapply(paired_list, function(x) x$tpr)
+  )]
+  # Obtain the fpr values, determine which is not duplicated to retain only the first instance
+  paired_list_final <- paired_list_ordered[!duplicated(sapply(paired_list_ordered, function(x) x$fpr))]
+  N <- length(paired_list_final) - 1
   # sum all areas to compute total area = auc
-  auc <- sum(sapply(seq(N), function(x) .trapezoid(paired_list[[x]], paired_list[[x + 1]])))
+  auc <- sum(sapply(seq(N), function(x) .trapezoid(paired_list_final[[x]], paired_list_final[[x + 1]])))
 
   return(auc)
 }

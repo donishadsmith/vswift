@@ -39,7 +39,7 @@ test_that("test roc curve", {
       n_folds = 5,
       standardize = T,
       stratified = TRUE,
-      random_seed = 50
+      random_seed = 123
     ),
     save = list(models = TRUE, data = TRUE)
   )
@@ -67,4 +67,114 @@ test_that("test roc curve", {
   file.remove(list.files(getwd(), pattern = "Rplots.pdf"))
 
   expect_true(length(output) == "13")
+})
+
+test_that("test equivalence with standardizing", {
+  data <- iris
+
+  data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
+  data$Species <- factor(data$Species)
+
+  result1 <- classCV(
+    formula = Species ~ .,
+    data = data,
+    models = "svm",
+    train_params = list(
+      split = 0.8,
+      n_folds = 5,
+      standardize = T,
+      stratified = TRUE,
+      random_seed = 123
+    ),
+    save = list(models = TRUE, data = TRUE)
+  )
+
+  output1 <- rocCurve(result1)
+
+  result2 <- classCV(
+    formula = Species ~ .,
+    data = data,
+    models = "svm",
+    train_params = list(
+      split = 0.8,
+      n_folds = 5,
+      standardize = T,
+      stratified = TRUE,
+      random_seed = 123
+    ),
+    save = list(models = TRUE, data = TRUE)
+  )
+
+  output2 <- rocCurve(result2, data)
+
+  for (fold in names(output1$svm$cv)) {
+    for (i in names(output1$svm$cv[[fold]])) {
+      if (i == "metrics") {
+        expect_true(all(output1$svm$cv[[fold]]$metrics$tpr == output2$svm$cv[[fold]]$metrics$tpr))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$fpr == output2$svm$cv[[fold]]$metrics$fpr))
+      } else {
+        expect_true(all(output1$svm$cv[[fold]][[i]] == output2$svm$cv[[fold]][[i]]))
+      }
+    }
+  }
+})
+
+
+test_that("test equivalence with imputation", {
+  data <- iris
+
+  data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
+  data$Species <- factor(data$Species)
+
+  set.seed(123)
+
+  # Introduce some missing data
+  for (i in 1:ncol(data)) {
+    data[sample(1:nrow(data), size = round(nrow(data) * .01)), i] <- NA
+  }
+
+  result1 <- classCV(
+    formula = Species ~ .,
+    data = data,
+    models = "svm",
+    train_params = list(
+      split = 0.8,
+      n_folds = 5,
+      stratified = TRUE,
+      random_seed = 123,
+      standardize = TRUE
+    ),
+    impute_params = list(method = "impute_bag", args = list(trees = 20, seed_val = 123)),
+    save = list(models = TRUE, data = TRUE)
+  )
+
+  output1 <- rocCurve(result1)
+
+  result2 <- classCV(
+    formula = Species ~ .,
+    data = data,
+    models = "svm",
+    train_params = list(
+      split = 0.8,
+      n_folds = 5,
+      stratified = TRUE,
+      random_seed = 123,
+      standardize = TRUE
+    ),
+    impute_params = list(method = "impute_bag", args = list(trees = 20, seed_val = 123)),
+    save = list(models = TRUE)
+  )
+
+  output2 <- rocCurve(result2, data)
+
+  for (fold in names(output1$svm$cv)) {
+    for (i in names(output1$svm$cv[[fold]])) {
+      if (i == "metrics") {
+        expect_true(all(output1$svm$cv[[fold]]$metrics$tpr == output2$svm$cv[[fold]]$metrics$tpr))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$fpr == output2$svm$cv[[fold]]$metrics$fpr))
+      } else {
+        expect_true(all(output1$svm$cv[[fold]][[i]] == output2$svm$cv[[fold]][[i]]))
+      }
+    }
+  }
 })

@@ -47,11 +47,11 @@ test_that("test new formula method", {
   data <- iris
   result1 <- classCV(
     data = data, target = "Species", models = "qda",
-    train_params = list(split = 0.8, random_seed = 50)
+    train_params = list(split = 0.8, random_seed = 123)
   )
   expect_no_error(result2 <- classCV(
     formula = Species ~ ., data = data, models = "qda",
-    train_params = list(split = 0.8, random_seed = 50)
+    train_params = list(split = 0.8, random_seed = 123)
   ))
   expect_equal(result1$metrics$lda$split, result2$metrics$lda$split)
   # Ensure values are greater than or equal to 0 and less than or equal to one
@@ -72,7 +72,7 @@ test_that("CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
     data = data, target = "Species", models = "nnet", size = 5,
-    train_params = list(n_folds = 3, stratified = TRUE, random_seed = 50)
+    train_params = list(n_folds = 3, stratified = TRUE, random_seed = 123)
   ))
   expect_true(all(c("proportions", "indices") %in% names(result$class_summary)))
 })
@@ -257,12 +257,12 @@ test_that("test random seed", {
   data <- iris
   result_1 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50), models = "knn",
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
     ks = 5
   )
   result_2 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50), models = "knn",
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
     model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
@@ -271,12 +271,12 @@ test_that("test random seed", {
 
   result_1 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 50), models = "knn",
+    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
     ks = 5
   )
   result_2 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 50), models = "knn",
+    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
     model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
@@ -299,7 +299,7 @@ test_that("running multiple models", {
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(
       split = 0.8, n_folds = 3, stratified = TRUE,
-      random_seed = 50, remove_obs = TRUE
+      random_seed = 123, remove_obs = TRUE
     ),
     save = list(models = TRUE), model_params = list(map_args = args)
   ))
@@ -323,7 +323,7 @@ test_that("running multiple models", {
     data = data, target = 5, models = models,
     train_params = list(
       split = 0.8, n_folds = 3, standardize = TRUE,
-      stratified = TRUE, random_seed = 50, remove_obs = TRUE
+      stratified = TRUE, random_seed = 123, remove_obs = TRUE
     ),
     save = list(models = TRUE), model_params = list(map_args = args)
   )))
@@ -349,14 +349,14 @@ test_that("n_cores", {
 
   expect_warning(result1 <- classCV(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
   expect_warning(result2 <- classCV(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
@@ -371,13 +371,13 @@ test_that("ensure parallel and nonparallel outputs are equal", {
 
   expect_no_error(result1 <- classCV(
     data = data, target = 5, models = "lda",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE)
   ))
 
   expect_no_error(result2 <- classCV(
     data = data, target = 5, models = "lda",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE),
     parallel_configs = list(n_cores = 2)
   ))
@@ -397,7 +397,7 @@ test_that("objectives-single", {
       data = df,
       formula = Species ~ .,
       models = "xgboost",
-      train_params = list(n_folds = 5, random_seed = 50),
+      train_params = list(n_folds = 5, random_seed = 123),
       params = list(
         objective = obj,
         eta = 0.3,
@@ -416,7 +416,7 @@ test_that("objectives-single", {
       data = df,
       formula = Species ~ .,
       models = "xgboost",
-      train_params = list(n_folds = 5, random_seed = 50),
+      train_params = list(n_folds = 5, random_seed = 123),
       params = list(
         objective = obj,
         num_class = 2,
@@ -448,7 +448,7 @@ test_that("objectives-multi", {
       data = df,
       formula = Species ~ .,
       models = c("xgboost", "knn"),
-      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
       model_params = list(map_args = args)
     )
 
@@ -467,7 +467,7 @@ test_that("objectives-multi", {
       data = df,
       formula = Species ~ .,
       models = c("xgboost", "knn"),
-      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 50),
+      train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
       model_params = list(map_args = args)
     )
 
@@ -493,7 +493,7 @@ test_that("binary target", {
       data = df,
       formula = Species ~ .,
       models = c("logistic", "xgboost"),
-      train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+      train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
       model_params = list(map_args = args)
     )
 
@@ -505,7 +505,7 @@ test_that("binary target", {
       data = df,
       target = "Species",
       models = c("xgboost", "logistic"),
-      train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+      train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
       model_params = list(map_args = args)
     )
 
@@ -526,7 +526,7 @@ test_that("test regularized", {
     data = df,
     target = "Species",
     models = c("regularized_logistic", "regularized_multinomial"),
-    train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
     model_params = list(map_args = map_args)
   )
 
@@ -542,7 +542,7 @@ test_that("test regularized", {
     data = df,
     target = "Species",
     models = c("regularized_logistic", "regularized_multinomial"),
-    train_params = list(split = 0.8, n_folds = 3, random_seed = 50),
+    train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
     model_params = list(map_args = map_args, final_model = TRUE)
   )
 })

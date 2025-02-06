@@ -33,14 +33,14 @@ help(package = "vswift")
 ```{r}
 result1 <- classCV(
   data = iris, target = "Species",
-  train_params = list("split" = 0.8, "random_seed" = 50),
+  train_params = list("split" = 0.8, "random_seed" = 123),
   models = "lda"
 )
 
 # Perform a train-test split with five folds using stratified sampling with K-Nearest Neighbors while also specifying an additional argument for knn to specify the number of neighbors to consider
 result2 <- classCV(
   data = iris, formula = Species ~ .,
-  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
+  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
   models = "knn",
   ks = 5
 )
@@ -51,7 +51,7 @@ args <- list("knn" = list(ks = 5))
 
 result3 <- classCV(
   data = iris, formula = Species ~ .,
-  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
+  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
   models = c("lda", "knn"),
   model_params = list(map_args = args)
 )
@@ -75,11 +75,11 @@ data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
 
 result <- classCV(
   data = data, formula = Species ~ .,
-  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 50),
+  train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
   models = c("decisiontree", "randomforest"),
   model_params = list(map_args = args),
-  save = list(data = TRUE, models = TRUE)
+  save = list(data = TRUE)
 )
 
-output <- rocCurve(result)
+output <- rocCurve(result, data)
 ```

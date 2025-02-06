@@ -252,7 +252,7 @@
   return(list("unlabeled_data_indices" = unlabeled_data, "n_incomplete_labeled_data" = n_incomplete_labeled_data))
 }
 
-.clean_data <- function(data, missing_info, imputation_requested) {
+.clean_data <- function(data, missing_info, imputation_requested, issue_warning = TRUE) {
   perform_imputation <- imputation_requested
 
   # Messages
@@ -272,7 +272,7 @@
 
   # Dropping unlabeled data
   if (length(missing_info$unlabeled_data_indices) > 0) {
-    warning(msg1)
+    if (isTRUE(issue_warning)) warning(msg1)
     data <- data[-missing_info$unlabeled_data_indices, ]
   }
 
@@ -285,7 +285,7 @@
   }
 
   if (nrow(data) == sum(complete.cases(data)) && imputation_requested) {
-    warning("remaining labeled observations has no missing data; imputation will not be performed")
+    if (isTRUE(issue_warning)) warning("remaining labeled observations has no missing data; imputation will not be performed")
     perform_imputation <- FALSE
   }
   return(list("cleaned_data" = data, "perform_imputation" = perform_imputation))
@@ -379,6 +379,11 @@
   return(colnames(df)[sapply(df, is.numeric)])
 }
 
+.restore_rownames <- function(df, rownames) {
+  rownames(df) <- rownames
+  return(df)
+}
+
 # Function to standardize features for train data
 .standardize_train <- function(train, test = NULL, standardize = TRUE, target, call = "standard") {
   col_names <- .get_cols(train, standardize, target)
@@ -406,9 +411,12 @@
   }
 
   if (call != ".impute_prep") {
-    return(list("train" = as.data.frame(train_dt), "test" = as.data.frame(test_dt)))
+    return(list(
+      "train" = .restore_rownames(as.data.frame(train_dt), row.names(train)),
+      "test" = .restore_rownames(as.data.frame(test_dt), row.names(test))
+    ))
   } else {
-    return(list("train" = as.data.frame(train_dt)))
+    return(list("train" = .restore_rownames(as.data.frame(train_dt), row.names(train))))
   }
 }
 
