@@ -2,7 +2,9 @@
 title: "Introduction to vswift"
 author: "Donisha Smith"
 date: "`r Sys.Date()`"
-output: 
+output:
+  pdf_document:
+    toc: true
   rmarkdown::html_vignette:
     fig_width: 8
     fig_height: 6
