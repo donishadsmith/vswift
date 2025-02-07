@@ -14,6 +14,14 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.0.9007] - 2025-02-06
+### 🚀 New/Added
+- For `rocCurve`, saving the dataframe is no longer required and the original dataframe can be used as input also.
+### 🐛 Fixes
+- Fix some internal `rocCurve` issues including:
+  - An issue with rownames in data frame being ordered lexicographically instead of numerically.
+  - An issue with AUC being underestimated in cases when there are multiple duplicate FPR values.
+
 ## [0.4.0.9008] - 2025-01-28
 ### ♻ Changed
 - Changed function name from snake_case (`roc_curve`) to camelCase (`rocCurve`).

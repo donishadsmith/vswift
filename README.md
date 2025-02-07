@@ -68,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.4.0.9008/vswift_0.4.0.9008.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.4.0/vswift_0.4.0.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -302,7 +302,7 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
 </details>
 
 ### Producing ROC Curves with AUC scores
-ROC curves are currently only available for binary classification tasks. The ROC curve plots the True Positive Rate (TPR)
+ROC curves are only available for binary classification tasks. The ROC curve plots the True Positive Rate (TPR)
 against the False Positive Rate (FPR) at various classification thresholds. To generate the ROC curve, the
 models must be saved.
 

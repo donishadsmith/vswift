@@ -1,7 +1,7 @@
 Package: vswift
 Title: Classification Model Evaluation
-Version: 0.4.0.9008
-Date: 2025-01-28
+Version: 0.4.0
+Date: 2025-02-06
 Authors@R: person(given = "Donisha",
                   family = "Smith",
                   role = c("aut", "cre"),
