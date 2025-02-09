@@ -143,9 +143,10 @@
   for (col in names(col_levels)) {
     delete_rows <- which(!test[, col] %in% train[, col])
     obs <- row.names(test)[delete_rows]
+
     if (length(obs) > 0) {
       warning(sprintf(
-        "for predictor `%s` in `%s` data partition has at least one class the model has not trained on\n  these observations will be temorarily removed: %s",
+        "for predictor `%s` in `%s` data partition has at least one class the model has not trained on\nthese observations will be temporarily removed: %s",
         col, id, paste(obs, collapse = ",")
       ))
       test <- test[-delete_rows, ]
@@ -164,6 +165,7 @@
     # Make lowercase
     models <- sapply(models, function(x) tolower(x))
     models <- intersect(models, x$configs$models)
+
     if (length(models) == 0) stop("no valid models specified in `models`")
 
     # Warning when invalid models specified
@@ -177,4 +179,15 @@
   }
 
   return(models)
+}
+
+
+# Helper function to convert matrices to vectors
+# Handle prediction output, some models will produce a matrix with posterior probabilities for binary outcomes
+.tovec <- function(model, result, keys) {
+  convert <- !(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost")) && !is.null(keys)
+
+  if (convert) result <- result[, names(keys)[keys == 1]]
+
+  return(as.vector(result))
 }

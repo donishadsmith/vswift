@@ -218,91 +218,93 @@
 }
 
 # Helper function for classCV to predict
-.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, keep_probs = FALSE) {
-  # vec to store ground truth and predicted data
-  vec <- list("ground" = list(), "pred" = list())
+.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, probs = FALSE, keys = NULL) {
+  # List to store ground truth and predicted data
+  results <- list("ground" = list(), "pred" = list())
 
   # Only get predictions for training set if train-test split
   if (id == "split") {
-    vec$ground$train <- as.vector(df_list$train[, vars$target])
+    results$ground$train <- as.vector(df_list$train[, vars$target])
   } else {
     df_list <- df_list[names(df_list) != "train"]
   }
 
-  vec$ground$test <- as.vector(df_list$test[, vars$target])
+  results$ground$test <- as.vector(df_list$test[, vars$target])
 
   for (i in names(df_list)) {
     switch(mod,
       "decisiontree" = {
         mat <- predict(train_mod, newdata = df_list[[i]])
-        if (!keep_probs) {
-          vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
+        if (!probs) {
+          results$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
         } else {
-          vec$pred[[i]] <- mat
+          results$pred[[i]] <- mat
         }
       },
       "knn" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "prob", "raw"))
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(probs, "prob", "raw"))
       },
       "logistic" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
-        if (!keep_probs) vec$pred[[i]] <- ifelse(vec$pred[[i]] >= thresh, 1, 0)
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
+        if (!probs) results$pred[[i]] <- ifelse(results$pred[[i]] >= thresh, 1, 0)
       },
       "multinom" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "probs", "class"))
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(probs, "probs", "class"))
       },
       "naivebayes" = {
-        vec$pred[[i]] <- predict(train_mod,
-          newdata = df_list[[i]][, vars$predictors],
-          type = ifelse(keep_probs, "prob", "class")
+        results$pred[[i]] <- predict(
+          train_mod,
+          newdata = df_list[[i]][, vars$predictors], type = ifelse(probs, "prob", "class")
         )
       },
       "nnet" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "raw", "class"))
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(probs, "raw", "class"))
       },
       "randomforest" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(keep_probs, "prob", "response"))
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(probs, "prob", "response"))
       },
       "regularized_logistic" = {
         X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
-        vec$pred[[i]] <- predict(train_mod$model,
+        results$pred[[i]] <- predict(train_mod$model,
           newx = X, s = train_mod$model$lambda,
-          type = ifelse(keep_probs, "response", "class")
+          type = ifelse(probs, "response", "class")
         )
       },
       "regularized_multinomial" = {
         X <- model.matrix(~ . - 1, data = df_list[[i]][, vars$predictors])
         mat <- predict(train_mod$model, newx = X, s = train_mod$model$lambda, type = "response")
-        if (!keep_probs) {
-          vec$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
+        if (!probs) {
+          results$pred[[i]] <- colnames(mat)[apply(mat, 1, which.max)]
         } else {
-          vec$pred[[i]] <- mat[, , 1]
+          results$pred[[i]] <- mat[, , 1]
         }
       },
       "svm" = {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], probability = if (keep_probs) TRUE else FALSE)
-        if (keep_probs) vec$pred[[i]] <- attr(vec$pred[[i]], "probabilities")
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], probability = if (probs) TRUE else FALSE)
+        if (probs) results$pred[[i]] <- attr(results$pred[[i]], "probabilities")
       },
       "xgboost" = {
         mat <- data.matrix(df_list[[i]])
         xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
-        vec$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, keep_probs)
+        results$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, probs)
       },
       # Default for lda and qda
-      if (keep_probs) {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$posterior
+      if (probs) {
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$posterior
       } else {
-        vec$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
+        results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]])$class
       }
     )
-    if (!keep_probs) vec$pred[[i]] <- as.vector(vec$pred[[i]])
+
+    # Converts matrices to vectors (for specific models) or just ensures output is a vector
+    results$pred[[i]] <- .tovec(mod, results$pred[[i]], keys)
   }
 
-  return(vec)
+  return(results)
 }
 
 # Handle different xgboost objective functions
-.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, keep_probs) {
+.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, probs) {
   # produces probability
   bin_prob <- c("reg:logistic", "binary:logistic")
 
@@ -313,15 +315,15 @@
   # Special cases that need to be converted to labels
   switch(obj,
     "binary_prob" = {
-      if (!keep_probs) pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs) pred <- ifelse(pred >= thresh, 1, 0)
     },
     "binary:logitraw" = {
       pred <- sapply(pred, .logit2prob)
-      if (!keep_probs) pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs) pred <- ifelse(pred >= thresh, 1, 0)
     },
     "multi:softprob" = {
       pred <- matrix(pred, ncol = n_classes, byrow = TRUE)
-      if (!keep_probs) pred <- max.col(pred) - 1
+      if (!probs) pred <- max.col(pred) - 1
     }
   )
 

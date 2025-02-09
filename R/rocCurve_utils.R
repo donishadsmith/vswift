@@ -89,6 +89,7 @@
   # Determine if standardizing is needed
   standardize <- ((isTRUE(x$configs$train_params$standardize) || is.numeric(x$configs$train_params$standardize)) &&
     is.null(x$imputation_models))
+
   # Check if standardized need standardized
   if (standardize) {
     df_list <- .standardize_train(
@@ -174,40 +175,27 @@
     }
   }
 
-  pred_list <- .prediction(
+  results <- .prediction(
     id, model, train_mod, info$vars, df_list, NULL, x$configs$model_params$map_args$xgboost$params$objective,
     length(info$keys),
-    keep_probs = TRUE
+    probs = TRUE, keys = info$keys
   )
-
-  # Handle prediction output, some models will produce a matrix with posterior probabilities for both outcomes
-  for (name in names(pred_list$pred)) {
-    if (!(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost"))) {
-      # Return the column corresponding to one in keys
-      if (model != "xgboost") {
-        pred_list$pred[[name]] <- pred_list$pred[[name]][, names(info$keys)[info$keys == 1]]
-      } else {
-        pred_list$pred[[name]] <- pred_list$pred[[name]][, 1]
-      }
-    }
-    pred_list$pred[[name]] <- as.vector(pred_list$pred[[name]])
-  }
 
   # Out list
   out <- list()
 
-  for (name in names(pred_list$pred)) {
+  for (name in names(results$pred)) {
     if (!is.null(thresholds)) {
       out[[name]]$thresholds <- unique(sort(c(0, thresholds)))
     } else {
-      probs <- pred_list$pred[[name]]
+      probs <- results$pred[[name]]
       probs <- c(0, probs)
       out[[name]]$thresholds <- unique(sort(probs))
     }
-    out[[name]]$probs <- pred_list$pred[[name]]
+    out[[name]]$probs <- results$pred[[name]]
 
-    if (inherits(pred_list$ground[[name]], "character")) {
-      out[[name]]$labels <- unlist(Map(function(x) info$key[[x]], pred_list$ground[[name]]))
+    if (inherits(results$ground[[name]], "character")) {
+      out[[name]]$labels <- unlist(Map(function(x) info$key[[x]], results$ground[[name]]))
     }
   }
 
@@ -219,7 +207,8 @@
   return(out)
 }
 
-# Helper function to compute true and false positive rates
+# Helper function to compute true positive rates (recall) and false positive rates for each
+# threshold using outer product matrix
 .compute_scores <- function(probs, thresholds, ground) {
   # Create outer product matrix; rows = probs and cols = thresholds
   mat <- outer(probs, thresholds, ">=")
@@ -238,7 +227,8 @@
 # Helper function to compute area under the curve
 .integrate <- function(fpr, tpr) {
   paired_list <- Map(list, "fpr" = fpr, "tpr" = tpr)
-  # Order by decreasing to ascending for fpr and the reverse of tpr; Each first instance of duplicate fpr is the max tpr
+  # Order by decreasing to ascending for fpr and the reverse of tpr
+  # Each first instance of duplicate fpr is the max tpr
   paired_list_ordered <- paired_list[order(
     sapply(paired_list, function(x) x$fpr),
     -sapply(paired_list, function(x) x$tpr)
