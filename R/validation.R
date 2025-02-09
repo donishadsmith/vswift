@@ -40,20 +40,20 @@
   # Remove observations where certain categorical levels in the predictors were not seen during training
   if (remove_obs && !is.null(col_levels)) test <- .remove_obs(train, test, col_levels, id)$test
 
-  thresh <- if (endsWith(model, "logistic") | model == "xgboost") model_params$logistic_threshold else NULL
+  thresh <- .determine_threshold(model, model_params$map_args$xgboost$params$objective, model_params$threshold)
   obj <- if (model == "xgboost") model_params$map_args$xgboost$params$objective else NULL
   n_classes <- length(classes)
 
   # Get predictions for train and test set
   vec <- .prediction(
     id, model, train_mod, vars, list("train" = train, "test" = test),
-    thresh, obj, n_classes
+    thresh, obj, n_classes, !is.null(thresh), keys
   )
 
   # Convert labels back
-  if (model %in% c("logistic", "xgboost")) {
+  if (model %in% c("logistic", "xgboost") || !is.null(thresh)) {
     for (name in names(vec$ground)) {
-      if (name == "train") {
+      if (name == "train" && !is.character(vec$ground[[name]])) {
         vec$ground[[name]] <- .convert_keys(vec$ground[[name]], keys, "decode")
       }
       vec$pred[[name]] <- .convert_keys(vec$pred[[name]], keys, "decode")
@@ -218,7 +218,8 @@
 }
 
 # Helper function for classCV to predict
-.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, probs = FALSE, keys = NULL) {
+.prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, probs = FALSE, keys = NULL,
+                        call = "validation") {
   # List to store ground truth and predicted data
   results <- list("ground" = list(), "pred" = list())
 
@@ -246,7 +247,6 @@
       },
       "logistic" = {
         results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = "response")
-        if (!probs) results$pred[[i]] <- ifelse(results$pred[[i]] >= thresh, 1, 0)
       },
       "multinom" = {
         results$pred[[i]] <- predict(train_mod, newdata = df_list[[i]], type = ifelse(probs, "probs", "class"))
@@ -286,7 +286,7 @@
       "xgboost" = {
         mat <- data.matrix(df_list[[i]])
         xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
-        results$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, probs)
+        results$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, probs, call)
       },
       # Default for lda and qda
       if (probs) {
@@ -298,13 +298,18 @@
 
     # Converts matrices to vectors (for specific models) or just ensures output is a vector
     results$pred[[i]] <- .tovec(mod, results$pred[[i]], keys)
+
+    # Assign classes if probabilities
+    if (probs && call == "validation") {
+      if (mod != "xgboost") results$pred[[i]] <- ifelse(results$pred[[i]] >= thresh, 1, 0)
+    }
   }
 
   return(results)
 }
 
 # Handle different xgboost objective functions
-.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, probs) {
+.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, probs, call) {
   # produces probability
   bin_prob <- c("reg:logistic", "binary:logistic")
 
@@ -315,15 +320,15 @@
   # Special cases that need to be converted to labels
   switch(obj,
     "binary_prob" = {
-      if (!probs) pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs || call == "validation") pred <- ifelse(pred >= thresh, 1, 0)
     },
     "binary:logitraw" = {
       pred <- sapply(pred, .logit2prob)
-      if (!probs) pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs || call == "validation") pred <- ifelse(pred >= thresh, 1, 0)
     },
     "multi:softprob" = {
       pred <- matrix(pred, ncol = n_classes, byrow = TRUE)
-      if (!probs) pred <- max.col(pred) - 1
+      pred <- max.col(pred) - 1
     }
   )
 

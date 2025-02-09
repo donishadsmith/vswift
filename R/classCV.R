@@ -55,12 +55,12 @@
 #'  Each sub-list corresponds to a particular model in the \code{models}] parameter and contains the arguments that will
 #'  be passed to that model. Default is \code{NULL}. Refer to the "Additional Model Parameters" section for acceptable
 #'  arguments.
-#'  \item \code{"logistic_threshold"}: A numeric value between 0 and 1, serving as the decision boundary for logistic
-#'  regression. Observations are assigned to the class coded as "1" if
-#'  \code{P(Class = 1 | Features) >= logistic_threshold}; otherwise, they are assigned to the class coded as "0". This
-#'  threshold is used when \code{"logistic"} is included in \code{models}, or when \code{"xgboost"} is included in
-#'  \code{models} with one of these objective functions: \code{"reg:logistic"}, \code{"binary:logistic"}, or
-#'  \code{"binary:logitraw"}. Default is \code{0.5}.
+#'  \item \code{"threshold"}: A numeric value in the interval [0, 1] that serves as the cutoff value for assigning binary targets.
+#'  Observations are assigned to the class coded as "1" if \code{P(Class = 1 | Features) >= threshold}; otherwise, they
+#'  are assigned to the class coded as "0". A default threshold of 0.5 is used when \code{"logistic"} is included in
+#'  \code{models}, or when \code{"xgboost"} is included in \code{models} with one of these objective functions:
+#'  \code{"reg:logistic"}, \code{"binary:logistic"}, or \code{"binary:logitraw"}. If \code{NULL}, the remaining models
+#'  will use there respective default assignment methods (maximizing the posterior probability). Default is \code{NULL}.
 #'  \item \code{"rule"}: A character that dictates the rule used to select the optimal lambda  when using
 #'  \code{regularized_logistic} or \code{"regularized_multinomial"}. Available options are: \code{"min"} or
 #'  \code{"1se"}. Default is \code{"min"}.
@@ -255,7 +255,7 @@ classCV <- function(data,
                     predictors = NULL,
                     models,
                     model_params = list(
-                      "map_args" = NULL, "logistic_threshold" = 0.5, "rule" = "min", "verbose" = TRUE,
+                      "map_args" = NULL, "threshold" = NULL, "rule" = "min", "verbose" = TRUE,
                       "final_model" = FALSE
                     ),
                     train_params = list(
@@ -312,8 +312,8 @@ classCV <- function(data,
   )
 
   # Create class dictionary
-  if (any(models %in% c("logistic", "xgboost"))) {
-    final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target])
+  if (any(models %in% c("logistic", "xgboost")) || !is.null(model_params$threshold)) {
+    final_output$class_summary$keys <- .create_dictionary(preprocessed_data[, vars$target], model_params$threshold)
   }
 
   # Sampling data

@@ -68,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.4.1/vswift_0.4.1.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9000/vswift_0.5.0.9000.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -767,7 +767,76 @@ print(output)
 
 </details>
 
+Youdin's Index values can be used as input for `classCV` to assess the performance when using a specific threshold.
+
+```R
+avg_youdins_indx <- mean(sapply(output$naivebayes$cv, function(x) x$youdins_indx))
+
+# Using 17, the column index of "Recurred"
+results <- classCV(
+  data = thyroid_data,
+  target = 17,
+  models = "naivebayes",
+  model_params = list(
+    threshold = avg_youdins_indx
+  ),
+  train_params = list(
+    n_folds = 5,
+    standardize = TRUE,
+    stratified = TRUE,
+    random_seed = 123
+  ),
+  save = list(models = TRUE)
+)
+
+print(results)
+```
+
+**Output**
+```
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
+Model: Naive Bayes 
+
+Formula: c(Recurred ~ Age + Gender + Smoking + Hx.Smoking + Hx.Radiothreapy + ,  Thyroid.Function + Physical.Examination + Adenopathy + Pathology + ,  Focality + Risk + T + N + M + Stage + Response)
+
+Number of Features: 16
+
+Classes: No, Yes
+
+Training Parameters: list(split = NULL, n_folds = 5, stratified = TRUE, random_seed = 123, standardize = TRUE, remove_obs = FALSE)
+
+Model Parameters: list(map_args = NULL, threshold = 0.446228154420309, final_model = FALSE)
+
+Unlabeled Data: 0
+
+Incomplete Labeled Data: 0
+
+Sample Size (Complete Data): 383
+
+Imputation Parameters: list(method = NULL, args = NULL)
+
+Parallel Configs: list(n_cores = NULL, future.seed = NULL)
+
+
+
+ Cross-validation (CV) 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+Average Classification Accuracy:  0.92 ± 0.03 (SD) 
+
+Class:       Average Precision:        Average Recall:            Average F1:
+
+No             0.95 ± 0.01 (SD)       0.93 ± 0.03 (SD)       0.94 ± 0.02 (SD) 
+Yes            0.84 ± 0.07 (SD)       0.88 ± 0.03 (SD)       0.86 ± 0.04 (SD) 
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+```
+
 ### Impute Incomplete Labeled Data
+
+Available options includes "impute_bag" and "impute_knn". Both methods use the recipe package for implementation.
 
 ```R
 set.seed(0)

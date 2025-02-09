@@ -43,14 +43,6 @@
     # Append ellipses
     if (length(models) == 1 && length(list(...)) > 0) new_struct$map_args[[models]] <- list(...)
 
-    xgboost_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
-    check_bool <- new_struct$map_args$xgboost$params$objective %in% xgboost_logistic
-
-    if (!"logistic" %in% models && !("xgboost" %in% models && isTRUE(check_bool))) {
-      # Assigning NULL to logistic_threshold directly will delete this key and leave an empty space
-      new_struct <- c(new_struct[!names(new_struct) == "logistic_threshold"], list(logistic_threshold = NULL))
-    }
-
     has_lambda <- (
       length(new_struct$map_args$regularized_logistic$lambda == 1) ||
         length(new_struct$map_args$regularized_multinomial$lambda == 1)
