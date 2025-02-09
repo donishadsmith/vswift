@@ -58,17 +58,23 @@
 
   # Check logistic threshold
   obj <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+  binary_models <- (any(c("logistic", "regularized_logistic") %in% models) ||
+    "xgboost" %in% models && model_params$map_args$xgboost$params$objective %in% obj)
 
-  if ("logistic" %in% models || "xgboost" %in% models && model_params$map_args$xgboost$params$objective %in% obj) {
+  if (binary_models) {
     # Check if binary and threshold valid
     if (!is.null(formula)) target <- .get_var_names(formula = formula, data = data)$target
     binary_target <- length(levels(factor(data[, target], exclude = NA))) == 2
-    valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
 
     if (!binary_target) {
-      stop("'logistic' and 'xgboost' with a logistic regression objective requires a binary target")
-    } else if (!valid_threshold) {
-      stop("`threshold` must a numeric value from 0 to 1")
+      stop("'logistic', 'regularized_logistic', and 'xgboost' (with a logistic regression objective) requires a binary target")
+    }
+
+    # Check threshold
+    valid_threshold <- model_params$logistic_threshold > 0 | model_params$logistic_threshold < 1
+
+    if (!valid_threshold && any(c("logistic", "xgboost") %in% models)) {
+      stop("`model_params$logistic_threshold` must a numeric value from 0 to 1")
     }
   }
 
@@ -76,7 +82,6 @@
   if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model) || isFALSE(model_params$final_model))) {
     stop("neither `split`, `n_folds`, or `final_model` specified")
   }
-
 
   if (!is.null(train_params$n_folds) && train_params$n_folds <= 2) stop("`train_params$n_folds` must greater than 2")
 

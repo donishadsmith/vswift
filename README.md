@@ -68,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.4.0/vswift_0.4.0.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.4.1/vswift_0.4.1.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -127,9 +127,13 @@ map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3))
 # Perform train-test split and cross-validation with stratified sampling
 results <- classCV(
   data = thyroid_data,
-  target = "Recurred",
+  formula = Recurred ~ .,
   models = "regularized_logistic",
-  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE), # rule can be "min" or "1se"
+  model_params = list(
+  map_args = map_args,
+  rule = "1se", # rule can be "min" or "1se"
+  verbose = TRUE
+  ),
   train_params = list(
     split = 0.8,
     n_folds = 5,
@@ -139,39 +143,6 @@ results <- classCV(
   ),
   save = list(models = TRUE) # Saves both `cv.glmnet` and `glmnet` model
 )
-
-# Also valid, the target variable can refer to the column index
-results <- classCV(
-  data = thyroid_data,
-  target = 17,
-  models = "regularized_logistic",
-  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE),
-  train_params = list(
-    split = 0.8,
-    n_folds = 5,
-    standardize = TRUE,
-    stratified = TRUE,
-    random_seed = 123
-  ),
-  save = list(models = TRUE)
-)
-
-# Formula method can be used
-results <- classCV(
-  formula = Recurred ~ .,
-  data = thyroid_data,
-  models = "regularized_logistic",
-  model_params = list(map_args = map_args, rule = "1se", verbose = TRUE),
-  train_params = list(
-    split = 0.8,
-    n_folds = 5,
-    standardize = TRUE,
-    stratified = TRUE,
-    random_seed = 123
-  ),
-  save = list(models = TRUE)
-)
-
 ```
 
 **Output Message**
@@ -307,10 +278,10 @@ against the False Positive Rate (FPR) at various classification thresholds. To g
 models must be saved.
 
 ```R
-
+# Can `target` parameter, which accepts characters and integers instead of `formula`
 results <- classCV(
-  formula = Recurred ~ .,
   data = thyroid_data,
+  target = "Recurred", # Using 17, the column index of "Recurred" is also valid
   models = "naivebayes",
   train_params = list(
     split = 0.8,

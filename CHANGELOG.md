@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.4.1] - 2025-02-09
+### 🐛 Fixes
+- Quicker failure if "regularized_logistic" requested and target is not binary
+
 ## [0.4.0] - 2025-02-06
 ### 🚀 New/Added
 - For `rocCurve`, saving the dataframe is no longer required and the original dataframe can be used as input also.
