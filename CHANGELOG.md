@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.5.0.9000] - 2025-02-09
+### ♻ Changed
+- `logistic_threshold` changed to `threshold` to allow a threshold to be used with any model for binary targets.
+
 ## [0.4.1] - 2025-02-09
 ### 🐛 Fixes
 - Quicker failure if "regularized_logistic" requested and target is not binary

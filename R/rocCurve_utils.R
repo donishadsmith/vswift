@@ -19,7 +19,7 @@
   }
 
   # Convert target
-  class_keys <- .create_dictionary(x$class_summary$classes, TRUE)
+  class_keys <- .create_dictionary(x$class_summary$classes, alternate_warning = TRUE)
 
   return(list("keys" = class_keys, "vars" = vars))
 }
@@ -178,7 +178,7 @@
   results <- .prediction(
     id, model, train_mod, info$vars, df_list, NULL, x$configs$model_params$map_args$xgboost$params$objective,
     length(info$keys),
-    probs = TRUE, keys = info$keys
+    probs = TRUE, keys = info$keys, call = "rocCurve"
   )
 
   # Out list

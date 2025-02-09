@@ -1,5 +1,5 @@
 # Create dictionary for target variable if needed for certain algos
-.create_dictionary <- function(target_vector, alternate_warning = FALSE) {
+.create_dictionary <- function(target_vector, threshold = NULL, alternate_warning = FALSE) {
   counter <- 0
   new_classes <- c()
   class_dict <- list()
@@ -10,7 +10,11 @@
     counter <- counter + 1
   }
 
-  msg <- if (!alternate_warning) "due to 'logistic' or 'xgboost' being specified" else "for `rocCurve`"
+  standard_msg <- sprintf(
+    "due to %s being specified", ifelse(is.null(threshold), "'logistic' or 'xgboost'", "`model_params$threshold`")
+  )
+
+  msg <- if (!alternate_warning) standard_msg else "for `rocCurve`"
 
   warning(sprintf(
     "creating keys for target variable %s;\n  classes are now encoded: %s",

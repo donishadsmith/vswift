@@ -18,13 +18,9 @@
   # Modify model parameters
   info <- x$configs$model_params
 
-  xgboost_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
-  check_bool <- info$map_args$xgboost$params$objective %in% xgboost_logistic
-
-  # Only show certain parameters for certain models
-  if (!model %in% c("logistic", "xgboost") || !isTRUE(check_bool)) {
-    info <- info[!names(info) == "logistic_threshold"]
-  }
+  # Show threshold
+  val <- .determine_threshold(model, info$map_args$xgboost$params$objective, info$threshold, FALSE)
+  if (!is.null(val)) info$threshold <- val
 
   if (!startsWith(model, "regularized") || (startsWith(model, "regularized") && is.null(info$rule))) {
     info <- info[!names(info) %in% c("rule", "verbose")]

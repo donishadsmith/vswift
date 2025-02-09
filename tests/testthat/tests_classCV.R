@@ -77,7 +77,6 @@ test_that("CV with stratified", {
   expect_true(all(c("proportions", "indices") %in% names(result$class_summary)))
 })
 
-
 test_that("train-test split and k-fold CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
@@ -124,7 +123,6 @@ test_that("train-test split and k-fold CV with stratified", {
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
 
-
 test_that("train-test split and k-fold CV without stratified sampling", {
   data <- iris
   expect_no_error(result <- classCV(
@@ -170,7 +168,6 @@ test_that("train-test split and k-fold CV without stratified sampling", {
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
-
 
 test_that("test final", {
   data <- iris
@@ -293,8 +290,6 @@ test_that("running multiple models", {
     max_depth = 6
   ), nrounds = 10))
 
-
-
   expect_warning(result <- classCV(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(
@@ -364,7 +359,6 @@ test_that("n_cores", {
   expect_equal(result1$metrics$knn$split, result2$metrics$knn$split)
   expect_equal(result1$metrics$knn$cv, result2$metrics$knn$cv)
 })
-
 
 test_that("ensure parallel and nonparallel outputs are equal", {
   data <- iris
@@ -454,6 +448,8 @@ test_that("objectives-multi", {
 
     expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics$knn$split)))
+    expect_true(all(!is.na(result$metrics$knn$cv)))
   }
 
   for (obj in multi_obj) {
@@ -473,6 +469,8 @@ test_that("objectives-multi", {
 
     expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics$knn$split)))
+    expect_true(all(!is.na(result$metrics$knn$cv)))
   }
 })
 
@@ -499,7 +497,8 @@ test_that("binary target", {
 
     expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
-
+    expect_true(all(!is.na(result$metrics$logistic$split)))
+    expect_true(all(!is.na(result$metrics$logistic$cv)))
 
     result <- classCV(
       data = df,
@@ -511,9 +510,10 @@ test_that("binary target", {
 
     expect_true(all(!is.na(result$metrics$xgboost$split)))
     expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics$logistic$split)))
+    expect_true(all(!is.na(result$metrics$logistic$cv)))
   }
 })
-
 
 test_that("test regularized", {
   df <- iris
@@ -545,4 +545,53 @@ test_that("test regularized", {
     train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
     model_params = list(map_args = map_args, final_model = TRUE)
   )
+})
+
+test_that("test threshold no xgboost", {
+  df <- iris
+
+  df$Species <- ifelse(df$Species == "setosa", "setosa", "not setosa")
+
+  mods <- names(vswift:::.MODEL_LIST)[!names(vswift:::.MODEL_LIST) == "xgboost"]
+  map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3), knn = list(ks = 5), nnet = list(size = 4))
+
+  result <- classCV(
+    data = df,
+    target = "Species",
+    models = mods,
+    train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
+    model_params = list(map_args = map_args)
+  )
+
+  for (mod in mods) {
+    expect_true(all(!is.na(result$metrics[[mod]]$split)))
+    expect_true(all(!is.na(result$metrics[[mod]]$cv)))
+  }
+})
+
+test_that("test threshold xgboost", {
+  df <- iris
+
+  df$Species <- ifelse(df$Species == "setosa", "setosa", "not setosa")
+
+  bin_obj <- c("reg:logistic", "binary:logistic", "binary:logitraw", "binary:hinge")
+
+  for (obj in bin_obj) {
+    args <- list("xgboost" = list(params = list(
+      booster = "gbtree", objective = obj,
+      lambda = 0.0003, alpha = 0.0003, eta = 0.8,
+      max_depth = 6
+    ), nrounds = 10))
+
+    result <- classCV(
+      data = df,
+      formula = Species ~ .,
+      models = "xgboost",
+      train_params = list(split = 0.8, n_folds = 3, random_seed = 123),
+      model_params = list(map_args = args)
+    )
+
+    expect_true(all(!is.na(result$metrics$xgboost$split)))
+    expect_true(all(!is.na(result$metrics$xgboost$cv)))
+  }
 })

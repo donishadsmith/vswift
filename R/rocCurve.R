@@ -91,6 +91,10 @@ rocCurve <- function(x, data = NULL, models = NULL, split = TRUE, cv = TRUE, thr
       models <- models[!models == "xgboost"]
     }
 
+    if ("xgboost" %in% models && x$configs$model_params$map_args$xgboost$params$objective == "binary:hinge") {
+      if (is.null(thresholds)) stop("`thresholds` must be specified since 'xgboost' uses the 'binary:hinge' objective")
+    }
+
     if (length(models) == 0) stop("no valid models to plot")
 
     # Iterate over models

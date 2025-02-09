@@ -185,9 +185,27 @@
 # Helper function to convert matrices to vectors
 # Handle prediction output, some models will produce a matrix with posterior probabilities for binary outcomes
 .tovec <- function(model, result, keys) {
-  convert <- !(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost")) && !is.null(keys)
+  convert <- (
+    !(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost")) &&
+      !is.null(keys) && length(dim(result)) == 1
+  )
 
   if (convert) result <- result[, names(keys)[keys == 1]]
 
   return(as.vector(result))
+}
+
+# Helper function to determine if default boundary should be used
+.determine_threshold <- function(model, obj, threshold, issue_warning = TRUE) {
+  xgboost_logistic <- c("reg:logistic", "binary:logistic", "binary:logitraw")
+  check_bool <- obj %in% xgboost_logistic
+
+  if ((model == "logistic" || (model == "xgboost" && isTRUE(check_bool))) && is.null(threshold)) {
+    threshold <- 0.5
+    if (issue_warning) warning(sprintf("using a default threshold of 0.5 to classify groups for %s model", model))
+  } else if (model == "xgboost" && obj == "binary:hinge") {
+    threshold <- NULL
+  }
+
+  return(threshold)
 }

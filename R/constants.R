@@ -3,7 +3,7 @@
   list(
     "model_params" = list(
       "map_args" = NULL,
-      "logistic_threshold" = 0.5,
+      "threshold" = NULL,
       "rule" = "min",
       "final_model" = FALSE,
       "verbose" = TRUE
@@ -45,7 +45,7 @@
   ),
   secondary = list(
     map_args = c("list", "NULL"),
-    logistic_threshold = c("numeric", "NULL"),
+    threshold = c("numeric", "NULL"),
     rule = c("character", "NULL"),
     final_model = c("logical"),
     verbose = c("logical", "NULL"),
