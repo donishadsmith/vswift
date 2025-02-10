@@ -67,7 +67,6 @@ test_that("CV no stratified sampling", {
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
 
-
 test_that("CV with stratified", {
   data <- iris
   expect_no_error(result <- classCV(
@@ -380,7 +379,7 @@ test_that("ensure parallel and nonparallel outputs are equal", {
   expect_equal(result1$metrics$lda$cv, result2$metrics$lda$cv)
 })
 
-test_that("objectives-single", {
+test_that("xgboost objectives-single", {
   df <- iris
   df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
 
@@ -424,7 +423,7 @@ test_that("objectives-single", {
   }
 })
 
-test_that("objectives-multi", {
+test_that("xgboost objectives-multi", {
   df <- iris
   df$Species <- ifelse(df$Species == df$Species[1], 1, 0)
 
@@ -569,7 +568,7 @@ test_that("test threshold no xgboost", {
   }
 })
 
-test_that("test threshold xgboost", {
+test_that("test threshold for xgboost", {
   df <- iris
 
   df$Species <- ifelse(df$Species == "setosa", "setosa", "not setosa")
