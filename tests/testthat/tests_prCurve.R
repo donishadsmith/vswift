@@ -4,7 +4,7 @@ library(testthat)
 source("utils.R")
 
 # Test that each model works with train-test splitting alone
-test_that("test roc curve", {
+test_that("test pr curve", {
   data <- iris
 
   data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
@@ -48,16 +48,16 @@ test_that("test roc curve", {
   )
 
   # With thresholds derived from models
-  roc_output <- rocCurve(results, path = getwd())
+  pr_output <- prCurve(results, path = getwd())
   check_png()
-  expect_true(length(roc_output) == "13")
-  check_metrics(roc_output, "roc")
+  expect_true(length(pr_output) == "13")
+  check_metrics(pr_output, "pr")
 
   # With specified thresholds
-  roc_output <- rocCurve(results, path = getwd(), thresholds = seq(0, 0.9, 0.1))
+  pr_output <- prCurve(results, path = getwd(), thresholds = seq(0, 0.9, 0.1))
   check_png()
-  expect_true(length(roc_output) == "13")
-  check_metrics(roc_output, "roc")
+  expect_true(length(pr_output) == "13")
+  check_metrics(pr_output, "pr")
 })
 
 test_that("test equivalence with standardizing", {
@@ -80,7 +80,7 @@ test_that("test equivalence with standardizing", {
     save = list(models = TRUE, data = TRUE)
   )
 
-  output1 <- rocCurve(result1)
+  output1 <- prCurve(result1)
 
   result2 <- classCV(
     formula = Species ~ .,
@@ -96,13 +96,13 @@ test_that("test equivalence with standardizing", {
     save = list(models = TRUE, data = TRUE)
   )
 
-  output2 <- rocCurve(result2, data)
+  output2 <- prCurve(result2, data)
 
   for (fold in names(output1$svm$cv)) {
     for (i in names(output1$svm$cv[[fold]])) {
       if (i == "metrics") {
-        expect_true(all(output1$svm$cv[[fold]]$metrics$tpr == output2$svm$cv[[fold]]$metrics$tpr))
-        expect_true(all(output1$svm$cv[[fold]]$metrics$fpr == output2$svm$cv[[fold]]$metrics$fpr))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$recall == output2$svm$cv[[fold]]$metrics$recall))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$precision == output2$svm$cv[[fold]]$metrics$precision))
       } else {
         expect_true(all(output1$svm$cv[[fold]][[i]] == output2$svm$cv[[fold]][[i]]))
       }
@@ -161,8 +161,8 @@ test_that("test equivalence with imputation", {
   for (fold in names(output1$svm$cv)) {
     for (i in names(output1$svm$cv[[fold]])) {
       if (i == "metrics") {
-        expect_true(all(output1$svm$cv[[fold]]$metrics$tpr == output2$svm$cv[[fold]]$metrics$tpr))
-        expect_true(all(output1$svm$cv[[fold]]$metrics$fpr == output2$svm$cv[[fold]]$metrics$fpr))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$precision == output2$svm$cv[[fold]]$metrics$precision))
+        expect_true(all(output1$svm$cv[[fold]]$metrics$recall == output2$svm$cv[[fold]]$metrics$recall))
       } else {
         expect_true(all(output1$svm$cv[[fold]][[i]] == output2$svm$cv[[fold]][[i]]))
       }

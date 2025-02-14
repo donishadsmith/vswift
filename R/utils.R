@@ -187,7 +187,7 @@
 .tovec <- function(model, result, keys) {
   convert <- (
     !(model %in% c("logistic", "regularized_logistic", "nnet", "multinom", "xgboost")) &&
-      !is.null(keys) && length(dim(result)) == 1
+      !is.null(keys) && length(dim(result)) == 2
   )
 
   if (convert) result <- result[, names(keys)[keys == 1]]
@@ -208,4 +208,13 @@
   }
 
   return(threshold)
+}
+
+# Helper function to ensure all columns have the same levels as the original data for svm
+.relevel_cols <- function(data, col_levels) {
+  data[, names(col_levels)] <- data.frame(
+    lapply(names(col_levels), function(col) factor(data[, col], levels = col_levels[[col]]))
+  )
+
+  return(data)
 }
