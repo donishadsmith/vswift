@@ -46,7 +46,7 @@ The following classification algorithms are available through their respective R
 - **Automatic Numerical Encoding**: Target variable classes are automatically encoded numerically for algorithms requiring numerical inputs.
 
 ### Model Evaluation
-- **Comprehensive Metrics**: Generate and save performance metrics including classification accuracy, precision, recall, and F1 for each class. For binary classification tasks, produce ROC (Receiver Operating Characteristic) curves and calculate ROC-AUC (Area Under Curve) scores.
+- **Comprehensive Metrics**: Generate and save performance metrics including classification accuracy, precision, recall, and F1 for each class. For binary classification tasks, produce ROC (Receiver Operating Characteristic) and PR (Precision-Recall) curves and calculate AUC (Area Under Curve) scores.
 
 ## Installation
 
@@ -68,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9000/vswift_0.5.0.9000.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9001/vswift_0.5.0.9001.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -272,10 +272,9 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
 
 </details>
 
-### Producing ROC Curves with AUC scores
-ROC curves are only available for binary classification tasks. The ROC curve plots the True Positive Rate (TPR)
-against the False Positive Rate (FPR) at various classification thresholds. To generate the ROC curve, the
-models must be saved.
+### Producing ROC and PR Curves with AUC scores
+ROC and PR curves are only available for binary classification tasks. To generate either curve, the models must be
+saved.
 
 ```R
 # Can `target` parameter, which accepts characters and integers instead of `formula`
@@ -292,10 +291,18 @@ results <- classCV(
   ),
   save = list(models = TRUE)
 )
+```
 
+Output consists of a list containing thresholds used to generate the ROC, target labels, False Positive Rates (FPR),
+True Positive Rates (TPR)/Recall, Area Under The Curve (AUC), and Youdin's Index for all training and validation sets
+for each model. For the PR curve, the outputs replace the FPR with Precision and Youdin's Index with the maximum
+F1 score and its associated optimal threshold.
+
+```R
 # Will derive thresholds from the probabilities
-output <- rocCurve(results, thyroid_data, return_output = TRUE, thresholds = NULL, path = getwd())
+roc_output <- rocCurve(results, thyroid_data, return_output = TRUE, thresholds = NULL, path = getwd())
 
+pr_output <- prCurve(results, thyroid_data, return_output = TRUE, thresholds = NULL, path = getwd())
 ```
 
 **Output**
@@ -305,16 +312,20 @@ Warning message:
 In .create_dictionary(x$class_summary$classes, TRUE) :
   creating keys for target variable for `rocCurve`;
   classes are now encoded: No = 0, Yes = 1
+  
+Warning message:
+In .create_dictionary(x$class_summary$classes, TRUE) :
+  creating keys for target variable for `prCurve`;
+  classes are now encoded: No = 0, Yes = 1
 ```
 
-![image](assets/roc/naivebayes_train_test_roc_curve.png)
-![image](assets/roc/naivebayes_cv_roc_curve.png)
-
-Output consists of a list containing thresholds used to generate the ROC, target labels, False Positive Rates (FPR),
-True Positive Rates, Area Under The Curve (AUC), and Youdin's Index for all training and validation sets for each model.
+![image](assets/curves/naivebayes_train_test_roc_curve.png)
+![image](assets/curves/naivebayes_cv_roc_curve.png)
+![image](assets/curves/naivebayes_train_test_precision_recall_curve.png)
+![image](assets/curves/naivebayes_cv_precision_recall_curve.png)
 
 ```R
-print(output)
+print(roc_output)
 ```
 <details>
     <summary><strong>Output</strong></summary>
@@ -767,10 +778,10 @@ print(output)
 
 </details>
 
-Youdin's Index values can be used as input for `classCV` to assess the performance when using a specific threshold.
+Optimal thresholds values can be used as input for `classCV` to assess the performance when using a specific threshold.
 
 ```R
-avg_youdins_indx <- mean(sapply(output$naivebayes$cv, function(x) x$youdins_indx))
+avg_youdins_indx <- mean(sapply(roc_output$naivebayes$cv, function(x) x$youdins_indx))
 
 # Using 17, the column index of "Recurred"
 results <- classCV(

@@ -11,7 +11,7 @@
 #' @param data A data frame. If \code{NULL}, then the preprocessed data muse be saved using
 #' \code{save = list("data" = TRUE)} in \code{classCV} Default = \code{NULL}.
 #'
-#' @param models A character string or a character vector specifying the classification algorithm(s) to plot ROC curves
+#' @param models A character string or a character vector specifying the classification algorithm(s) to plot curves
 #' for. If \code{NULL}, all models will be plotted. The following options are available:
 #' \itemize{
 #'  \item \code{"lda"}: Linear Discriminant Analysis
@@ -30,12 +30,12 @@
 #'  }
 #'  Default = \code{NULL}.
 #'
-#' @param split A logical value indicating whether to plot ROC curves for the train-test split results. Default is
+#' @param split A logical value indicating whether to plot curves for the train-test split results. Default is
 #' \code{TRUE}.
 #'
-#' @param cv A logical value indicating whether to plot ROC curves for cross-validation results. Default is \code{TRUE}.
+#' @param cv A logical value indicating whether to plot curves for cross-validation results. Default is \code{TRUE}.
 #'
-#' @param thresholds A numerical vector specifying the thresholds to use when producing the ROC curves. If left as NULL
+#' @param thresholds A numerical vector specifying the thresholds to use when producing the curves. If left as NULL
 #' the unique probability values produced by the training model will be used as thresholds. Default is \code{NULL}.
 #'
 #' @param return_output A logical value indicating whether to return the output list. Default is \code{TRUE}.
@@ -45,9 +45,9 @@
 #'
 #' @param ... Additional arguments passed to the \code{png} function.
 #'
-#' @return A list containing thresholds used to generate the ROC, target labels, False Positive Rates (FPR),
-#' True Positive Rates (TPR), Area Under The Curve (AUC), and Youdin's Index for all training and validation sets
-#' for each model
+#' @return A list containing thresholds used to generate the ROC curve, target labels, false positive rates (FPR),
+#' true positive rates (TPR), area under the curve (AUC), and Youdin's Index for all training and validation sets
+#' for each model.
 #'
 #' @examples
 #' # Load an example dataset
@@ -76,42 +76,51 @@
 #' @export
 rocCurve <- function(x, data = NULL, models = NULL, split = TRUE, cv = TRUE, thresholds = NULL, return_output = TRUE,
                      path = NULL, ...) {
-  if (inherits(x, "vswift")) {
-    # Perform checks and get dictionary class keys and variables
-    info <- .perform_checks(x, data)
-
-    # Unlist keys to turn into a named vector
-    info$keys <- unlist(info$keys)
-
-    # Get valid models
-    models <- .intersect_models(x, models)
-
-    if ("xgboost" %in% models && x$configs$model_params$map_args$xgboost$params$objective == "multi:softmax") {
-      warnings("'xgboost' cannot be specified when the 'multi:softmax; objective is used since probabilties are needed")
-      models <- models[!models == "xgboost"]
-    }
-
-    if ("xgboost" %in% models && x$configs$model_params$map_args$xgboost$params$objective == "binary:hinge") {
-      if (is.null(thresholds)) stop("`thresholds` must be specified since 'xgboost' uses the 'binary:hinge' objective")
-    }
-
-    if (length(models) == 0) stop("no valid models to plot")
-
-    # Iterate over models
-    roc_output <- list()
-
-    for (model in models) {
-      roc_output[[model]] <- .computeROC(
-        x, data, model, .MODEL_LIST[[model]], split, cv, thresholds, info, path, ...
-      )
-
-      if (!isTRUE(return_output)) roc_output[[model]] <- NULL
-    }
-
-    if (isTRUE(return_output)) {
-      return(roc_output)
-    }
-  } else {
-    stop("`x` must be an object of class 'vswift'")
-  }
+  return(.curve_entry(x, data, models, split, cv, thresholds, return_output, "roc", path, ...))
 }
+
+#' Plot Precision-Recall (PR) Curves for Binary Classification Tasks
+#'
+#' @name prCurve
+#'
+#' @description Produces PR curves and computes the area under the curve (AUC) and the threshold with the maximum F1.
+#' score. Only works for binary classification tasks.
+#'
+#' @inheritParams rocCurve
+#'
+#' @return A list containing thresholds used to generate the PR curve, target labels, precision, recall,
+#' area under the curve (AUC), and maximum F1 score and its associated optimal threshold for all training and
+#' validation sets for each model.
+#'
+#' @examples
+#' # Load an example dataset
+#' data <- iris
+#'
+#' # Make Binary
+#' data$Species <- ifelse(data$Species == "setosa", "setosa", "not setosa")
+#'
+#' # Perform a train-test split with an 80% training set and stratified sampling using QDA
+#' result <- classCV(
+#'   data = data,
+#'   target = "Species",
+#'   models = "qda",
+#'   train_params = list(split = 0.8, stratified = TRUE, random_seed = 123),
+#'   save = list(data = TRUE, models = TRUE)
+#' )
+#'
+#' # Get PR curve
+#' prCurve(result, return_output = FALSE)
+#'
+#' @author Donisha Smith
+#'
+#'
+#' @export
+prCurve <- function() {}
+
+# Get the function signature from rocCurve
+formals(prCurve) <- formals(rocCurve)
+
+# Substitute in the body of the prCurve function
+body(prCurve) <- substitute({
+  return(.curve_entry(x, data, models, split, cv, thresholds, return_output, "pr", path, ...))
+})

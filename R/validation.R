@@ -3,12 +3,8 @@
                         classes, keys, met_df, random_seed, save) {
   # Ensure factored columns have same levels for svm
   if (model == "svm" && !is.null(col_levels)) {
-    train[, names(col_levels)] <- data.frame(
-      lapply(names(col_levels), function(col) factor(train[, col], levels = col_levels[[col]]))
-    )
-    test[, names(col_levels)] <- data.frame(
-      lapply(names(col_levels), function(col) factor(test[, col], levels = col_levels[[col]]))
-    )
+    train <- .relevel_cols(train, col_levels)
+    test <- .relevel_cols(test, col_levels)
   }
 
   # Convert to numerical
