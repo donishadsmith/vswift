@@ -14,18 +14,50 @@
   # Create list of parameters
   if (call == "classCV") {
     params_list <- list(
-      data = data, formula = formula, target = target, predictors = predictors, models = models
+      data = data, formula = formula, target = target, predictors = predictors, models = models,
+      train_params = train_params, model_params = model_params, impute_params = impute_params,
+      save = save, parallel_configs = parallel_configs
     )
   } else {
-    params_list <- list(data = data, create_data = create_data)
-    return(0)
+    params_list <- list(data = data, target = target, train_params = train_params, create_data = create_data)
   }
 
   # Check types
-  for (param in names(params_list)) .param_checker(param, params_list[[param]])
+  for (param in names(params_list)) .type_validator(param, params_list[[param]])
+
+  # Check split, n_folds
+  stop_execution <- all(is.null(train_params$split), is.null(train_params$n_folds))
+
+  if (call == "classCV") {
+    stop_execution <- all(stop_execution, is.null(model_params$final_model) || isFALSE(model_params$final_model))
+  }
+
+  if (stop_execution) {
+    if (call == "genFolds") {
+      msg <- "neither `train_params$split` or `train_params$n_folds` specified"
+    } else {
+      msg <- "neither `train_params$split`, `train_params$n_folds`, or `model_params$final_model` specified"
+    }
+    stop(msg)
+  }
+
+  if (!is.null(train_params$n_folds) && train_params$n_folds <= 2) stop("`train_params$n_folds` must greater than 2")
+
+  if (!is.null(train_params$split) && c(train_params$split < 0 || train_params$split > 1)) {
+    stop("`train_params$split` must a numeric value from 0 to 1")
+  }
 
   # Check formula and target
-  if (inherits(c(formula, target), "NULL")) stop(sprintf("either `formula` or `target` must be specified"))
+  msg <- ifelse(call == "classCV", "either `formula` or `target` must be specified", "`target` must be specified")
+  if (inherits(c(formula, target), "NULL")) stop(msg)
+
+  # Check vars
+  .check_vars(formula, target, predictors, data)
+
+  # Exit early for genFolds
+  if (call == "genFolds") {
+    return(0)
+  }
 
   if (!is.null(formula) && any(!is.null(target), !is.null(predictors))) {
     stop(sprintf("`formula` cannot be used when `target` or `predictors` are specified"))
@@ -50,9 +82,6 @@
     if (length(intersect_char) == 0) stop("'min' and '1se' are the only valid options for `model_params$rule`")
   }
 
-  # Check vars
-  .check_vars(formula, target, predictors, data)
-
   # Check map_args
   if (!is.null(model_params$map_args)) .check_args(model_params = model_params, call = "model")
 
@@ -75,17 +104,6 @@
     if (!valid_threshold) stop("`model_params$threshold` must a numeric value from 0 to 1")
   }
 
-  # Check split, n_folds, final_model
-  if (all(is.null(train_params$split), is.null(train_params$n_folds), is.null(model_params$final_model) || isFALSE(model_params$final_model))) {
-    stop("neither `split`, `n_folds`, or `final_model` specified")
-  }
-
-  if (!is.null(train_params$n_folds) && train_params$n_folds <= 2) stop("`train_params$n_folds` must greater than 2")
-
-  if (!is.null(train_params$split) && c(train_params$split < 0 || train_params$split > 1)) {
-    stop("`train_params$split` must a numeric value from 0 to 1")
-  }
-
   # Check if impute method and args is valid
   if (!is.null(impute_params$method)) {
     if (!impute_params$method %in% valid_inputs$imputes) {
@@ -102,7 +120,10 @@
 
   # Check n_cores
   if (!is.null(parallel_configs$n_cores)) {
-    if (is.null(train_params$n_folds)) stop("parallel processing is only available when `n_folds` is not NULL")
+    if (is.null(train_params$n_folds)) {
+      stop("parallel processing is only available when `train_params$n_folds` is not NULL")
+    }
+
     if (parallel_configs$n_cores > as.vector(future::availableCores())) {
       stop(sprintf(
         "more cores specified than available; only %s cores available but %s cores specified",

@@ -70,8 +70,12 @@
     if (configs) .print_configs(x, model)
 
     if (metrics) {
-      if (is.data.frame(x$metrics[[model]]$split)) .print_metrics_split(x, x$metrics[[model]]$split, str_list$max, str_list$diff)
-      if (is.data.frame(x$metrics[[model]]$cv)) .print_metrics_cv(x, x$metrics[[model]]$cv, str_list$max, str_list$diff)
+      if (is.data.frame(x$metrics[[model]]$split)) {
+        .print_metrics_split(x, x$metrics[[model]]$split, str_list$max, str_list$diff)
+      }
+      if (is.data.frame(x$metrics[[model]]$cv)) {
+        .print_metrics_cv(x, x$metrics[[model]]$cv, str_list$max, str_list$diff)
+      }
     }
     # Add dashed line to separate each model
     .dashed_lines(x$class_summary$classes)

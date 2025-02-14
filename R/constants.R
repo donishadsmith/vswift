@@ -41,7 +41,13 @@
     formula = c("formula", "NULL"),
     target = c("character", "numeric", "integer", "NULL"),
     predictors = c("character", "numeric", "integer", "NULL"),
-    models = c("character")
+    models = c("character"),
+    model_params = c("list"),
+    train_params = c("list"),
+    impute_params = c("list"),
+    parallel_configs = c("list"),
+    save = c("list"),
+    create_data = c("logical") # Only in genFolds
   ),
   secondary = list(
     map_args = c("list", "NULL"),
@@ -60,8 +66,7 @@
     models = c("logical"),
     data = c("logical"),
     n_cores = c("numeric", "NULL"),
-    future.seed = c("numeric", "NULL"),
-    create_data = c("logical") # Only in genFolds
+    future.seed = c("numeric", "NULL")
   )
 )
 

@@ -16,7 +16,10 @@
     test <- df_list$test
 
     # Prep data
-    if (isTRUE(kwargs$train_params$standardize) || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
+    need_prep <- (isTRUE(kwargs$train_params$standardize) ||
+      !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0)
+
+    if (need_prep) {
       df_list <- .prep_data(i, train, test, kwargs)
       train <- df_list$train
       test <- df_list$test
@@ -63,7 +66,10 @@
     test <- df_list$test
 
     # Prep data
-    if (isTRUE(kwargs$train_params$standardize) || !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
+    need_prep <- (isTRUE(kwargs$train_params$standardize) ||
+      !is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0)
+
+    if (need_prep) {
       df_list <- .prep_data(i, train, test, kwargs)
       train <- df_list$train
       test <- df_list$test
