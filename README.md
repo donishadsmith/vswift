@@ -42,7 +42,7 @@ The following classification algorithms are available through their respective R
 - **Parallel Processing**: Utilize multi-core processing for cross-validation through the future package, configurable via `n_cores` and `future.seed` keys in the `parallel_configs` parameter.
 
 ### Data Preprocessing
-- **Missing Data Imputation**: Select either Bagged Tree Imputation or KNN Imputation, implemented using the recipes package. Imputation uses only feature data from the training set to prevent leakage.
+- **Missing Data Imputation**: Select either Bagged Tree Imputation or KNN Imputation, implemented using the recipes package. Imputation only uses feature data (specifically observations where not all features are missing) from the training set to prevent leakage.
 - **Automatic Numerical Encoding**: Target variable classes are automatically encoded numerically for algorithms requiring numerical inputs.
 
 ### Model Evaluation
@@ -68,7 +68,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9001/vswift_0.5.0.9001.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9002/vswift_0.5.0.9002.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -197,13 +197,15 @@ Classes: No, Yes
 
 Training Parameters: list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123, standardize = TRUE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = list(regularized_logistic = list(alpha = 1, nfolds = 3)), rule = "1se", final_model = FALSE, verbose = TRUE)
+Model Parameters: list(map_args = list(regularized_logistic = list(alpha = 1, nfolds = 3)), threshold = NULL, rule = "1se", final_model = FALSE, verbose = TRUE)
 
-Unlabeled Data: 0
+Unlabeled Observations: 0
 
-Incomplete Labeled Data: 0
+Incomplete Labeled Observations: 0
 
-Sample Size (Complete Data): 383
+Observations Missing All Features: 0
+
+Sample Size (Complete Observations): 383
 
 Imputation Parameters: list(method = NULL, args = NULL)
 
@@ -820,11 +822,13 @@ Training Parameters: list(split = NULL, n_folds = 5, stratified = TRUE, random_s
 
 Model Parameters: list(map_args = NULL, threshold = 0.446228154420309, final_model = FALSE)
 
-Unlabeled Data: 0
+Unlabeled Observations: 0
 
-Incomplete Labeled Data: 0
+Incomplete Labeled Observations: 0
 
-Sample Size (Complete Data): 383
+Observations Missing All Features: 0
+
+Sample Size (Complete Observations): 383
 
 Imputation Parameters: list(method = NULL, args = NULL)
 
@@ -897,13 +901,15 @@ Classes: No, Yes
 
 Training Parameters: list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123, standardize = TRUE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = NULL, final_model = FALSE)
+Model Parameters: list(map_args = NULL, threshold = NULL, final_model = FALSE)
 
-Unlabeled Data: 8
+Unlabeled Observations: 8
 
-Incomplete Labeled Data: 110
+Incomplete Labeled Observations: 110
 
-Sample Size (Complete + Imputed Incomplete Labeled Data): 375
+Observations Missing All Features: 0
+
+Sample Size (Complete + Imputed Incomplete Labeled Observations): 375
 
 Imputation Parameters: list(method = "impute_bag", args = list(trees = 20, seed_val = 123))
 
@@ -970,7 +976,7 @@ print(results)
     $configs$model_params$map_args
     NULL
     
-    $configs$model_params$logistic_threshold
+    $configs$model_params$threshold
     NULL
     
     $configs$model_params$rule
@@ -1034,13 +1040,16 @@ print(results)
     
     
     $missing_data_summary
-    $missing_data_summary$unlabeled_data
+    $missing_data_summary$unlabeled_observations
     [1] 8
     
-    $missing_data_summary$incomplete_labeled_data
+    $missing_data_summary$observations_missing_all_features
+    [1] 0
+    
+    $missing_data_summary$incomplete_labeled_observations
     [1] 110
     
-    $missing_data_summary$complete_data
+    $missing_data_summary$complete_observations
     [1] 265
     
     
@@ -1055,19 +1064,20 @@ print(results)
     
     $class_summary$indices
     $class_summary$indices$No
-      [1]   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38
-     [39]  39  40  41  42  43  44  45  46  47  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77
-     [77]  78  79  80  81  82  83  84  85  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120
-    [115] 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158
-    [153] 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196
-    [191] 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 215 216 217 218 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254
-    [229] 255 256 257 258 259 260 261 262 263 264 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292
-    [267] 334 335 348
+      [1]   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34
+     [35]  35  36  37  38  39  40  41  42  43  44  45  46  47  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69
+     [69]  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  91  92  93  94  95  96  97  98  99 100 101 102 103 104 105 106 107 108
+    [103] 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142
+    [137] 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176
+    [171] 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210
+    [205] 211 212 213 214 215 216 217 218 239 240 241 242 243 244 245 246 247 248 249 250 251 252 253 254 255 256 257 258 259 260 261 262 263 264
+    [239] 265 266 267 268 269 270 271 272 273 274 275 276 277 278 279 280 281 282 283 284 285 286 287 288 289 290 291 292 334 335 348
     
     $class_summary$indices$Yes
-      [1]  48  86  87  88  89  90 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 293 294 295 296 297 298 299 300 301 302 303 304
-     [39] 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 336 337 338 339 340 341 342 343 344
-     [77] 345 346 347 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371 372 373 374 375
+      [1]  48  86  87  88  89  90 219 220 221 222 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 293 294 295 296 297 298 299 300
+     [35] 301 302 303 304 305 306 307 308 309 310 311 312 313 314 315 316 317 318 319 320 321 322 323 324 325 326 327 328 329 330 331 332 333 336
+     [69] 337 338 339 340 341 342 343 344 345 346 347 349 350 351 352 353 354 355 356 357 358 359 360 361 362 363 364 365 366 367 368 369 370 371
+    [103] 372 373 374 375
     
     
     
@@ -1075,40 +1085,47 @@ print(results)
     $data_partitions$indices
     $data_partitions$indices$split
     $data_partitions$indices$split$train
-      [1] 185  14 201 124 255 270 335 159  96  97 282 203 286 191  98 275 143 247 105  73  26   7 176 279 217 170  79  82  43 109 123  77 149  32 260 115 274 272
-     [39] 175  75  23 161 194  54 141 252 254 172 243  34  70 276 264  64 147 216 103 283 288  38  21 213  41 181 287  61  16 122 100   6  92 205  39 165 292  51
-     [77] 246   4  13 245 133 271  53  22  95 166  25  35 174 118  30 146 202 127 116 164  65 148  68 157 128  80  91 171 142  52 256 112 104 169 195  17  46  55
-    [115] 212 207 187  24 119 113 251 108 155   5  71 209 158 262 215  56  76  84 284 162  49  78 144 117 258   1 348 160 208 285 150  94 248 145 153  20 110 177
-    [153]  99  36 193 114 192  50  42  60  85  11 184   8 163 173  67 140 111 151 244  44 178 183  45 289 131  93  33  40 211  10 277  83   9 259 261  59  62 190
-    [191] 263 242 129 291 280 218  58  29 130 250 154 120 189 121 257 139 334 278  66 239 126 253  74 125 214  86 315 375 225 236 374 333 351 373 303 329 344 372
-    [229] 308 327 338 304 330 349 302 301 369 314 332 235 354 221 361 305 297 341 356 234 310 307 309 346 366 299 224 233 355 296 237 316 313 320  87 317 323 230
-    [267] 298 229 359 362 306 318 321 238 363 232 319 312 295 364 358 220 360 222 326 322 223 367 231 347 370 340 336 342 311 228  89  88 343 170 280
+      [1] 185  14 201 124 255 270 335 159  96  97 282 203 286 191  98 275 143 247 105  73  26   7 176 279 217 170  79  82  43 109 123  77 149  32
+     [35] 260 115 274 272 175  75  23 161 194  54 141 252 254 172 243  34  70 276 264  64 147 216 103 283 288  38  21 213  41 181 287  61  16 122
+     [69] 100   6  92 205  39 165 292  51 246   4  13 245 133 271  53  22  95 166  25  35 174 118  30 146 202 127 116 164  65 148  68 157 128  80
+    [103]  91 171 142  52 256 112 104 169 195  17  46  55 212 207 187  24 119 113 251 108 155   5  71 209 158 262 215  56  76  84 284 162  49  78
+    [137] 144 117 258   1 348 160 208 285 150  94 248 145 153  20 110 177  99  36 193 114 192  50  42  60  85  11 184   8 163 173  67 140 111 151
+    [171] 244  44 178 183  45 289 131  93  33  40 211  10 277  83   9 259 261  59  62 190 263 242 129 291 280 218  58  29 130 250 154 120 189 121
+    [205] 257 139 334 278  66 239 126 253  74 125 214  86 315 375 225 236 374 333 351 373 303 329 344 372 308 327 338 304 330 349 302 301 369 314
+    [239] 332 235 354 221 361 305 297 341 356 234 310 307 309 346 366 299 224 233 355 296 237 316 313 320  87 317 323 230 298 229 359 362 306 318
+    [273] 321 238 363 232 319 312 295 364 358 220 360 222 326 322 223 367 231 347 370 340 336 342 311 228  89  88 343 170 280
     
     $data_partitions$indices$split$test
-     [1] 197 135  69 249  19 152   2 138 206 101 167 265 267 132  27 210 107 268 168 179 240 241 180  18 137 198  12 196 273 266   3  15  37 269 188  28  63 134
-    [39]  72 290 200 102  31 204 186 182 106  57 281 136  47  81 156  48 350 352 331  90 357 345 219 227 293 325 368 328 371 300 324 365 226 339 294 353 199 337
+     [1] 197 135  69 249  19 152   2 138 206 101 167 265 267 132  27 210 107 268 168 179 240 241 180  18 137 198  12 196 273 266   3  15  37 269
+    [35] 188  28  63 134  72 290 200 102  31 204 186 182 106  57 281 136  47  81 156  48 350 352 331  90 357 345 219 227 293 325 368 328 371 300
+    [69] 324 365 226 339 294 353 199 337
     
     
     $data_partitions$indices$cv
     $data_partitions$indices$cv$fold1
-     [1] 293  52 185  14 201 124 255 270 335 159  96  97 282 203 286 191  98 275 143 247 105  73  26   7 176 279 217 170  79  82  43 109 123  77 149  32 260 115
-    [39] 274 272 175  75  23 161 194  54 141 252 254 172 243  34  70 276 264 329 225 351 366 360 237 304 233 347 307 313 359 326 228  90 340 355 364 305 297 350
+     [1] 293  52 185  14 201 124 255 270 335 159  96  97 282 203 286 191  98 275 143 247 105  73  26   7 176 279 217 170  79  82  43 109 123  77
+    [35] 149  32 260 115 274 272 175  75  23 161 194  54 141 252 254 172 243  34  70 276 264 329 225 351 366 360 237 304 233 347 307 313 359 326
+    [69] 228  90 340 355 364 305 297 350
     
     $data_partitions$indices$cv$fold2
-     [1] 116 148  59  40   4  15  84 158 192  61  25 114 200  29  41 210 140  36 177 199 152 138 198  76 179  81 189 153 102 110 207 169  60  94 241 134 126 249
-    [39] 288 216  19  55  63 205 266 120 257  28 142 135 168 259 193 130 306 220 299 318  89 356 231 295 375 238 333 311 315 332 222 324 336 361  48 316 302
+     [1] 116 148  59  40   4  15  84 158 192  61  25 114 200  29  41 210 140  36 177 199 152 138 198  76 179  81 189 153 102 110 207 169  60  94
+    [35] 241 134 126 249 288 216  19  55  63 205 266 120 257  28 142 135 168 259 193 130 306 220 299 318  89 356 231 295 375 238 333 311 315 332
+    [69] 222 324 336 361  48 316 302
     
     $data_partitions$indices$cv$fold3
-     [1] 122 157  21 147  91  30 174 156  83 182  33  65 100 139  13 208 250  69 144 183 181 128  53 334 213  50  62  12 258  11   9 103 106 291  39 256  95 271
-    [39]  45 195 251  85 242 263 265 277  38 285 240 246 202 146 151  49 300 371 309 367 227 339 330 308 235 345 223 314  86 312 341 352 294 319 354 358 301
+     [1] 122 157  21 147  91  30 174 156  83 182  33  65 100 139  13 208 250  69 144 183 181 128  53 334 213  50  62  12 258  11   9 103 106 291
+    [35]  39 256  95 271  45 195 251  85 242 263 265 277  38 285 240 246 202 146 151  49 300 371 309 367 227 339 330 308 235 345 223 314  86 312
+    [69] 341 352 294 319 354 358 301
     
     $data_partitions$indices$cv$fold4
-     [1] 206  10 145  58 107 209   8 253  71 248  37 160  93 133  46  80 218  74 163   5 180   6  57  16 131 211 113  42 108 281 284 171 150 118 278 212 155 127
-    [39] 244 184 196 187   2 119 166  24  56 165 173   3 287 164 269  22 296 373 226 368 310 362 363 338 365 327 219 346 369  88 303 357 353 232 229 337 221
+     [1] 206  10 145  58 107 209   8 253  71 248  37 160  93 133  46  80 218  74 163   5 180   6  57  16 131 211 113  42 108 281 284 171 150 118
+    [35] 278 212 155 127 244 184 196 187   2 119 166  24  56 165 173   3 287 164 269  22 296 373 226 368 310 362 363 338 365 327 219 346 369  88
+    [69] 303 357 353 232 229 337 221
     
     $data_partitions$indices$cv$fold5
-     [1] 162 111 215 204 125 129 214 190 239 186 273 154  99  64 348 104  78 290 132 167 268 117  18  92 137 289  31  51  44 262 121  66 101 136 178 112  47  72
-    [39] 280  35 283   1  68  17 267 188 245 261 292  20  67 197  27 325 349 321 342 236 234 224  87 323 331 328 344 372 370 343 298 230 322 320 317 374
+     [1] 162 111 215 204 125 129 214 190 239 186 273 154  99  64 348 104  78 290 132 167 268 117  18  92 137 289  31  51  44 262 121  66 101 136
+    [35] 178 112  47  72 280  35 283   1  68  17 267 188 245 261 292  20  67 197  27 325 349 321 342 236 234 224  87 323 331 328 344 372 370 343
+    [69] 298 230 322 320 317 374
     
     
     
@@ -1162,15 +1179,24 @@ print(results)
     2     Test               0.9605263           0.9811321         0.962963    0.9719626            0.9130435         0.9545455     0.9333333
     
     $metrics$randomforest$cv
-                        Fold Classification Accuracy Class: No Precision Class: No Recall Class: No F1 Class: Yes Precision Class: Yes Recall Class: Yes F1
-    1                 Fold 1             0.973684211         0.981481481      0.981481481  0.981481481           0.95454545        0.95454545   0.954545455
-    2                 Fold 2             0.973333333         0.964285714      1.000000000  0.981818182           1.00000000        0.90476190   0.950000000
-    3                 Fold 3             0.960000000         0.963636364      0.981481481  0.972477064           0.95000000        0.90476190   0.926829268
-    4                 Fold 4             0.960000000         0.963636364      0.981481481  0.972477064           0.95000000        0.90476190   0.926829268
-    5                 Fold 5             0.959459459         0.980769231      0.962264151  0.971428571           0.90909091        0.95238095   0.930232558
-    6               Mean CV:             0.965295401         0.970761831      0.981341719  0.975936473           0.95272727        0.92424242   0.937687310
-    7 Standard Deviation CV:             0.007502020         0.009467624      0.013343010  0.005234449           0.03223750        0.02668577   0.013483016
-    8     Standard Error CV:             0.003355006         0.004234050      0.005967175  0.002340917           0.01441705        0.01193424   0.006029788
+                        Fold Classification Accuracy Class: No Precision Class: No Recall Class: No F1 Class: Yes Precision Class: Yes Recall
+    1                 Fold 1             0.973684211         0.981481481      0.981481481  0.981481481           0.95454545        0.95454545
+    2                 Fold 2             0.973333333         0.964285714      1.000000000  0.981818182           1.00000000        0.90476190
+    3                 Fold 3             0.960000000         0.963636364      0.981481481  0.972477064           0.95000000        0.90476190
+    4                 Fold 4             0.960000000         0.963636364      0.981481481  0.972477064           0.95000000        0.90476190
+    5                 Fold 5             0.959459459         0.980769231      0.962264151  0.971428571           0.90909091        0.95238095
+    6               Mean CV:             0.965295401         0.970761831      0.981341719  0.975936473           0.95272727        0.92424242
+    7 Standard Deviation CV:             0.007502020         0.009467624      0.013343010  0.005234449           0.03223750        0.02668577
+    8     Standard Error CV:             0.003355006         0.004234050      0.005967175  0.002340917           0.01441705        0.01193424
+      Class: Yes F1
+    1   0.954545455
+    2   0.950000000
+    3   0.926829268
+    4   0.926829268
+    5   0.930232558
+    6   0.937687310
+    7   0.013483016
+    8   0.006029788
 
 </details>
 
@@ -1318,9 +1344,11 @@ Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_s
 
 Model Parameters: list(map_args = list(xgboost = list(params = list(booster = "gbtree", objective = "reg:logistic", lambda = 3e-04, alpha = 3e-04, eta = 0.8, max_depth = 6), nrounds = 10)), logistic_threshold = 0.5, final_model = FALSE)
 
-Unlabeled Data: 0
+Unlabeled Observations: 0
 
-Incomplete Labeled Data: 0
+Incomplete Labeled Observations: 0
+
+Observations Missing All Features: 0
 
 Sample Size (Complete Data): 3278
 
@@ -1377,9 +1405,11 @@ Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_s
 
 Model Parameters: list(map_args = list(knn = list(ks = 5)), final_model = FALSE)
 
-Unlabeled Data: 0
+Unlabeled Observations: 0
 
-Incomplete Labeled Data: 0
+Incomplete Labeled Observations: 0
+
+Observations Missing All Features: 0
 
 Sample Size (Complete Data): 3278
 

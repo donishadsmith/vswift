@@ -38,13 +38,14 @@
   cat(sprintf("Model Parameters: %s\n\n", str))
 
   # Print sample size and missing data for user transparency
-  cat(sprintf("Unlabeled Data: %s\n\n", x$missing_data_summary$unlabeled_data))
-  cat(sprintf("Incomplete Labeled Data: %s\n\n", x$missing_data_summary$incomplete_labeled_data))
+  cat(sprintf("Unlabeled Observations: %s\n\n", x$missing_data_summary$unlabeled_observations))
+  cat(sprintf("Incomplete Labeled Observations: %s\n\n", x$missing_data_summary$incomplete_labeled_observations))
+  cat(sprintf("Observations Missing All Features: %s\n\n", x$missing_data_summary$observations_missing_all_features))
   if (!is.null(x$configs$impute_params$method)) {
-    total <- x$missing_data_summary$complete_data + x$missing_data_summary$incomplete_labeled_data
-    cat(sprintf("Sample Size (Complete + Imputed Incomplete Labeled Data): %s\n\n", total))
+    total <- x$missing_data_summary$complete_observations + x$missing_data_summary$incomplete_labeled_observations
+    cat(sprintf("Sample Size (Complete + Imputed Incomplete Labeled Observations): %s\n\n", total))
   } else {
-    cat(sprintf("Sample Size (Complete Data): %s\n\n", x$missing_data_summary$complete_data))
+    cat(sprintf("Sample Size (Complete Observations): %s\n\n", x$missing_data_summary$complete_observations))
   }
   str <- capture.output(dput(x$configs$impute_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))

@@ -224,6 +224,9 @@ test_that("test imputation and missing data", {
     data[sample(1:nrow(data), size = round(nrow(data) * .10)), i] <- NA
   }
 
+  # Add row with all missing features
+  data[10, colnames(data)[colnames(data) != "Species"]] <- NA
+
   # knn
   expect_warning(expect_warning(result <- classCV(
     data = data, target = "Species",

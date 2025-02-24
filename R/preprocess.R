@@ -268,11 +268,24 @@
 .missing_summary <- function(data, target) {
   # Indices of unlabeled observations
   unlabeled_data <- which(is.na(data[, target]))
+  # Get only features to identify observations where all features are missing
+  feature_cols <- colnames(data)[colnames(data) != target]
+  feature_data <- data[, feature_cols]
+  # Indices with all features missing
+  missing_all_features_indices <- which(
+    sapply(seq(nrow(feature_data)), function(x) all(is.na(feature_data[x, feature_cols])))
+  )
   # Number of observations with ONLY missing features
   incomplete_labeled_data <- unique(which(is.na(data), arr.ind = TRUE)[, "row"])
+  incomplete_labeled_data <- incomplete_labeled_data[!incomplete_labeled_data %in% missing_all_features_indices]
   n_incomplete_labeled_data <- length(incomplete_labeled_data[!incomplete_labeled_data %in% unlabeled_data])
-
-  return(list("unlabeled_data_indices" = unlabeled_data, "n_incomplete_labeled_data" = n_incomplete_labeled_data))
+  return(
+    list(
+      "unlabeled_data_indices" = unlabeled_data,
+      "missing_all_features_indices" = missing_all_features_indices,
+      "n_incomplete_labeled_data" = n_incomplete_labeled_data
+    )
+  )
 }
 
 .clean_data <- function(data, missing_info, imputation_requested, issue_warning = TRUE) {
@@ -280,27 +293,30 @@
 
   # Messages
   msg1 <- sprintf("dropping %s unlabeled observations", length(missing_info$unlabeled_data_indices))
+  msg2 <- sprintf("dropping %s observations with all features missing", length(missing_info$missing_all_features_indices))
 
   if (imputation_requested) {
-    msg2 <- sprintf(
+    msg3 <- sprintf(
       "%s labeled observations are missing data in one or more features and will be imputed",
       missing_info$n_incomplete_labeled_data
     )
   } else {
-    msg2 <- sprintf(
+    msg3 <- sprintf(
       "dropping %s labeled observations with one or more missing features",
       length(missing_info$n_incomplete_labeled_data)
     )
   }
 
   # Dropping unlabeled data
-  if (length(missing_info$unlabeled_data_indices) > 0) {
-    if (isTRUE(issue_warning)) warning(msg1)
-    data <- data[-missing_info$unlabeled_data_indices, ]
+  if (length(missing_info$unlabeled_data_indices) > 0 || length(missing_info$missing_all_features_indices) > 0) {
+    if (isTRUE(issue_warning) & length(missing_info$unlabeled_data_indices) > 0) warning(msg1)
+    if (isTRUE(issue_warning) & length(missing_info$missing_all_features_indices) > 0) warning(msg2)
+    discard_indices <- c(missing_info$unlabeled_data_indices, missing_info$missing_all_features_indices)
+    data <- data[-discard_indices, ]
   }
 
   # Issue warning for labeled data with missing values
-  if (missing_info$n_incomplete_labeled_data > 0) warning(msg2)
+  if (missing_info$n_incomplete_labeled_data > 0) warning(msg3)
 
   # Drop missing labeled data if no imputation requested
   if (missing_info$n_incomplete_labeled_data > 0 && !imputation_requested) {
@@ -311,6 +327,7 @@
     if (isTRUE(issue_warning)) warning("remaining labeled observations has no missing data; imputation will not be performed")
     perform_imputation <- FALSE
   }
+
   return(list("cleaned_data" = data, "perform_imputation" = perform_imputation))
 }
 

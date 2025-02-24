@@ -14,7 +14,15 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.5.0.9000] - 2025-02-14
+## [0.5.0.9002] - 2025-02-24
+### ♻ Changed
+- In the `classCV` output and printed output, changed instances of "data" to "observations" for variables related to
+missing cases
+### 🐛 Fixes
+- For interpolation, remove observations with all features missing
+- Fix issue character to factor conversion issue in curve functions
+
+## [0.5.0.9001] - 2025-02-14
 ### 🚀 New/Added
 - Add new function - `prCurve`.
 ### 🐛 Fixes
@@ -30,7 +38,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.4.0] - 2025-02-06
 ### 🚀 New/Added
-- For `rocCurve`, saving the dataframe is no longer required and the original dataframe can be used as input also.
+- For `rocCurve`, saving the dataframe is no longer required and the original dataframe can be used as input also
 ### 🐛 Fixes
 - Fix some internal `rocCurve` issues including:
   - An issue with rownames in data frame being ordered lexicographically instead of numerically.
@@ -42,7 +50,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.4.0.9007] - 2025-01-26
 ### 🐛 Fixes
-- Fixes ordering of the output list configurations
+- Fixes ordering of the output list configurations.
 
 ## [0.4.0.9006] - 2025-01-23
 ### 🐛 Fixes

@@ -27,9 +27,10 @@
   }
 
   info_dict$configs$train_params <- train_params
-  info_dict$missing_data_summary$unlabeled_data <- length(missing_n$unlabeled_data_indices)
-  info_dict$missing_data_summary$incomplete_labeled_data <- missing_n$n_incomplete_labeled_data
-  info_dict$missing_data_summary$complete_data <- sum(complete.cases(preprocessed_data))
+  info_dict$missing_data_summary$unlabeled_observations <- length(missing_n$unlabeled_data_indices)
+  info_dict$missing_data_summary$observations_missing_all_features <- length(missing_n$missing_all_features_indices)
+  info_dict$missing_data_summary$incomplete_labeled_observations <- missing_n$n_incomplete_labeled_data
+  info_dict$missing_data_summary$complete_observations <- sum(complete.cases(preprocessed_data))
   info_dict$configs$impute_params <- impute_params
   info_dict$configs$parallel_configs <- parallel_configs
   info_dict$configs$save <- save

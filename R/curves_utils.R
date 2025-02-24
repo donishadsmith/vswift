@@ -76,7 +76,7 @@
 
 # Helper function to get data, indices, and models
 .get_data <- function(x, data, id = NULL, foldid = NULL, get_indices = FALSE, vars = NULL, model = NULL,
-                      discard_labels = TRUE) {
+                      discard_unusable_data = TRUE) {
   preprocess <- ifelse(is.data.frame(data), TRUE, FALSE)
   # Get information for indexing for either dataframes or the test set indices
   id <- ifelse(is.null(id), names(x$data_partitions$indices)[1], id)
@@ -90,9 +90,10 @@
     df <- data
     rownames(df) <- seq(nrow(df))
     # Discard missing labels
-    if (discard_labels) {
-      target <- which(is.na(df[, all.vars(x$configs$formula)[1]]))
-      df <- df[-unique(target), ]
+    if (discard_unusable_data) {
+      miss_info <- .missing_summary(data, all.vars(x$configs$formula)[1])
+      discard_indices <- c(miss_info$unlabeled_data_indices, miss_info$missing_all_features_indices)
+      if (length(discard_indices) != 0) df <- df[-discard_indices, ]
     }
   } else {
     if (id == "split") {
@@ -112,9 +113,9 @@
   # Ensure all characters are factors
   if (isTRUE(preprocess) && !is.null(vars)) {
     out <- .convert_to_factor(df, vars$target, model, remove_obs = FALSE)
-    missing_info <- .missing_summary(out$data, vars$target)
+    miss_info <- .missing_summary(out$data, vars$target)
     impute <- ifelse(!is.null(x$imputation_models), TRUE, FALSE)
-    cleaned_data <- .clean_data(df, missing_info, impute, FALSE)
+    cleaned_data <- .clean_data(out$data, miss_info, impute, FALSE)
     out$data <- cleaned_data$cleaned_data
   } else {
     out <- list("data" = df)
@@ -229,7 +230,6 @@
 
   # Get data
   out <- .get_data(x, data, id, foldid, TRUE, info$vars, model, FALSE)
-
   # Partition training and test data
   df_list <- .partition(out$data, out$indices)
 
