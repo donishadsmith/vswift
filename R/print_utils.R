@@ -58,7 +58,7 @@
 }
 
 # Function to print train-test split metrics to console
-.print_metrics_split <- function(x, df, max_str_len, str_diff) {
+.print_metrics_split <- function(x, data, max_str_len, str_diff) {
   for (set in c("Training", "Test")) {
     # Variable for which class string length to print to ensure all values have equal spacing
     class_pos <- 1
@@ -66,17 +66,17 @@
     cat("\n\n", set, "\n")
     cat(rep("_", 21), "\n\n")
     # Print classification accuracy
-    cat("Classification Accuracy: ", format(round(df[df$Set == set, "Classification Accuracy"], 2), nsmall = 2), "\n\n")
+    cat("Classification Accuracy: ", format(round(data[data$Set == set, "Classification Accuracy"], 2), nsmall = 2), "\n\n")
     # Print name of metrics
     cat("Class:", rep("", max_str_len - 1), "Precision:", "", "Recall:", strrep(" ", 5), "F1:\n\n")
     # For loop to obtain vector of values for each class
 
     for (class in x$class_summary$classes) {
       # Get class specific columns
-      class_cols <- .split_colnames(class, df)
+      class_cols <- .split_colnames(class, data)
 
       # Print metric corresponding to class
-      class_met <- sapply(df[df$Set == set, class_cols], function(x) format(round(x, 2), nsmall = 2))
+      class_met <- sapply(data[data$Set == set, class_cols], function(x) format(round(x, 2), nsmall = 2))
       # Add spacing
       padding <- nchar(paste("Class:", "", "Pre"))
 
@@ -100,7 +100,7 @@
 }
 
 # Function to print cross validation metrics to console
-.print_metrics_cv <- function(x, df, max_str_len, str_diff) {
+.print_metrics_cv <- function(x, data, max_str_len, str_diff) {
   # Variable for which class string length to print to ensure all values have equal spacing
   class_pos <- 1
   # Get number of folds to select the correct rows for mean and stdev
@@ -108,8 +108,8 @@
   # Print parameters name
   cat("\n\n", "Cross-validation (CV)", "\n")
   cat(rep("_", 21), "\n\n")
-  mean_cv <- round(df[df$Fold == "Mean CV:", "Classification Accuracy"], 2)
-  sd_cv <- round(df[df$Fold == "Standard Deviation CV:", "Classification Accuracy"], 2)
+  mean_cv <- round(data[data$Fold == "Mean CV:", "Classification Accuracy"], 2)
+  sd_cv <- round(data[data$Fold == "Standard Deviation CV:", "Classification Accuracy"], 2)
   acc_met <- c(format(mean_cv, nsmall = 2), format(sd_cv, nsmall = 2))
 
   acc_met <- sprintf("%s \U00B1 %s (SD)", acc_met[1], acc_met[2])
@@ -122,11 +122,11 @@
   # Go through column names, split the colnames and class name to see if the column name is the metric for that class
   for (class in x$class_summary$classes) {
     # Get class specific columns
-    class_cols <- .split_colnames(class, df)
+    class_cols <- .split_colnames(class, data)
 
     # Print metric corresponding to class
-    mean_met <- sapply(df[((n_folds + 1)), class_cols], function(x) format(round(x, 2), nsmall = 2))
-    sd_met <- sapply(df[((n_folds + 2)), class_cols], function(x) format(round(x, 2), nsmall = 2))
+    mean_met <- sapply(data[((n_folds + 1)), class_cols], function(x) format(round(x, 2), nsmall = 2))
+    sd_met <- sapply(data[((n_folds + 2)), class_cols], function(x) format(round(x, 2), nsmall = 2))
     sd_met_pos <- 1
     class_met <- c()
 
@@ -151,9 +151,9 @@
   }
 }
 
-.split_colnames <- function(class, df) {
+.split_colnames <- function(class, data) {
   class_cols <- c()
-  for (colname in colnames(df)) {
+  for (colname in colnames(data)) {
     split_colname <- unlist(strsplit(colname, split = " "))
     # Remove the first and last element, corresponds to "Class:" and some metric name
     split_colname <- split_colname[-c(1, length(split_colname))]

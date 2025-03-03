@@ -366,16 +366,16 @@
 }
 
 # Function to retrieve columns that will be standardized
-.get_cols <- function(df, standardize, target) {
+.get_cols <- function(data, standardize, target) {
   # Get predictor names
-  predictors <- colnames(df)[colnames(df) != target]
+  predictors <- colnames(data)[colnames(data) != target]
 
   if (inherits(standardize, "logical")) {
     col_names <- predictors
   } else if (inherits(standardize, c("numeric", "integer"))) {
     # Remove any index value outside the range of the number of columns
-    col_names <- predictors[intersect(1:ncol(df), standardize)]
-    unused <- setdiff(standardize, 1:ncol(df))
+    col_names <- predictors[intersect(1:ncol(data), standardize)]
+    unused <- setdiff(standardize, 1:ncol(data))
     if (length(unused) > 0) {
       warning(sprintf("some indices are outside possible range and will be ignored: %s", paste(unused)))
     }
@@ -415,13 +415,15 @@
 }
 
 # Function to obtain numeric columns
-.filter_cols <- function(df, col_names) {
-  return(colnames(df)[sapply(df, is.numeric)])
+.filter_cols <- function(data, col_names) {
+  return(colnames(data)[sapply(data, is.numeric)])
 }
 
-.restore_rownames <- function(df, rownames) {
-  rownames(df) <- rownames
-  return(df)
+# Function to restore rownames of original data
+.restore_rownames <- function(data, rownames) {
+  rownames(data) <- rownames
+
+  return(data)
 }
 
 # Function to standardize features for train data
