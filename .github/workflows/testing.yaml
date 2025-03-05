@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         r: [4.2.0, 4.3.0, 4.4.0]
-        os: ['macos-latest', 'windows-latest','ubuntu-latest']
+        os: ['macos-latest', 'windows-latest', 'ubuntu-latest']
 
     name: R version ${{ matrix.r }} check on ${{ matrix.os }}
     steps:
