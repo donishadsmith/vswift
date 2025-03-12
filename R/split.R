@@ -22,6 +22,7 @@
   cv_indxs <- list()
   # Create folds; start with randomly shuffling indices
   indices <- sample(1:N)
+
   # Get floor
   folds_vec <- rep(floor(N / n_folds), n_folds)
   excess <- N - sum(folds_vec)
@@ -29,6 +30,7 @@
     folds_vector <- rep(1:n_folds, excess)[1:excess]
     for (num in folds_vector) folds_vec[num] <- folds_vec[num] + 1
   }
+
   # Random shuffle
   folds_vec <- sample(folds_vec, size = length(folds_vec), replace = FALSE)
   for (i in 1:n_folds) {
@@ -39,5 +41,6 @@
     # Add indices to list
     cv_indxs[[sprintf("fold%s", i)]] <- fold_indxs
   }
+
   return(cv_indxs)
 }

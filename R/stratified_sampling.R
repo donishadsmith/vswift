@@ -14,10 +14,12 @@
 # Helper function to get class proportions in data partitions
 .get_proportions <- function(target_vector, indxs) {
   prop_dict <- list()
+
   for (id in names(indxs)) {
     vec_subset <- table(target_vector[indxs[[id]]])
     prop_dict[[id]] <- vec_subset / sum(vec_subset)
   }
+
   return(prop_dict)
 }
 
@@ -30,6 +32,7 @@
   test_n <- N - train_n
   # Initialize list
   split_indxs <- list("train" = NULL, "test" = NULL)
+
   for (class in classes) {
     # Check if sampling possible
     .stratified_check(class, class_indxs[[class]], class_props[[class]], train_n, "train-test splitting", "training set")
@@ -47,9 +50,11 @@
     # Remove indices to check if leftovers remain for special circumstances
     class_indxs[[class]] <- class_indxs[[class]][!(class_indxs[[class]] %in% test_indxs)]
   }
+
   # Get number of leftover
   leftover <- length(as.vector(unlist(class_indxs)))
   if (leftover > 0) split_indxs <- .excess_split(class_indxs, split_indxs, classes)
+
   return(split_indxs)
 }
 
@@ -67,6 +72,7 @@
       split_indxs$test <- c(split_indxs$test, class_indxs[[class]])
     }
   }
+
   return(split_indxs)
 }
 
@@ -119,6 +125,7 @@
       }
     }
   }
+
   return(cv_indxs)
 }
 

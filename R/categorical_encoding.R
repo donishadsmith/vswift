@@ -33,5 +33,6 @@
     names(converted_keys) <- as.character(as.vector(unlist(keys)))
     labels <- sapply(target_vector, function(x) converted_keys[[as.character(x)]])
   }
+
   return(labels)
 }

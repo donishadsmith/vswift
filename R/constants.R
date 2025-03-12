@@ -8,7 +8,7 @@
       "final_model" = FALSE,
       "verbose" = TRUE
     ),
-    "train_params" = .TRAIN_PARAMS_KEYS(call),
+    "train_params" = .train_params_keys(call),
     "impute_params" = list(
       "method" = NULL,
       "args" = NULL
@@ -25,7 +25,7 @@
 })
 
 # Helper function to return train keys depending on function call
-.TRAIN_PARAMS_KEYS <- function(call) {
+.train_params_keys <- function(call) {
   keys <- list("split" = NULL, "n_folds" = NULL, "stratified" = FALSE, "random_seed" = NULL)
 
   if (call == "classCV") keys <- c(keys, list("standardize" = FALSE, "remove_obs" = FALSE))

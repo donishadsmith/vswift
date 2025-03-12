@@ -41,12 +41,14 @@
   cat(sprintf("Unlabeled Observations: %s\n\n", x$missing_data_summary$unlabeled_observations))
   cat(sprintf("Incomplete Labeled Observations: %s\n\n", x$missing_data_summary$incomplete_labeled_observations))
   cat(sprintf("Observations Missing All Features: %s\n\n", x$missing_data_summary$observations_missing_all_features))
+
   if (!is.null(x$configs$impute_params$method)) {
     total <- x$missing_data_summary$complete_observations + x$missing_data_summary$incomplete_labeled_observations
     cat(sprintf("Sample Size (Complete + Imputed Incomplete Labeled Observations): %s\n\n", total))
   } else {
     cat(sprintf("Sample Size (Complete Observations): %s\n\n", x$missing_data_summary$complete_observations))
   }
+
   str <- capture.output(dput(x$configs$impute_params))
   str <- gsub("\\s+", " ", paste(str, collapse = ""))
   cat(sprintf("Imputation Parameters: %s\n\n", str))
@@ -82,7 +84,6 @@
 
       # Pad output with strings
       formatted_class_met <- c()
-
       for (i in seq_along(class_met)) {
         formatted_class_met <- c(formatted_class_met, class_met[i])
         if (i != length(class_met)) {
@@ -111,7 +112,6 @@
   mean_cv <- round(data[data$Fold == "Mean CV:", "Classification Accuracy"], 2)
   sd_cv <- round(data[data$Fold == "Standard Deviation CV:", "Classification Accuracy"], 2)
   acc_met <- c(format(mean_cv, nsmall = 2), format(sd_cv, nsmall = 2))
-
   acc_met <- sprintf("%s \U00B1 %s (SD)", acc_met[1], acc_met[2])
   cat("Average Classification Accuracy: ", acc_met, "\n\n")
   cat(

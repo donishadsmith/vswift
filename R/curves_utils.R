@@ -288,7 +288,7 @@
 }
 
 # Helper function to turn a paired_list to a simple list with two levels
-.simplifyList <- function(paired_list) {
+.simplify_list <- function(paired_list) {
   x <- sapply(paired_list, function(coord) coord$x)
   y <- sapply(paired_list, function(coord) coord$y)
 
@@ -300,7 +300,7 @@
   paired_list <- Map(list, "x" = x, "y" = y)
   # Sort
   paired_list <- paired_list[order(sapply(paired_list, function(coord) coord$x))]
-  coords <- .simplifyList(paired_list)
+  coords <- .simplify_list(paired_list)
 
   if (coords$y[1] == 0) {
     coords$x <- coords$x[-1]
@@ -316,7 +316,7 @@
   if (plot) {
     paired_list <- Map(list, "x" = coords$x, "y" = coords$y)
     paired_list_ordered <- .order_paired_list(paired_list, c("x", "y"))
-    coords <- .simplifyList(paired_list_ordered)
+    coords <- .simplify_list(paired_list_ordered)
   }
 
   return(list("x" = coords$x, "y" = coords$y))

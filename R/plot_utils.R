@@ -66,6 +66,7 @@
     plot_kwargs$y <- df$split[1:2, "Classification Accuracy"]
     plot_kwargs$ylab <- "Classification Accuracy"
     plot_kwargs$main <- plot_title
+
     # Create png
     if (!is.null(path)) {
       png(
@@ -73,6 +74,7 @@
         ...
       )
     }
+
     # Plot data
     do.call(plot, plot_kwargs)
     # Add axis info
@@ -93,6 +95,7 @@
       plot_kwargs$y <- df$split[1:2, sprintf("Class: %s %s", class, metrics_list[[metric]])]
       plot_kwargs$ylab <- metrics_list[[metric]]
       plot_kwargs$main <- sprintf("%s - Class: %s", plot_title, class)
+
       # Create png
       if (!is.null(path)) {
         png(filename = paste0(
@@ -100,6 +103,7 @@
           sprintf("%s_train_test_%s_%s.png", png_name, metric, paste(unlist(strsplit(class, split = " ")), collapse = "_"))
         ), ...)
       }
+
       # Plot data
       do.call(plot, plot_kwargs)
       # Add axis info
@@ -154,6 +158,7 @@
       class_name <- paste(split_vec[-which(split_vec %in% c("Class:", metric_name))],
         collapse = " "
       )
+
       # Get ylab and main
       plot_kwargs$ylab <- metric_name
       plot_kwargs$main <- sprintf("%s - Class: %s", plot_title, class_name)

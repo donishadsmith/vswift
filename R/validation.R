@@ -203,9 +203,7 @@
 
   # Get model
   model <- do.call(glmnet::glmnet, mod_args)
-
   out <- list("model" = model)
-
   if (cv_flag) {
     out <- c(out, list("cv.fit" = cv.fit, "optimal_lambda" = mod_args$lambda))
   }
@@ -333,6 +331,5 @@
 
 # Convert logit to probability
 .logit2prob <- function(x) {
-  prob <- exp(x) / (1 + exp(x))
-  return(prob)
+  return(exp(x) / (1 + exp(x)))
 }

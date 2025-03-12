@@ -12,11 +12,13 @@
   # Initialize output list
   info_dict <- list()
   info_dict$configs <- list()
+
   if (!is.null(formula)) {
     info_dict$configs$formula <- formula
   } else {
     info_dict$configs$formula <- as.formula(paste(vars$target, "~", paste(vars$predictors, collapse = " + ")))
   }
+
   info_dict$configs$n_features <- length(vars$predictors)
   info_dict$configs$models <- models
   info_dict$configs$model_params <- model_params
@@ -37,6 +39,7 @@
 
   # Create sublist for class_summary and data_partitions
   info_dict <- c(info_dict, .append_output(preprocessed_data[, vars$target], train_params$stratified))
+
   # Return output
   return(info_dict)
 }

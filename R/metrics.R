@@ -29,6 +29,7 @@
     class_acc <- sum(vec$ground[[j]] == vec$pred[[j]]) / length(vec$ground[[j]])
     rowid <- ifelse(col == "Set", dict[[j]], paste(c(col, unlist(strsplit(id, split = "fold"))[2]), collapse = " "))
     met_df[met_df[, col] == rowid, "Classification Accuracy"] <- class_acc
+
     # class specific metrics
     for (class in classes) {
       met_list <- .calculate_metrics(class, vec$ground[[j]], vec$pred[[j]])
@@ -36,6 +37,7 @@
       met_df[met_df[, col] == rowid, sprintf("Class: %s Precision", class)] <- met_list$precision
       met_df[met_df[, col] == rowid, sprintf("Class: %s Recall", class)] <- met_list$recall
       met_df[met_df[, col] == rowid, sprintf("Class: %s F1", class)] <- met_list$f1
+
       # Warning is a metric is NA
       met_vals <- c(
         "classification accuracy" = class_acc, "precision" = met_list$precision,
@@ -75,5 +77,6 @@
     cv_df[cv_df$Fold == desc[2], colname] <- sd(num_vector, na.rm = TRUE)
     cv_df[cv_df$Fold == desc[3], colname] <- sd(num_vector, na.rm = TRUE) / sqrt(n_folds)
   }
+
   return(cv_df)
 }
