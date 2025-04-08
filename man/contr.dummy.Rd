@@ -2,9 +2,10 @@
 % Please edit documentation in R/contr.dummy.R
 \name{contr.dummy}
 \alias{contr.dummy}
-\title{Dummy Variables Contrast Function}
+\title{Internal Re-export of contr.dummy}
 \description{
 This function is re-exported from the \code{kknn} package to ensure compatibility with the \code{train.kknn} function,
 which requires \code{contr.dummy} to be available in the current namespace. This function generates dummy variables
 for factors
 }
+\keyword{internal}

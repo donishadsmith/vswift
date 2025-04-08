@@ -6,8 +6,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![Platform Support](https://img.shields.io/badge/OS-Ubuntu%20|%20macOS%20|%20Windows-blue)
 
-vswift streamlines the process of train-test splitting and cross-validation for classification tasks (binary
-and multi-class), providing a unified interface to multiple classification algorithms from popular R packages.
+vswift provides a unified interface to multiple classification algorithms from popular R packages for performing model evaluation on classification tasks (binary and multi-class).
 
 ## Supported Classification Algorithms
 The following classification algorithms are available through their respective R packages:
@@ -67,7 +66,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9002/vswift_0.5.0.9002.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9003/vswift_0.5.0.9003.tar.gz",
   repos = NULL,
   type = "source"
 )

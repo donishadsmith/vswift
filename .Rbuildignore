@@ -8,7 +8,5 @@
 ^\.pre-commit-config\.yaml$
 ^assets$
 ^renovate\.json$
-^renv$
-^renv\.lock$
 ^vignettes/\.Rprofile$
 ^vswift\.Rproj$

@@ -39,25 +39,20 @@ repos:
           .*\.Rproj|
           .*\.sh|
           (.*/|)\.gitignore|
-          (.*/|)\.gitlab-ci\.yml|
           (.*/|)\.lintr|
           (.*/|)\.pre-commit-.*|
           (.*/|)\.Rbuildignore|
-          (.*/|)\.Renviron|
           (.*/|)\.Rprofile|
           (.*/|)\.travis\.yml|
           (.*/|)appveyor\.yml|
           (.*/|)NAMESPACE|
-          (.*/|)renv/settings\.dcf|
-          (.*/|)renv\.lock|
-          (.*/|)WORDLIST|
           \.github/workflows/.*|
           data/.*|
           )$
     -   id: parsable-R
     -   id: no-browser-statement
     -   id: no-print-statement
-        exclude: '(.*tests_print.*|.*^renv.*\.R$)'
+        exclude: '.*tests_print.*'
     -   id: no-debug-statement
     -   id: pkgdown
 -   repo: https://github.com/pre-commit/pre-commit-hooks

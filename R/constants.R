@@ -85,3 +85,46 @@
   "multinom" = "Unregularized Multinomial Logistic Regression",
   "knn" = "K-Nearest Neighbors", "naivebayes" = "Naive Bayes"
 )
+
+
+# List of valid arguments for each model type
+.GLMNET_ARGS <- c(
+  "alpha", "lambda", "penalty.factor", "maxit", "thresh", "nfolds"
+)
+
+# List of valid arguments for each model type
+.VALID_ARGS <- list(
+  "model" = list(
+    "lda" = c("prior", "method", "nu", "tol"),
+    "qda" = c("prior", "method", "nu"),
+    "logistic" = c("weights", "singular.ok", "maxit"),
+    "regularized_logistic" = .GLMNET_ARGS,
+    "svm" = c(
+      "kernel", "degree", "gamma", "cost", "nu", "class.weights", "shrinking",
+      "epsilon", "tolerance", "cachesize"
+    ),
+    "naivebayes" = c(
+      "prior", "laplace", "usekernel", "usepoisson"
+    ),
+    "nnet" = c(
+      "size", "rang", "decay", "maxit", "softmax", "entropy", "abstol", "reltol", "Hess",
+      "skip"
+    ),
+    "knn" = c("kmax", "ks", "distance", "kernel"),
+    "decisiontree" = c("method", "parms", "control", "cost"),
+    "randomforest" = c(
+      "classwt", "ntree", "mtry", "nodesize", "importance", "localImp",
+      "nPerm", "proximity", "keep.forest", "norm.votes"
+    ),
+    "multinom" = c("Hess"),
+    "regularized_multinomial" = .GLMNET_ARGS,
+    "xgboost" = c(
+      "params", "nrounds", "print_every_n", "feval", "verbose",
+      "early_stopping_rounds", "obj", "save_period", "save_name"
+    )
+  ),
+  "imputation" = list(
+    "impute_bag" = c("trees", "seed_val"),
+    "impute_knn" = c("neighbors")
+  )
+)

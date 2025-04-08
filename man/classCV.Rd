@@ -248,7 +248,7 @@ result <- classCV(
 result
 
 
-# Perform 5-fold cross-validation a train-test split w/multiple models
+# Perform 5-fold cross-validation a train-test split with multiple models
 map_args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
 result <- classCV(
   data = iris,
