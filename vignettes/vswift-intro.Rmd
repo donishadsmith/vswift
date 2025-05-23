@@ -39,35 +39,35 @@ result1 <- classCV(
   models = "lda"
 )
 
-# Perform a train-test split with five folds using stratified sampling with K-Nearest Neighbors while also specifying an additional argument for nnet to specify the number of neighbors to consider
+# Perform a train-test split with five folds using stratified sampling with K-Nearest Neighbors while also specifying an additional argument for knn to specify the number of neighbors to consider
 result2 <- classCV(
   data = iris, formula = Species ~ .,
   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
-  models = "nnet",
-  size = 5
+  models = "knn",
+  ks = 5
 )
 
-# Perform a train-test split with an 80% training set and five folds with stratified sampling LDA and nnet. Also specify an argument for nnet and save the models for lda and nnet.
+# Perform a train-test split with an 80% training set and five folds with stratified sampling LDA and knn. Also specify an argument for knn and save the models for lda and knn.
 
-args <- list("nnet" = list(size = 5))
+args <- list("knn" = list(ks = 5))
 
 result3 <- classCV(
   data = iris, formula = Species ~ .,
   train_params = list(split = 0.8, n_folds = 5, stratified = TRUE, random_seed = 123),
-  models = c("lda", "nnet"),
+  models = c("lda", "knn"),
   model_params = list(map_args = args)
 )
 ```
 
 ### `print` can be used to produce command-line output of the performance metrics.
 ```{r}
-print(result3, models = "nnet")
+print(result3, models = "knn")
 ```
 
 
 ### `plot` function can be used to visualize performance metrics.
 ```{r}
-plot(result3, models = "nnet", split = FALSE, cv = TRUE, class_names = c("setosa", "virginica"), metrics = "precision")
+plot(result3, models = "knn", split = FALSE, cv = TRUE, class_names = c("setosa", "virginica"), metrics = "precision")
 ```
 
 ### `rocCurve`` can be used to generate ROC curves and ROC-AUC scores for binary classification targets. The model and preprocessed dataset must be saved.

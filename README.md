@@ -51,15 +51,12 @@ The following classification algorithms are available through their respective R
 ### From the "main" branch
 
 ```R
-# Install "devtools"" to install packages from Github
+# Install 'devtools' to install packages from Github
 install.packages("devtools")
 
-# Install "vswift"" package
+# Install 'vswift' package
 devtools::install_github("donishadsmith/vswift", build_manual = TRUE, build_vignettes = TRUE)
-
-# Install "kknn" package
-devtools::install_version("kknn", version = "1.4.0", repos = "https://cloud.r-project.org")
-
+ 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
 ```
@@ -73,9 +70,6 @@ install.packages(
   repos = NULL,
   type = "source"
 )
-
-# Install "kknn" package
-devtools::install_version("kknn", version = "1.4.0", repos = "https://cloud.r-project.org")
 
 # Display documentation for the 'vswift' package
 help(package = "vswift")
@@ -262,31 +256,18 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
   <summary><strong>Plots</strong></summary>
   
   ![image](assets/thyroid/regularized_logistic_regression_cv_classification_accuracy.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_f1_No.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_f1_Yes.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_precision_No.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_precision_Yes.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_recall_No.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_cv_recall_Yes.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_classification_accuracy.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_f1_No.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_f1_Yes.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_precision_No.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_precision_Yes.png)
-
   ![image](assets/thyroid/regularized_logistic_regression_train_test_recall_No.png)
-  
   ![image](assets/thyroid/regularized_logistic_regression_train_test_recall_Yes.png)
 
 </details>
@@ -339,11 +320,8 @@ In .create_dictionary(x$class_summary$classes, TRUE) :
 ```
 
 ![image](assets/curves/naivebayes_train_test_roc_curve.png)
-
 ![image](assets/curves/naivebayes_cv_roc_curve.png)
-
 ![image](assets/curves/naivebayes_train_test_precision_recall_curve.png)
-
 ![image](assets/curves/naivebayes_cv_precision_recall_curve.png)
 
 ```R
@@ -1249,6 +1227,7 @@ library(vswift)
 
 # Create arguments variable to tune parameters for multiple models
 map_args <- list(
+  "knn" = list(ks = 5),
   "xgboost" = list(
     params = list(
       booster = "gbtree",
@@ -1271,7 +1250,7 @@ start <- proc.time()
 results <- classCV(
   data = ad_data,
   target = "ad.",
-  models = c("svm", "decisiontree", "xgboost"),
+  models = c("knn", "svm", "decisiontree", "xgboost"),
   train_params = list(
     split = 0.8,
     n_folds = 5,
@@ -1298,7 +1277,7 @@ start_par <- proc.time()
 results <- classCV(
   data = ad_data,
   target = "ad.",
-  models = c("svm", "decisiontree", "xgboost"),
+  models = c("knn", "svm", "decisiontree", "xgboost"),
   train_params = list(
     split = 0.8,
     n_folds = 5,
@@ -1343,7 +1322,7 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
 
 ```R
 # Print parameter information and model evaluation metrics; If number of features > 20, the target replaces the formula
-print(results, models = c("xgboost", "svm"))
+print(results, models = c("xgboost", "knn"))
 ```
 
 **Output**
@@ -1361,7 +1340,7 @@ Classes: ad., nonad.
 
 Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_seed = 123, standardize = FALSE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = list(xgboost = list(params = list(booster = "gbtree", objective = "reg:logistic", lambda = 3e-04, alpha = 3e-04, eta = 0.8, max_depth = 6), nrounds = 10)), threshold = 0.5, final_model = FALSE)
+Model Parameters: list(map_args = list(xgboost = list(params = list(booster = "gbtree", objective = "reg:logistic", lambda = 3e-04, alpha = 3e-04, eta = 0.8, max_depth = 6), nrounds = 10)), logistic_threshold = 0.5, final_model = FALSE)
 
 Unlabeled Observations: 0
 
@@ -1369,7 +1348,7 @@ Incomplete Labeled Observations: 0
 
 Observations Missing All Features: 0
 
-Sample Size (Complete Observations): 3278
+Sample Size (Complete Data): 3278
 
 Imputation Parameters: list(method = NULL, args = NULL)
 
@@ -1412,7 +1391,7 @@ nonad.            0.98 ± 0.01 (SD)       0.99 ± 0.00 (SD)       0.99 ± 0.00 (
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
-Model: Support Vector Machine 
+Model: K-Nearest Neighbors 
 
 Target: ad.
 
@@ -1422,7 +1401,7 @@ Classes: ad., nonad.
 
 Training Parameters: list(split = 0.8, n_folds = 5, stratified = FALSE, random_seed = 123, standardize = FALSE, remove_obs = FALSE)
 
-Model Parameters: list(map_args = NULL, threshold = NULL, final_model = FALSE)
+Model Parameters: list(map_args = list(knn = list(ks = 5)), final_model = FALSE)
 
 Unlabeled Observations: 0
 
@@ -1430,7 +1409,7 @@ Incomplete Labeled Observations: 0
 
 Observations Missing All Features: 0
 
-Sample Size (Complete Observations): 3278
+Sample Size (Complete Data): 3278
 
 Imputation Parameters: list(method = NULL, args = NULL)
 
@@ -1441,34 +1420,34 @@ Parallel Configs: list(n_cores = 6, future.seed = 100)
  Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  0.88 
+Classification Accuracy:  0.99 
 
 Class:      Precision:  Recall:       F1:
 
-ad.               0.97     0.17      0.28 
-nonad.            0.88     1.00      0.94 
+ad.               0.90     1.00      0.95 
+nonad.            1.00     0.98      0.99 
 
 
  Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Classification Accuracy:  0.87 
+Classification Accuracy:  0.91 
 
 Class:      Precision:  Recall:       F1:
 
-ad.               1.00     0.15      0.27 
-nonad.            0.87     1.00      0.93 
+ad.               0.67     0.80      0.73 
+nonad.            0.96     0.93      0.95 
 
 
  Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
-Average Classification Accuracy:  0.88 ± 0.01 (SD) 
+Average Classification Accuracy:  0.93 ± 0.01 (SD) 
 
 Class:          Average Precision:        Average Recall:            Average F1:
 
-ad.               0.98 ± 0.03 (SD)       0.17 ± 0.05 (SD)       0.29 ± 0.07 (SD) 
-nonad.            0.88 ± 0.01 (SD)       1.00 ± 0.00 (SD)       0.94 ± 0.01 (SD) 
+ad.               0.73 ± 0.06 (SD)       0.82 ± 0.05 (SD)       0.77 ± 0.03 (SD) 
+nonad.            0.97 ± 0.01 (SD)       0.95 ± 0.01 (SD)       0.96 ± 0.01 (SD) 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
@@ -1489,11 +1468,8 @@ plot(
   <summary><strong>Plots</strong></summary>
 
   ![image](assets/ads/extreme_gradient_boosting_cv_precision_ad..png)
-
   ![image](assets/ads/extreme_gradient_boosting_cv_recall_ad..png)
-
   ![image](assets/ads/extreme_gradient_boosting_train_test_precision_ad..png)
-
   ![image](assets/ads/extreme_gradient_boosting_train_test_recall_ad..png)
 
 </details>
