@@ -256,13 +256,13 @@ test_that("test random seed", {
   data <- iris
   result_1 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "nnet",
-    size = 4
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
+    ks = 5
   )
   result_2 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "nnet",
-    model_params = list(map_args = list(nnet = list(size = 4)))
+    train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
+    model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
   expect_equal(result_1$data_partitions$indices$split$train, result_2$data_partitions$indices$split$train)
@@ -270,13 +270,13 @@ test_that("test random seed", {
 
   result_1 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "nnet",
-    size = 4
+    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
+    ks = 5
   )
   result_2 <- classCV(
     data = data, target = "Species",
-    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "nnet",
-    model_params = list(map_args = list(nnet = list(size = 4)))
+    train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
+    model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
   expect_equal(result_1$data_partitions$indices$split$train, result_2$data_partitions$indices$split$train)
@@ -286,14 +286,14 @@ test_that("test random seed", {
 test_that("running multiple models", {
   data <- iris
 
-  args <- list("xgboost" = list(params = list(
+  args <- list("knn" = list(ks = 3), "xgboost" = list(params = list(
     booster = "gbtree", objective = "multi:softmax",
     lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
     max_depth = 6
   ), nrounds = 10))
 
   expect_warning(result <- classCV(
-    data = data, target = 5, models = c("svm", "xgboost", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(
       split = 0.8, n_folds = 3, stratified = TRUE,
       random_seed = 123, remove_obs = TRUE
@@ -306,6 +306,7 @@ test_that("running multiple models", {
   data$Species <- ifelse(data$Species == 1, 0, 1)
 
   args <- list(
+    "knn" = list(ks = 3),
     "xgboost" = list(params = list(
       booster = "gbtree", objective = "multi:softmax",
       lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
@@ -314,7 +315,7 @@ test_that("running multiple models", {
     "logistic" = list(maxit = 10000)
   )
 
-  models <- c("svm", "logistic", "xgboost", "randomforest")
+  models <- c("knn", "svm", "logistic", "xgboost", "randomforest")
   expect_warning(expect_warning(result <- classCV(
     data = data, target = 5, models = models,
     train_params = list(
@@ -337,21 +338,21 @@ test_that("running multiple models", {
 test_that("n_cores", {
   data <- iris
 
-  args <- list("xgboost" = list(params = list(
+  args <- list("knn" = list(ks = 3), "xgboost" = list(params = list(
     booster = "gbtree", objective = "multi:softmax",
     lambda = 0.0003, alpha = 0.0003, num_class = 3, eta = 0.8,
     max_depth = 6
   ), nrounds = 10))
 
   expect_warning(result1 <- classCV(
-    data = data, target = 5, models = c("svm", "xgboost", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
   expect_warning(result2 <- classCV(
-    data = data, target = 5, models = c("svm", "xgboost", "randomforest"),
+    data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
@@ -433,7 +434,7 @@ test_that("xgboost objectives-multi", {
   multi_obj <- c("multi:softprob", "multi:softmax")
 
   for (obj in bin_obj) {
-    args <- list("xgboost" = list(params = list(
+    args <- list("knn" = list(ks = 2), "xgboost" = list(params = list(
       booster = "gbtree", objective = obj,
       lambda = 0.0003, alpha = 0.0003, eta = 0.8,
       max_depth = 6
@@ -442,7 +443,7 @@ test_that("xgboost objectives-multi", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = c("xgboost", "lda"),
+      models = c("xgboost", "knn"),
       train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
       model_params = list(map_args = args)
     )
@@ -454,7 +455,7 @@ test_that("xgboost objectives-multi", {
   }
 
   for (obj in multi_obj) {
-    args <- list("xgboost" = list(params = list(
+    args <- list("knn" = list(ks = 2), "xgboost" = list(params = list(
       booster = "gbtree", objective = obj,
       lambda = 0.0003, alpha = 0.0003, num_class = 2,
       eta = 0.8, max_depth = 6
@@ -463,7 +464,7 @@ test_that("xgboost objectives-multi", {
     result <- classCV(
       data = df,
       formula = Species ~ .,
-      models = c("xgboost", "lda"),
+      models = c("xgboost", "knn"),
       train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
       model_params = list(map_args = args)
     )
@@ -548,13 +549,13 @@ test_that("test regularized", {
   )
 })
 
-test_that("test threshold no xgboost or kbb", {
+test_that("test threshold no xgboost", {
   df <- iris
 
   df$Species <- ifelse(df$Species == "setosa", "setosa", "not setosa")
 
-  mods <- names(vswift:::.MODEL_LIST)[!names(vswift:::.MODEL_LIST) %in% c("knn", "xgboost")]
-  map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3), nnet = list(size = 4))
+  mods <- names(vswift:::.MODEL_LIST)[!names(vswift:::.MODEL_LIST) == "xgboost"]
+  map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3), knn = list(ks = 5), nnet = list(size = 4))
 
   result <- classCV(
     data = df,

@@ -226,12 +226,12 @@
 #'
 #'
 #' # Perform 5-fold cross-validation a train-test split with multiple models
-#' map_args <- list("nnet" = list(size = 20))
+#' map_args <- list("knn" = list(ks = 5), "nnet" = list(size = 20))
 #' result <- classCV(
 #'   data = iris,
 #'   target = 5,
 #'   predictors = c(1:3),
-#'   models = c("decisiontree", "nnet", "svm"),
+#'   models = c("decisiontree", "knn", "nnet", "svm"),
 #'   model_params = list(map_args = map_args),
 #'   train_params = list(
 #'     n_folds = 5,

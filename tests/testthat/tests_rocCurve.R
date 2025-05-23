@@ -11,6 +11,7 @@ test_that("test roc curve", {
   data$Species <- factor(data$Species)
 
   map_args <- list(
+    "knn" = list(ks = 5),
     "xgboost" = list(
       params = list(
         booster = "gbtree",
@@ -26,7 +27,10 @@ test_that("test roc curve", {
     "nnet" = list(size = 2)
   )
 
-  models <- names(vswift:::.MODEL_LIST)[!names(vswift:::.MODEL_LIST) == "knn"]
+  models <- c(
+    "regularized_logistic", "regularized_multinomial", "multinom", "knn", "nnet", "lda", "qda",
+    "svm", "decisiontree", "randomforest", "logistic", "naivebayes", "xgboost"
+  )
 
   results <- classCV(
     formula = Species ~ .,
@@ -46,13 +50,13 @@ test_that("test roc curve", {
   # With thresholds derived from models
   roc_output <- rocCurve(results, path = getwd())
   check_png()
-  expect_true(length(roc_output) == "12")
+  expect_true(length(roc_output) == "13")
   check_metrics(roc_output, "roc")
 
   # With specified thresholds
   roc_output <- rocCurve(results, path = getwd(), thresholds = seq(0, 0.9, 0.1))
   check_png()
-  expect_true(length(roc_output) == "12")
+  expect_true(length(roc_output) == "13")
   check_metrics(roc_output, "roc")
 })
 

@@ -14,15 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
-## [0.5.0.9004] - 2025-05-19
-### 🐛 Fixes
-- kknn is currently archived, so a check occurs to determine if the package is installed with
-additional modifications in the codebase to allow vswift to be installed without it but allow
-"knn" to run if "kknn" is already installed or installed from archive.
-
 ## [0.5.0.9003] - 2025-04-08
 ### ♻ Changed
 - Minor refactoring and internal documentation changes.
+
 
 ## [0.5.0.9002] - 2025-02-24
 ### ♻ Changed
