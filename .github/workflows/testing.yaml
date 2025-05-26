@@ -34,14 +34,14 @@ jobs:
         if: ${{ matrix.os  == 'ubuntu-latest' || matrix.os == 'macos-latest' }}
         run: |
           R CMD build .
-          R CMD check --as-cran vswift_0.5.0.9003.tar.gz
+          R CMD check --as-cran *vswift*.tar.gz
         shell: bash
 
       - name: Build tar & CRAN check for Windows
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           R CMD build --no-build-vignettes .
-          R CMD check --no-manual --as-cran vswift_0.5.0.9003.tar.gz
+          for %%i in (vswift*.tar.gz) do R CMD check --no-manual --as-cran %%i
         shell: cmd
 
       - name: Run MacOS and get coverage

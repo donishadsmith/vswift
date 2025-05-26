@@ -14,10 +14,14 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.5.0.9004] - 2025-05-25
+### 🐛 Fixes
+- Re-export `contr.ordinal` from `kknn` package for the function to be available in namespace for
+`train.kknn`
+
 ## [0.5.0.9003] - 2025-04-08
 ### ♻ Changed
 - Minor refactoring and internal documentation changes.
-
 
 ## [0.5.0.9002] - 2025-02-24
 ### ♻ Changed
