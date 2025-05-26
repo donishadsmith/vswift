@@ -66,7 +66,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9003/vswift_0.5.0.9003.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9004/vswift_0.5.0.9004.tar.gz",
   repos = NULL,
   type = "source"
 )
