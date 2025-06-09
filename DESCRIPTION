@@ -1,7 +1,7 @@
 Package: vswift
 Title: Classification Model Evaluation
-Version: 0.5.0.9004
-Date: 2025-05-25
+Version: 0.5.0.9005
+Date: 2025-06-08
 Authors@R: person(given = "Donisha",
                   family = "Smith",
                   role = c("aut", "cre"),
@@ -21,7 +21,7 @@ Imports:
     randomForest,
     xgboost,
     recipes,
-    future (>= 1.9.0),
+    future,
     future.apply,
     kknn,
     glmnet,

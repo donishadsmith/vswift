@@ -52,7 +52,7 @@
 # Function to perform validation of split and folds using parallel processing while combining outputs
 #' @importFrom future.apply future_lapply
 .parallel <- function(kwargs, parallel_configs, iters) {
-  future::plan(future::multisession, workers = parallel_configs$n_cores)
+  future::plan(future::multicore, workers = parallel_configs$n_cores)
   par_out <- future_lapply(iters, function(i) {
     # Get indices
     test_indices <- .get_indices(kwargs$indices, i)
