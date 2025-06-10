@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.5.0.9005] - 2025-06-08
+### 🐛 Fixes
+- Fix versioning for `future` package,
+
 ## [0.5.0.9004] - 2025-05-25
 ### 🐛 Fixes
 - Re-export `contr.ordinal` from `kknn` package for the function to be available in namespace for

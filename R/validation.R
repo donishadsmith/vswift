@@ -195,7 +195,7 @@
         "Model: %s | Partition: %s | Optimal lambda: %.5f (nested %s-fold cross-validation using '%s' rule)",
         model, id, mod_args$lambda, num, rule
       )
-      cat(msg, "\n")
+      message(msg, "\n")
     }
   } else {
     mod_args$lambda <- add_args$lambda
