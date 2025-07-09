@@ -36,9 +36,7 @@
   .check_vars(formula, target, predictors, data)
 
   # Exit early for genFolds
-  if (call == "genFolds") {
-    return(0)
-  }
+  if (call == "genFolds") return(0)
 
   # Check that only formula and target are specified
   if (!is.null(formula) && any(!is.null(target), !is.null(predictors))) {
