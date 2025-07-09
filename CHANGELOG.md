@@ -16,7 +16,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.5.0.9005] - 2025-06-08
 ### 🐛 Fixes
-- Fix versioning for `future` package,
+- Fix versioning for `future` package
 
 ## [0.5.0.9004] - 2025-05-25
 ### 🐛 Fixes

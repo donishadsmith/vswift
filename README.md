@@ -143,7 +143,10 @@ results <- classCV(
 )
 ```
 
-**Output Message**
+<details>
+
+<summary><strong>Output Message</strong></summary>
+
 ```
 Model: regularized_logistic | Partition: Train-Test Split | Optimal lambda: 0.09459 (nested 3-fold cross-validation using '1se' rule) 
 Model: regularized_logistic | Partition: Fold 1 | Optimal lambda: 0.00983 (nested 3-fold cross-validation using '1se' rule) 
@@ -153,34 +156,35 @@ Model: regularized_logistic | Partition: Fold 4 | Optimal lambda: 0.00565 (neste
 Model: regularized_logistic | Partition: Fold 5 | Optimal lambda: 0.01253 (nested 3-fold cross-validation using '1se' rule)
 ```
 
+</details>
+
+
 Print optimal lambda values.
 ```R
 print(results$metrics$regularized_logistic$optimal_lambdas)
 ```
-**Output Message**
+
+<details>
+
+<summary><strong>Output</strong></summary>
+
 ```
       split       fold1       fold2       fold3       fold4       fold5 
 0.094590537 0.009834647 0.079494739 0.013763132 0.005649260 0.012525544 
 ```
 
-`classCV` produces a vswift object which can be used for custom printing and plotting of performance metrics by using
-the `print` and `plot` functions.
+</details>
 
-```R
-class(results)
-```
-
-**Output**
-```
-[1] "vswift"
-```
 
 ```R
 # Print parameter information and model evaluation metrics
 print(results, parameters = TRUE, metrics = TRUE)
 ```
 
-**Output**
+<details>
+
+<summary><strong>Output</strong></summary>
+
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -211,7 +215,7 @@ Parallel Configs: list(n_cores = NULL, future.seed = NULL)
 
 
 
- Training 
+Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.93 
@@ -222,7 +226,7 @@ No             0.91     1.00      0.95
 Yes            0.98     0.76      0.86 
 
 
- Test 
+Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.91 
@@ -233,7 +237,7 @@ No             0.89     1.00      0.94
 Yes            1.00     0.68      0.81 
 
 
- Cross-validation (CV) 
+Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Average Classification Accuracy:  0.95 ± 0.03 (SD) 
@@ -245,6 +249,8 @@ Yes            0.97 ± 0.03 (SD)       0.84 ± 0.12 (SD)       0.90 ± 0.06 (SD)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
+
+</details>
 
 ```R
 # Plot model evaluation metrics
@@ -271,6 +277,7 @@ plot(results, split = TRUE, cv = TRUE, path = getwd())
   ![image](assets/thyroid/regularized_logistic_regression_train_test_recall_Yes.png)
 
 </details>
+
 
 ### Producing ROC and PR Curves with AUC scores
 ROC and PR curves are only available for binary classification tasks. To generate either curve, the models must be
@@ -305,7 +312,9 @@ roc_output <- rocCurve(results, thyroid_data, return_output = TRUE, thresholds =
 pr_output <- prCurve(results, thyroid_data, return_output = TRUE, thresholds = NULL, path = getwd())
 ```
 
-**Output**
+<details>
+
+<summary><strong>Output</strong></summary>
 
 ```
 Warning message:
@@ -323,6 +332,9 @@ In .create_dictionary(x$class_summary$classes, TRUE) :
 ![image](assets/curves/naivebayes_cv_roc_curve.png)
 ![image](assets/curves/naivebayes_train_test_precision_recall_curve.png)
 ![image](assets/curves/naivebayes_cv_precision_recall_curve.png)
+
+</details>
+
 
 ```R
 print(roc_output)
@@ -803,7 +815,11 @@ results <- classCV(
 print(results)
 ```
 
-**Output**
+
+<details>
+
+<summary><strong>Output</strong></summary>
+
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -834,7 +850,7 @@ Parallel Configs: list(n_cores = NULL, future.seed = NULL)
 
 
 
- Cross-validation (CV) 
+Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Average Classification Accuracy:  0.92 ± 0.03 (SD) 
@@ -846,6 +862,8 @@ Yes            0.84 ± 0.07 (SD)       0.88 ± 0.03 (SD)       0.86 ± 0.04 (SD)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
+</details>
+
 
 ### Impute Incomplete Labeled Data
 
@@ -878,7 +896,11 @@ results <- classCV(
 print(results)
 ```
 
-**Output**
+
+<details>
+
+<summary><strong>Output</strong></summary>
+
 ```
 Warning messages:
 1: In .clean_data(data, missing_info, !is.null(impute_params$method)) :
@@ -915,7 +937,7 @@ Parallel Configs: list(n_cores = NULL, future.seed = NULL)
 
 
 
- Training 
+Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  1.00 
@@ -926,7 +948,7 @@ No             1.00     1.00      1.00
 Yes            1.00     0.99      0.99 
 
 
- Test 
+Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.96 
@@ -937,7 +959,7 @@ No             0.98     0.96      0.97
 Yes            0.91     0.95      0.93 
 
 
- Cross-validation (CV) 
+Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Average Classification Accuracy:  0.97 ± 0.01 (SD) 
@@ -949,6 +971,9 @@ Yes            0.95 ± 0.03 (SD)       0.92 ± 0.03 (SD)       0.94 ± 0.01 (SD)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
+
+</details>
+
 
 Displaying what is contained in the vswift object by converting its class to a list and using R's base `print` function.
 
@@ -1196,6 +1221,7 @@ print(results)
     7   0.013483016
     8   0.006029788
 
+
 </details>
 
 ### Using Parallel Processing
@@ -1297,7 +1323,11 @@ end_par <- proc.time() - start_par
 print(end_par)
 ```
 
-**Output**
+
+<details>
+
+<summary><strong>Output</strong></summary>
+
 ```
 [1] "Without Parallel Processing:"
 
@@ -1319,13 +1349,16 @@ In .create_dictionary(preprocessed_data[, vars$target]) :
    user  system elapsed 
    2.06    5.89  103.59 
 ```
+</details>
 
 ```R
 # Print parameter information and model evaluation metrics; If number of features > 20, the target replaces the formula
 print(results, models = c("xgboost", "knn"))
 ```
+<details>
 
-**Output**
+<summary><strong>Output</strong></summary>
+
 ```
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -1356,7 +1389,7 @@ Parallel Configs: list(n_cores = 6, future.seed = 100)
 
 
 
- Training 
+Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.99 
@@ -1367,7 +1400,7 @@ ad.               0.98     0.93      0.96
 nonad.            0.99     1.00      0.99 
 
 
- Test 
+Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.98 
@@ -1378,7 +1411,7 @@ ad.               0.99     0.85      0.91
 nonad.            0.97     1.00      0.99 
 
 
- Cross-validation (CV) 
+Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Average Classification Accuracy:  0.98 ± 0.01 (SD) 
@@ -1417,7 +1450,7 @@ Parallel Configs: list(n_cores = 6, future.seed = 100)
 
 
 
- Training 
+Training 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.99 
@@ -1428,7 +1461,7 @@ ad.               0.90     1.00      0.95
 nonad.            1.00     0.98      0.99 
 
 
- Test 
+Test 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Classification Accuracy:  0.91 
@@ -1439,7 +1472,7 @@ ad.               0.67     0.80      0.73
 nonad.            0.96     0.93      0.95 
 
 
- Cross-validation (CV) 
+Cross-validation (CV) 
 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
 
 Average Classification Accuracy:  0.93 ± 0.01 (SD) 
@@ -1451,6 +1484,9 @@ nonad.            0.97 ± 0.01 (SD)       0.95 ± 0.01 (SD)       0.96 ± 0.01 (
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
+
+</details>
+
 
 ```R
 # Plot results
@@ -1473,6 +1509,7 @@ plot(
   ![image](assets/ads/extreme_gradient_boosting_train_test_recall_ad..png)
 
 </details>
+
 
 ## Acknowledgements
 The development of this package was inspired by other machine learning packages such as

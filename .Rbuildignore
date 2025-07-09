@@ -1,6 +1,7 @@
 ^CHANGELOG\.md$
 ^LICENSE\.md$
 ^Meta$
+^demos$
 ^\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
