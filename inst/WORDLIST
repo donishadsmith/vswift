@@ -1,6 +1,7 @@
 Acknowledgements
 ann
 aut
+automerge
 BugReports
 camelCase
 changelog
@@ -8,6 +9,7 @@ Changelog
 classCV
 Codecov
 Config
+config
 configs
 contr
 covr
@@ -18,6 +20,7 @@ Donisha
 donishadsmith
 donishasmith
 doParallel
+earlyMondays
 FPR
 gbm
 GBM
@@ -25,6 +28,7 @@ github
 Github
 glmnet
 https
+json
 kknn
 kknn's
 knitr
@@ -33,15 +37,22 @@ KNN
 lda
 lexicographically
 logitraw
+matchPackageNames
+MERCHANTABILITY
 multinom
 multisession
 naivebayes
 NaN
 nnet
+NONINFRINGEMENT
+packageRules
+prConcurrentLimit
 preprocessed
+prHourlyLimit
 qda
 randomforest
 randomForest
+renovatebot
 reproducibility
 rmarkdown
 rocCurve
@@ -54,6 +65,7 @@ setosa
 softmax
 softprob
 styler
+sublicense
 svm
 testthat
 topepo's

@@ -213,7 +213,7 @@
 
 # Helper function for classCV to predict
 .prediction <- function(id, mod, train_mod, vars, df_list, thresh, obj, n_classes, probs = FALSE, keys = NULL,
-                        call = "validation") {
+                        caller = "validation") {
   # List to store ground truth and predicted data
   results <- list("ground" = list(), "pred" = list())
 
@@ -280,7 +280,7 @@
       "xgboost" = {
         mat <- data.matrix(df_list[[i]])
         xgb_mat <- xgboost::xgb.DMatrix(data = mat[, vars$predictors], label = mat[, vars$target])
-        results$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, probs, call)
+        results$pred[[i]] <- .handle_xgboost_predict(train_mod, xgb_mat, obj, thresh, n_classes, probs, caller)
       },
       # Default for lda and qda
       if (probs) {
@@ -294,7 +294,7 @@
     results$pred[[i]] <- .tovec(mod, results$pred[[i]], keys)
 
     # Assign classes if probabilities
-    if (probs && call == "validation") {
+    if (probs && caller == "validation") {
       if (mod != "xgboost") results$pred[[i]] <- ifelse(results$pred[[i]] >= thresh, 1, 0)
     }
   }
@@ -303,7 +303,7 @@
 }
 
 # Handle different xgboost objective functions
-.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, probs, call) {
+.handle_xgboost_predict <- function(train_mod, xgb_mat, obj, thresh, n_classes, probs, caller) {
   # produces probability
   bin_prob <- c("reg:logistic", "binary:logistic")
 
@@ -314,11 +314,11 @@
   # Special cases that need to be converted to labels
   switch(obj,
     "binary_prob" = {
-      if (!probs || call == "validation") pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs || caller == "validation") pred <- ifelse(pred >= thresh, 1, 0)
     },
     "binary:logitraw" = {
       pred <- sapply(pred, .logit2prob)
-      if (!probs || call == "validation") pred <- ifelse(pred >= thresh, 1, 0)
+      if (!probs || caller == "validation") pred <- ifelse(pred >= thresh, 1, 0)
     },
     "multi:softprob" = {
       pred <- matrix(pred, ncol = n_classes, byrow = TRUE)

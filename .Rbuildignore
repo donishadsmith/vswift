@@ -1,13 +1,13 @@
 ^CHANGELOG\.md$
 ^LICENSE\.md$
 ^Meta$
-^demos$
 ^\.Rproj$
 ^\.Rproj\.user$
 ^\.github$
 ^\.inst$
 ^\.pre-commit-config\.yaml$
 ^assets$
+^demos$
 ^renovate\.json$
 ^vignettes/\.Rprofile$
 ^vswift\.Rproj$

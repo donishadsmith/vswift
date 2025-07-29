@@ -36,7 +36,7 @@
 }
 
 # Helper function for classCV to check if additional arguments are valid
-.check_args <- function(model_params = NULL, impute_params = NULL, call) {
+.check_args <- function(model_params = NULL, impute_params = NULL, caller) {
   # Helper function to generate error message
   error_message <- function(method_name, invalid_args) {
     sprintf(
@@ -46,12 +46,12 @@
   }
 
   # Obtain user-specified models based on the number of models called
-  methods <- ifelse(call == "model", names(model_params$map_args), impute_params$method)
+  methods <- ifelse(caller == "model", names(model_params$map_args), impute_params$method)
 
   # Obtain user-specified model arguments based on the number of models called
   for (method in methods) {
-    user_args <- ifelse(call == "model", names(model_params$map_args[[method]]), names(impute_params$args))
-    invalid_args <- user_args[!user_args %in% .VALID_ARGS[[call]][[method]]]
+    user_args <- ifelse(caller == "model", names(model_params$map_args[[method]]), names(impute_params$args))
+    invalid_args <- user_args[!user_args %in% .VALID_ARGS[[caller]][[method]]]
 
     # Special case
     if (method == "knn" && !"ks" %in% user_args) {
@@ -103,6 +103,7 @@
   incomplete_labeled_data <- unique(which(is.na(data), arr.ind = TRUE)[, "row"])
   incomplete_labeled_data <- incomplete_labeled_data[!incomplete_labeled_data %in% missing_all_features_indices]
   n_incomplete_labeled_data <- length(incomplete_labeled_data[!incomplete_labeled_data %in% unlabeled_data])
+
   return(
     list(
       "unlabeled_data_indices" = unlabeled_data,
@@ -115,7 +116,6 @@
 .clean_data <- function(data, missing_info, imputation_requested, issue_warning = TRUE) {
   perform_imputation <- imputation_requested
 
-  # Messages
   msg1 <- sprintf("dropping %s unlabeled observations", length(missing_info$unlabeled_data_indices))
   msg2 <- sprintf("dropping %s observations with all features missing", length(missing_info$missing_all_features_indices))
 
@@ -182,7 +182,6 @@
   # Revert back to data.frame
   preprocessed_data <- as.data.frame(preprocessed_dt)
 
-  # Return output
   return(list(
     "data" = preprocessed_data,
     "col_levels" = if (exists("col_levels") && length(col_levels) > 0) col_levels else NULL
@@ -211,6 +210,7 @@
       warning(sprintf("some column names not in dataframe and will be ignored: %s", paste(unused)))
     }
   }
+
   return(col_names)
 }
 
@@ -251,11 +251,10 @@
 }
 
 # Function to standardize features for train data
-.standardize_train <- function(train, test = NULL, standardize = TRUE, target, call = "standard") {
+.standardize_train <- function(train, test = NULL, standardize = TRUE, target, caller = "standard") {
   col_names <- .get_cols(train, standardize, target)
   filtered_col_names <- .filter_cols(train, col_names)
 
-  # Convert train to data table for computation
   train_dt <- data.table(train)
 
   if (length(col_names) > 0) {
@@ -265,8 +264,7 @@
     # Standardize in place
     train_dt[, (filtered_col_names) := Map(function(x, m, s) (x - m) / s, .SD, means, stdevs), .SDcols = filtered_col_names]
     # Standardize test
-    if (call != ".impute_prep") {
-      # Convert to data.table
+    if (caller != ".impute_prep") {
       test_dt <- data.table(test)
       # Standardize using training parameters
       test_dt[, (filtered_col_names) := Map(function(x, m, s) (x - m) / s, .SD, means, stdevs), .SDcols = filtered_col_names]
@@ -276,7 +274,7 @@
     being of class 'numeric'")
   }
 
-  if (call != ".impute_prep") {
+  if (caller != ".impute_prep") {
     return(list(
       "train" = .restore_rownames(as.data.frame(train_dt), row.names(train)),
       "test" = .restore_rownames(as.data.frame(test_dt), row.names(test))
@@ -304,17 +302,17 @@
 }
 
 # Function to standardize prior to creating or using the imputation model
-.impute_standardize <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, call = "standard") {
+.impute_standardize <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, caller = "standard") {
   # Get data id
   use_data <- ifelse(!is.null(preprocessed_data), "preprocessed", "train")
-  # Standardize
+
   if (use_data == "preprocessed") {
     data <- .standardize(preprocessed_data = preprocessed_data, target = vars$target)$preprocessed_data
     return(list("data" = data, "use_data" = use_data))
   } else {
-    df_list <- .standardize_train(train = train, test = test, target = vars$target, call = call)
+    df_list <- .standardize_train(train = train, test = test, target = vars$target, caller = caller)
 
-    if (call != ".impute_prep") {
+    if (caller != ".impute_prep") {
       return(list("data" = df_list$train, "test" = df_list$test, "use_data" = use_data))
     } else {
       return(list("data" = df_list$train))
@@ -327,7 +325,7 @@
   # Standardize
   data <- .impute_standardize(
     preprocessed_data = preprocessed_data, train = train, vars = vars,
-    call = ".impute_prep"
+    caller = ".impute_prep"
   )$data
 
   # Create args list
@@ -353,14 +351,12 @@
 
 # Apply the prep model to data
 .impute_bake <- function(preprocessed_data = NULL, train = NULL, test = NULL, vars, prep) {
-  # Standardize
   if (!is.null(preprocessed_data)) {
     df_list <- .impute_standardize(preprocessed_data = preprocessed_data, vars = vars)
   } else {
     df_list <- .impute_standardize(train = train, test = test, vars = vars)
   }
 
-  # Get data/output
   use_data <- df_list$use_data
   data <- df_list$data
 
@@ -375,7 +371,6 @@
       data.frame(recipes::bake(prep, new_data = test[, vars$predictors])),
       subset(test, select = vars$target)
     )
-
     return(list("train" = data, "test" = test))
   }
 }

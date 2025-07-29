@@ -238,7 +238,7 @@
   results <- .prediction(
     id, model, train_mod, info$vars, df_list, NULL, x$configs$model_params$map_args$xgboost$params$objective,
     length(info$keys),
-    probs = TRUE, keys = info$keys, call = "curve"
+    probs = TRUE, keys = info$keys, caller = "curve"
   )
 
   # Out list

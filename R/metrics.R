@@ -12,6 +12,7 @@
   f1 <- 2 * (precision * recall) / (precision + recall)
 
   metrics <- list("precision" = precision, "recall" = recall, "f1" = f1)
+
   return(metrics)
 }
 

@@ -2,7 +2,7 @@
 library(vswift)
 library(testthat)
 
-skip_test <- function(){
+skip_test <- function() {
   if (Sys.info()["sysname"] == "Linux" && Sys.getenv("GITHUB_ACTIONS") == "true") {
     skip("Hangs on Ubuntu for Github Actions")
   }
@@ -343,7 +343,7 @@ test_that("running multiple models", {
 
 test_that("n_cores", {
   data <- iris
-  
+
   skip_test()
 
   args <- list("knn" = list(ks = 3), "xgboost" = list(params = list(
@@ -372,9 +372,9 @@ test_that("n_cores", {
 
 test_that("ensure parallel and nonparallel outputs are equal", {
   data <- iris
-  
+
   skip_test()
-  
+
   expect_no_error(result1 <- classCV(
     data = data, target = 5, models = "lda",
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 123),
@@ -387,7 +387,7 @@ test_that("ensure parallel and nonparallel outputs are equal", {
     save = list(models = TRUE),
     parallel_configs = list(n_cores = 2),
   ))
-  
+
   expect_true(exists("result1") && !is.null(result1))
   expect_true(exists("result2") && !is.null(result2))
 

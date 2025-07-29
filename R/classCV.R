@@ -283,7 +283,7 @@ classCV <- function(data,
   .error_handling(
     data = data, formula = formula, target = target, predictors = predictors, models = models,
     model_params = model_params, train_params = train_params, impute_params = impute_params,
-    save = save, parallel_configs = parallel_configs, call = "classCV"
+    save = save, parallel_configs = parallel_configs, caller = "classCV"
   )
 
   # Get character form of target and predictor variables
@@ -481,5 +481,6 @@ classCV <- function(data,
 
   # Make list a vswift class
   class(final_output) <- "vswift"
+
   return(final_output)
 }

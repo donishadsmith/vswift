@@ -51,9 +51,9 @@ genFolds <- function(data,
                      train_params = list(split = NULL, n_folds = NULL, stratified = FALSE, random_seed = NULL),
                      create_data = FALSE) {
   # Append train_params
-  train_params <- .append_param_keys("train_params", train_params, call = "genFolds")
+  train_params <- .append_param_keys("train_params", train_params, caller = "genFolds")
   # Check validity of inputs
-  .error_handling(data = data, target = target, train_params = train_params, create_data = create_data, call = "genFolds")
+  .error_handling(data = data, target = target, train_params = train_params, create_data = create_data, caller = "genFolds")
 
   # Initialize final output list
   final_output <- list("configs" = train_params)
