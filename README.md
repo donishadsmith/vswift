@@ -2,9 +2,7 @@
 ![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4-blue)
 [![Test Status](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml)
 [![Codecov](https://codecov.io/github/donishadsmith/vswift/graph/badge.svg?token=7DYAPU2M0G)](https://codecov.io/github/donishadsmith/vswift)
-[![Code Style: styler](https://img.shields.io/badge/Code%20Style-styler-a18595)](https://github.com/r-lib/styler)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-![Platform Support](https://img.shields.io/badge/OS-Ubuntu%20|%20macOS%20|%20Windows-blue)
 
 vswift provides a unified interface to multiple classification algorithms from popular R packages for performing model evaluation on classification tasks (binary and multi-class).
 
@@ -66,7 +64,7 @@ help(package = "vswift")
 ```R
 # Install 'vswift' package
 install.packages(
-  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9005/vswift_0.5.0.9005.tar.gz",
+  "https://github.com/donishadsmith/vswift/releases/download/0.5.0.9006/vswift_0.5.0.9006.tar.gz",
   repos = NULL,
   type = "source"
 )
@@ -301,8 +299,8 @@ results <- classCV(
 ```
 
 Output consists of a list containing thresholds used to generate the ROC, target labels, False Positive Rates (FPR),
-True Positive Rates (TPR)/Recall, Area Under The Curve (AUC), and Youdin's Index for all training and validation sets
-for each model. For the PR curve, the outputs replace the FPR with Precision and Youdin's Index with the maximum
+True Positive Rates (TPR)/Recall, Area Under The Curve (AUC), and Youden's Index for all training and validation sets
+for each model. For the PR curve, the outputs replace the FPR with Precision and Youden's Index with the maximum
 F1 score and its associated optimal threshold.
 
 ```R
@@ -477,7 +475,7 @@ print(roc_output)
     $naivebayes$split$train$auc
     [1] 0.984443
     
-    $naivebayes$split$train$youdins_indx
+    $naivebayes$split$train$youdens_indx
     [1] 0.06708378
     
     
@@ -529,7 +527,7 @@ print(roc_output)
     $naivebayes$split$test$auc
     [1] 0.9691558
     
-    $naivebayes$split$test$youdins_indx
+    $naivebayes$split$test$youdens_indx
     [1] 0.01560677
     
     
@@ -582,7 +580,7 @@ print(roc_output)
     $naivebayes$cv$fold1$auc
     [1] 0.9876033
     
-    $naivebayes$cv$fold1$youdins_indx
+    $naivebayes$cv$fold1$youdens_indx
     [1] 0.8630677
     
     
@@ -632,7 +630,7 @@ print(roc_output)
     $naivebayes$cv$fold2$auc
     [1] 0.9917355
     
-    $naivebayes$cv$fold2$youdins_indx
+    $naivebayes$cv$fold2$youdens_indx
     [1] 0.3420353
     
     
@@ -683,7 +681,7 @@ print(roc_output)
     $naivebayes$cv$fold3$auc
     [1] 0.9690083
     
-    $naivebayes$cv$fold3$youdins_indx
+    $naivebayes$cv$fold3$youdens_indx
     [1] 0.9178667
     
     
@@ -733,7 +731,7 @@ print(roc_output)
     $naivebayes$cv$fold4$auc
     [1] 0.9701299
     
-    $naivebayes$cv$fold4$youdins_indx
+    $naivebayes$cv$fold4$youdens_indx
     [1] 0.02765587
     
     
@@ -783,7 +781,7 @@ print(roc_output)
     $naivebayes$cv$fold5$auc
     [1] 0.9926407
     
-    $naivebayes$cv$fold5$youdins_indx
+    $naivebayes$cv$fold5$youdens_indx
     [1] 0.0805153
 
         
@@ -793,7 +791,7 @@ print(roc_output)
 Optimal thresholds values can be used as input for `classCV` to assess the performance when using a specific threshold.
 
 ```R
-avg_youdins_indx <- mean(sapply(roc_output$naivebayes$cv, function(x) x$youdins_indx))
+avg_youdens_indx <- mean(sapply(roc_output$naivebayes$cv, function(x) x$youdens_indx))
 
 # Using 17, the column index of "Recurred"
 results <- classCV(
@@ -801,7 +799,7 @@ results <- classCV(
   target = 17,
   models = "naivebayes",
   model_params = list(
-    threshold = avg_youdins_indx
+    threshold = avg_youdens_indx
   ),
   train_params = list(
     n_folds = 5,

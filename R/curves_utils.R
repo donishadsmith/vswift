@@ -196,10 +196,10 @@
   # Get metrics
   out$metrics <- .compute_scores(x$prob, x$thresholds, x$labels, curve_method)
 
-  # Obtain AUC and Youdin's Index or Max F1
+  # Obtain AUC and Youden's Index or Max F1
   if (curve_method == "roc") {
     out$auc <- .integrate(fpr = out$metrics$fpr, tpr = out$metrics$tpr, curve_method = curve_method)
-    out$youdins_indx <- .youdins_indx(out$metrics$fpr, out$metrics$tpr, x$thresholds)
+    out$youdens_indx <- .youdens_indx(out$metrics$fpr, out$metrics$tpr, x$thresholds)
   } else {
     out$auc <- .integrate(precision = out$metrics$precision, tpr = out$metrics$tpr, curve_method = curve_method)
     scores <- .maxf1(out$metrics$tpr, out$metrics$precision, x$thresholds)
@@ -379,8 +379,8 @@
   return(area)
 }
 
-# Helper function to implement youdin's index
-.youdins_indx <- function(fpr, tpr, thresholds) {
+# Helper function to implement youden's index
+.youdens_indx <- function(fpr, tpr, thresholds) {
   # j = sensitivity + specificity - 1
   # tpr = sensitivity; fpr = 1 - specificity
   # sensitivity - (1 - specificity) = sensitivity + specificity - 1 = tpr - fpr

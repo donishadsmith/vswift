@@ -2,7 +2,7 @@
 #'
 #' @name rocCurve
 #'
-#' @description Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
+#' @description Produces ROC curves and computes the area under the curve (AUC) and Youden's Index.
 #' Only works for binary classification tasks.
 #'
 #' @param x A list object of class \code{"vswift"}. Note that the models must be saved using

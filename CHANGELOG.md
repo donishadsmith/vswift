@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.5.0.9006] - 2025-08-15
+### 🐛 Fixes
+- Correct misspelling from youdin -> youden in docs and list components
+
 ## [0.5.0.9005] - 2025-06-08
 ### 🐛 Fixes
 - Fix versioning for `future` package
