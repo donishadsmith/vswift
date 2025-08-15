@@ -46,7 +46,7 @@
 #' @param ... Additional arguments passed to the \code{png} function.
 #'
 #' @return A list containing thresholds used to generate the ROC curve, target labels, false positive rates (FPR),
-#' true positive rates (TPR), area under the curve (AUC), and Youdin's Index for all training and validation sets
+#' true positive rates (TPR), area under the curve (AUC), and Youden's Index for all training and validation sets
 #' for each model.
 #'
 #' @examples

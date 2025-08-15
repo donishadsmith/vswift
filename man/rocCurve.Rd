@@ -59,11 +59,11 @@ Default is \code{NULL}.}
 }
 \value{
 A list containing thresholds used to generate the ROC curve, target labels, false positive rates (FPR),
-true positive rates (TPR), area under the curve (AUC), and Youdin's Index for all training and validation sets
+true positive rates (TPR), area under the curve (AUC), and Youden's Index for all training and validation sets
 for each model.
 }
 \description{
-Produces ROC curves and computes the area under the curve (AUC) and Youdin's Index.
+Produces ROC curves and computes the area under the curve (AUC) and Youden's Index.
 Only works for binary classification tasks.
 }
 \examples{

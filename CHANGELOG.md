@@ -16,7 +16,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.5.0.9006] - 2025-08-15
 ### 🐛 Fixes
-- Correct misspelling from youdin -> youden in docs and list components
+- Correct misspelling of youden in docs and list components
 
 ## [0.5.0.9005] - 2025-06-08
 ### 🐛 Fixes
