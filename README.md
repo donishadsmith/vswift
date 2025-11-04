@@ -1,5 +1,5 @@
 # vswift
-![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4-blue)
+![R Versions](https://img.shields.io/badge/R-4.2%20%7C%204.3%20%7C%204.4%20%7C%204.5-blue)
 [![Test Status](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml/badge.svg)](https://github.com/donishadsmith/vswift/actions/workflows/testing.yaml)
 [![Codecov](https://codecov.io/github/donishadsmith/vswift/graph/badge.svg?token=7DYAPU2M0G)](https://codecov.io/github/donishadsmith/vswift)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
