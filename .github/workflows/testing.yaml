@@ -25,6 +25,8 @@ jobs:
         with:
           r-version: ${{ matrix.r }}
       - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache: false
       - uses: r-lib/actions/setup-tinytex@v2
         env:
           TINYTEX_INSTALLER: TinyTeX
