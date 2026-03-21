@@ -6,18 +6,18 @@ test_that("testing plot function", {
 
   args <- list("knn" = list(ks = 3), "nnet" = list(size = 10))
 
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = 5, models = c("knn", "randomforest", "nnet", "svm"),
     train_params = list(split = 0.8, n_folds = 5, remove_obs = T, stratified = T),
     model_params = list(map_args = args), save = list(models = T, data = T)
   ))
 
   expect_no_error(
-    plot(result, models = "knn", split = T, cv = T, class_names = "setosa")
+    result$plot(models = "knn", split = T, cv = T, class_names = "setosa")
   )
 
   expect_no_error(
-    plot(result, models = "knn", class_names = "setosa", path = getwd())
+    result$plot(models = "knn", class_names = "setosa", path = getwd())
   )
 
   for (png_file in list.files(getwd(), pattern = ".png")) {

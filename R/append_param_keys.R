@@ -1,5 +1,5 @@
 # Function for appending missing keys to parameters that are lists
-.append_param_keys <- function(param, struct, models = NULL, caller = "classCV", ...) {
+.append_param_keys <- function(param, struct, models = NULL, ...) {
   # Evaluate to get default keys for specific parameters
   default_keys <- eval(as.list(.DEFAULT_KEYS[[2]])[[param]])
 

@@ -8,81 +8,85 @@
                          return_output = TRUE,
                          curve_method,
                          path = NULL, ...) {
-  if (inherits(x, "vswift")) {
-    # Perform checks and get dictionary class keys and variables
-    info <- .perform_checks(x, data, curve_method)
+  info <- .perform_checks(x, data, curve_method)
 
-    # Unlist keys to turn into a named vector
-    info$keys <- unlist(info$keys)
+  info$keys <- unlist(info$keys)
 
-    # Get valid models
-    models <- .intersect_models(x, models)
+  model_params <- x$configs("model_params")
+  if ("xgboost" %in% models &&
+    model_params$map_args$xgboost$params$objective == "multi:softmax") {
+    warnings("'xgboost' cannot be specified when the 'multi:softmax; objective is used since probabilties are needed")
+    models <- models[!models == "xgboost"]
+  }
 
-    if ("xgboost" %in% models && x$configs$model_params$map_args$xgboost$params$objective == "multi:softmax") {
-      warnings("'xgboost' cannot be specified when the 'multi:softmax; objective is used since probabilties are needed")
-      models <- models[!models == "xgboost"]
-    }
-
-    if ("xgboost" %in% models && x$configs$model_params$map_args$xgboost$params$objective == "binary:hinge") {
-      if (is.null(thresholds)) stop("`thresholds` must be specified since 'xgboost' uses the 'binary:hinge' objective")
-    }
-
-    if (length(models) == 0) stop("no valid models to plot")
-
-    # Iterate over models
-    output <- list()
-
-    for (model in models) {
-      output[[model]] <- .curve_pipeline(
-        x, data, model, .MODEL_LIST[[model]], split, cv, thresholds, info, curve_method, path, ...
+  if ("xgboost" %in% models && model_params$map_args$xgboost$params$objective == "binary:hinge") {
+    if (is.null(thresholds)) {
+      stop(
+        "`thresholds` must be specified since 'xgboost' uses the 'binary:hinge' objective"
       )
-
-      if (!isTRUE(return_output)) output[[model]] <- NULL
     }
+  }
 
-    if (isTRUE(return_output)) {
-      return(output)
-    }
-  } else {
-    stop("`x` must be an object of class 'vswift'")
+  if (length(models) == 0) stop("no valid models to plot")
+
+  # Iterate over models
+  output <- list()
+
+  for (model in models) {
+    output[[model]] <- .curve_pipeline(
+      x, data, model, .MODEL_LIST[[model]], split, cv, thresholds, info,
+      curve_method, path, ...
+    )
+
+    if (!isTRUE(return_output)) output[[model]] <- NULL
+  }
+
+  if (isTRUE(return_output)) {
+    return(output)
   }
 }
 
-# Helper function to perform checks to ensure information needed is available and to obtain information needed for plotting
+# Helper function to perform checks to ensure information needed is
+# available and to obtain information needed for plotting
 .perform_checks <- function(x, data, curve_method) {
-  if (is.null(x$models)) {
-    stop("models must be saved in order to use `rocCurve`")
+  if (is.null(x$get_trained_model())) {
+    stop("models must be saved in order to use this method")
   }
 
   # Check if data is available
-  if (!is.data.frame(data) && is.null(x$data_partitions$dataframes)) {
-    stop("data cannot be NULL if dataframes were not saved by `classCV`")
+  if (!is.data.frame(data) && is.null(x$get_partition("dataframes"))) {
+    stop("data cannot be NULL if dataframes were not saved by `class_cv`")
   }
 
   # Check if target is binary
-  df <- .get_data(x, data)$data
-
-  vars <- .get_var_names(formula = x$configs$formula, data = df)
-
-  if (length(x$class_summary$classes) != 2) {
-    stop("`rocCurve` currently only supports binary targets")
+  if (length(x$classes) != 2) {
+    stop("`roc_curve` and `pr_curve` currently only supports binary targets")
   }
 
   # Convert target
-  class_keys <- .create_dictionary(x$class_summary$classes, alternate_warning = TRUE, curve_method = curve_method)
+  class_keys <- .create_dictionary(
+    x$classes,
+    alternate_warning = TRUE, curve_method = curve_method
+  )
+
+  df <- .get_data(x, data)$data
+
+  vars <- .get_var_names(formula = x$configs()$formula, data = df)
 
   return(list("keys" = class_keys, "vars" = vars))
 }
 
 # Helper function to get data, indices, and models
-.get_data <- function(x, data, id = NULL, foldid = NULL, get_indices = FALSE, vars = NULL, model = NULL,
-                      discard_unusable_data = TRUE) {
+.get_data <- function(x, data, id = NULL, foldid = NULL, get_indices = FALSE,
+                      vars = NULL, model = NULL, discard_unusable_data = TRUE) {
   preprocess <- ifelse(is.data.frame(data), TRUE, FALSE)
   # Get information for indexing for either dataframes or the test set indices
-  id <- ifelse(is.null(id), names(x$data_partitions$indices)[1], id)
+  id <- ifelse(is.null(id), names(x$get_partition()$indices)[1], id)
 
-  if (!is.null(x$data_partitions$indices$cv)) {
-    foldid <- ifelse(is.null(foldid), names(x$data_partitions$indices$cv)[1], foldid)
+  if (!is.null(x$get_partition("indices")$cv)) {
+    foldid <- ifelse(
+      is.null(foldid), names(x$get_partition("indices")$cv)[1], foldid
+    )
   }
 
   # Get data
@@ -91,30 +95,29 @@
     rownames(df) <- seq(nrow(df))
     # Discard missing labels
     if (discard_unusable_data) {
-      miss_info <- .missing_summary(data, all.vars(x$configs$formula)[1])
-      discard_indices <- c(miss_info$unlabeled_data_indices, miss_info$missing_all_features_indices)
+      miss_info <- .missing_summary(data, all.vars(x$configs("formula"))[1])
+      discard_indices <- c(
+        miss_info$unlabeled_data_indices,
+        miss_info$missing_all_features_indices
+      )
       if (length(discard_indices) != 0) df <- df[-discard_indices, ]
     }
   } else {
     if (id == "split") {
-      df <- rbind(
-        x$data_partitions$dataframes$split$train, x$data_partitions$dataframes$split$test
-      )
+      split_df <- x$get_partition("dataframes", "split")
+      df <- rbind(split_df$train, split_df$test)
     } else {
-      df <- rbind(
-        x$data_partitions$dataframes$cv[[foldid]]$train, x$data_partitions$dataframes$cv[[foldid]]$test
-      )
+      cv_df <- x$get_partition("dataframes", "cv")
+      df <- rbind(cv_df[[foldid]]$train, cv_df[[foldid]]$test)
     }
   }
 
-  # Sort rows if data extracted from vswift object
   if (!is.data.frame(data)) df <- df[order(as.numeric(rownames(df))), ]
 
-  # Ensure all characters are factors
   if (isTRUE(preprocess) && !is.null(vars)) {
     out <- .convert_to_factor(df, vars$target, model, remove_obs = FALSE)
     miss_info <- .missing_summary(out$data, vars$target)
-    impute <- ifelse(!is.null(x$imputation_models), TRUE, FALSE)
+    impute <- ifelse(!is.null(x$get_imputation_model()), TRUE, FALSE)
     cleaned_data <- .clean_data(out$data, miss_info, impute, FALSE)
     out$data <- cleaned_data$cleaned_data
   } else {
@@ -123,64 +126,95 @@
 
   # Get the test set
   if (get_indices) {
-    indices <- if (id == "split") x$data_partitions$indices$split$test else x$data_partitions$indices$cv[[foldid]]
-    out$indices <- indices
+    if (id == "split") {
+      out$indices <- x$get_partition("indices", "split", "test")
+    } else {
+      out$indices <- x$get_partition("indices", "cv", foldid)
+    }
   }
 
   return(out)
 }
 
 # Helper function to perform quick preparation of input dataframe
-.quick_prep <- function(x, df_list, id, foldid, info, preprocess, model, col_levels) {
+.quick_prep <- function(
+  x, df_list, id, foldid, info, preprocess, model, col_levels
+) {
   # Check imputation first
-  if (!is.null(x$imputation_models) && isTRUE(preprocess)) {
-    prep <- if (id == "split") x$imputation_models$split else x$imputation_models$cv[[foldid]]
-    df_list <- .impute_bake(train = df_list$train, test = df_list$test, vars = info$vars, prep = prep)
+  if (!is.null(x$get_imputation_model()) && isTRUE(preprocess)) {
+    if (id == "split") {
+      prep <- x$get_imputation_model("split")
+    } else {
+      prep <- x$get_imputation_model("cv")[[foldid]]
+    }
+    df_list <- .impute_bake(
+      train = df_list$train, test = df_list$test, vars = info$vars, prep = prep
+    )
   }
 
   # Determine if standardizing is needed
-  standardize <- ((isTRUE(x$configs$train_params$standardize) || is.numeric(x$configs$train_params$standardize)) &&
-    is.null(x$imputation_models))
+  condition1 <- isTRUE(x$configs("train_params")$standardize)
+  condition2 <- is.numeric(x$configs("train_params")$standardize)
+  condition3 <- is.null(x$get_imputation_model())
+  standardize <- (condition1 || condition2) && condition3
 
-  # Check if standardized need standardized
   if (standardize) {
     df_list <- .standardize_train(
       df_list$train, df_list$test,
-      standardize = x$configs$train_params$standardize, info$vars$target
+      standardize = x$configs("train_params")$standardize, info$vars$target
     )
   }
 
   # Relevel columns if svm
   if (model == "svm" && !is.null(col_levels)) {
-    for (i in names(df_list)) df_list[[i]] <- .relevel_cols(df_list[[i]], col_levels)
+    for (i in names(df_list)) {
+      df_list[[i]] <- .relevel_cols(df_list[[i]], col_levels)
+    }
   }
 
   return(df_list)
 }
 
 # Helper function that serves as the pipeline for producing curves
-.curve_pipeline <- function(x, data, model, plot_title, split, cv, thresholds, info, curve_method, path, ...) {
+.curve_pipeline <- function(
+  x, data, model, plot_title, split, cv, thresholds, info, curve_method,
+  path, ...
+) {
   out <- list()
 
-  if (isTRUE(split) && !is.null(x$configs$train_params$split)) {
-    out$split <- .get_thresholds(x, data, "split", NULL, model, thresholds, info)
+  if (isTRUE(split) && !is.null(x$configs("train_params")$split)) {
+    out$split <- .get_thresholds(
+      x, data, "split", NULL, model, thresholds, info
+    )
 
     for (i in c("train", "test")) {
-      out$split[[i]] <- c(out$split[[i]], .get_curve_metrics(out$split[[i]], curve_method))
+      out$split[[i]] <- c(
+        out$split[[i]], .get_curve_metrics(out$split[[i]], curve_method)
+      )
       # Rename tpr to recall
-      if (curve_method != "roc") names(out$split[[i]]$metrics) <- .rename_metrics(out$split[[i]]$metrics)
+      if (curve_method != "roc") {
+        names(out$split[[i]]$metrics) <- .rename_metrics(out$split[[i]]$metrics)
+      }
     }
 
     # Plot curves
     .plot_curve(out$split, curve_method, "train_test", model, path, ...)
   }
 
-  if (isTRUE(cv) && !is.null(x$configs$train_params$n_folds)) {
-    for (foldid in paste0("fold", seq(x$configs$train_params$n_folds))) {
-      out$cv[[foldid]] <- .get_thresholds(x, data, "cv", foldid, model, thresholds, info)
-      out$cv[[foldid]] <- c(out$cv[[foldid]], .get_curve_metrics(out$cv[[foldid]], curve_method))
+  if (isTRUE(cv) && !is.null(x$configs("train_params", "n_folds"))) {
+    for (foldid in paste0("fold", seq(x$configs("train_params")$n_folds))) {
+      out$cv[[foldid]] <- .get_thresholds(
+        x, data, "cv", foldid, model, thresholds, info
+      )
+      out$cv[[foldid]] <- c(
+        out$cv[[foldid]], .get_curve_metrics(out$cv[[foldid]], curve_method)
+      )
       # Rename tpr to recall
-      if (curve_method != "roc") names(out$cv[[foldid]]$metrics) <- .rename_metrics(out$cv[[foldid]]$metrics)
+      if (curve_method != "roc") {
+        names(out$cv[[foldid]]$metrics) <- .rename_metrics(
+          out$cv[[foldid]]$metrics
+        )
+      }
     }
 
     # Plot curves
@@ -198,12 +232,19 @@
 
   # Obtain AUC and Youden's Index or Max F1
   if (curve_method == "roc") {
-    out$auc <- .integrate(fpr = out$metrics$fpr, tpr = out$metrics$tpr, curve_method = curve_method)
-    out$youdens_indx <- .youdens_indx(out$metrics$fpr, out$metrics$tpr, x$thresholds)
+    out$auc <- .integrate(
+      fpr = out$metrics$fpr, tpr = out$metrics$tpr, curve_method = curve_method
+    )
+    out$youdens_indx <- .youdens_indx(
+      out$metrics$fpr, out$metrics$tpr, x$thresholds
+    )
   } else {
-    out$auc <- .integrate(precision = out$metrics$precision, tpr = out$metrics$tpr, curve_method = curve_method)
+    out$auc <- .integrate(
+      precision = out$metrics$precision, tpr = out$metrics$tpr,
+      curve_method = curve_method
+    )
     scores <- .maxf1(out$metrics$tpr, out$metrics$precision, x$thresholds)
-    out$maxF1 <- scores$maxF1
+    out$max_f1 <- scores$max_f1
     out$optimal_threshold <- scores$optimal_threshold
   }
 
@@ -219,13 +260,14 @@
 }
 
 # Helper function to obtain thresholds used for ROC curve
-.get_thresholds <- function(x, data, id, foldid = NULL, model, thresholds, info) {
+.get_thresholds <- function(x, data, id, foldid = NULL, model,
+                            thresholds, info) {
   preprocess <- ifelse(is.data.frame(data), TRUE, FALSE)
   # Get training model
   if (id == "split") {
-    train_mod <- x$models[[model]]$split
+    train_mod <- x$get_trained_model(model, "split")
   } else {
-    train_mod <- x$models[[model]]$cv[[foldid]]
+    train_mod <- x$get_trained_model(model, "cv")[[foldid]]
   }
 
   # Get data
@@ -233,10 +275,15 @@
   # Partition training and test data
   df_list <- .partition(out$data, out$indices)
 
-  if (preprocess) df_list <- .quick_prep(x, df_list, id, foldid, info, preprocess, model, out$col_levels)
+  if (preprocess) {
+    df_list <- .quick_prep(
+      x, df_list, id, foldid, info, preprocess, model, out$col_levels
+    )
+  }
 
+  model_params <- x$configs("model_params")$map_args$xgboost$params$objective
   results <- .prediction(
-    id, model, train_mod, info$vars, df_list, NULL, x$configs$model_params$map_args$xgboost$params$objective,
+    id, model, train_mod, info$vars, df_list, NULL, model_params,
     length(info$keys),
     probs = TRUE, keys = info$keys, caller = "curve"
   )
@@ -251,20 +298,25 @@
     out[[name]]$probs <- results$pred[[name]]
 
     if (inherits(results$ground[[name]], "character")) {
-      out[[name]]$labels <- unlist(Map(function(x) info$key[[x]], results$ground[[name]]))
+      out[[name]]$labels <- unlist(
+        Map(function(x) info$key[[x]], results$ground[[name]])
+      )
     }
   }
 
   # For ids that start with fold, unnest
   if (id == "cv") {
-    out <- list("thresholds" = out$test$thresholds, "probs" = out$test$probs, "labels" = out$test$labels)
+    out <- list(
+      "thresholds" = out$test$thresholds, "probs" = out$test$probs,
+      "labels" = out$test$labels
+    )
   }
 
   return(out)
 }
 
-# Helper function to compute true positive rates (recall) and false positive rates for each
-# threshold using outer product matrix
+# Helper function to compute true positive rates (recall) and false positive
+# rates for each threshold using outer product matrix
 .compute_scores <- function(probs, thresholds, ground, curve_method) {
   # Create outer product matrix; rows = probs and cols = thresholds
   mat <- outer(probs, thresholds, ">=")
@@ -272,11 +324,9 @@
   true_pos <- colSums(mat[ground == 1, ])
   # Subtract column sums from true_pos to obtain false_pos
   false_pos <- colSums(mat) - true_pos
-  # Compute tpr
   tpr <- true_pos / sum(ground)
 
   if (curve_method == "roc") {
-    # Compute fpr
     fpr <- false_pos / sum(!ground)
     return(list("fpr" = fpr, "tpr" = tpr))
   } else {
@@ -295,7 +345,7 @@
   return(list("x" = x, "y" = y))
 }
 
-# Helper function to add anchor for prCurve
+# Helper function to add anchor for pr_curve
 .add_anchor <- function(x, y, plot = FALSE) {
   paired_list <- Map(list, "x" = x, "y" = y)
   # Sort
@@ -345,13 +395,15 @@
     order_names <- c("tpr", "precision")
   }
 
-  # Order by decreasing -> increasing for metric that is x-axis (fpr for roc and tpr for pr)
-  # For metric that is y-axis order from increasing -> decreasing
-  # Each first instance of duplicated pairs will have the minimum x paired with the maximum y
+  # Order by decreasing -> increasing for metric that is x-axis (fpr for roc
+  # and tpr for pr). For metric that is y-axis order from increasing ->
+  # decreasing. Each first instance of duplicated pairs will have the minimum x
+  # paired with the maximum y
   paired_list_ordered <- .order_paired_list(paired_list, order_names)
 
   i <- ifelse(curve_method == "roc", "fpr", "tpr")
-  # Obtain the fpr or tpr values, determine which is not duplicated to retain only the first instance
+  # Obtain the fpr or tpr values, determine which is not duplicated to retain
+  # only the first instance
   paired_list_final <- paired_list_ordered[!duplicated(sapply(paired_list_ordered, function(x) x[[i]]))]
 
   return(paired_list_final)
@@ -362,7 +414,9 @@
   paired_list <- .create_paired_list(fpr, precision, tpr, curve_method)
   N <- length(paired_list) - 1
   # sum all areas to compute total area = auc
-  auc <- sum(sapply(seq(N), function(x) .trapezoid(paired_list[[x]], paired_list[[x + 1]], curve_method)))
+  auc <- sum(
+    sapply(seq(N), function(x) .trapezoid(paired_list[[x]], paired_list[[x + 1]], curve_method))
+  )
 
   return(auc)
 }
@@ -398,7 +452,9 @@
   # Select index of max F1 score
   max_indx <- which.max(f1_scores)
 
-  return(list("maxF1" = f1_scores[max_indx], "optimal_threshold" = thresholds[max_indx]))
+  return(list(
+    "max_f1" = f1_scores[max_indx], "optimal_threshold" = thresholds[max_indx]
+  ))
 }
 
 # Helper function to plot curves
@@ -466,7 +522,11 @@
   legend_colors <- c(legend_colors, "black")
   legend_lty <- c(legend_lty, 2)
 
-  legend("bottomright", legend = legend_labels, col = legend_colors, lty = legend_lty)
+  legend(
+    "bottomright",
+    legend = legend_labels, col = legend_colors,
+    lty = legend_lty, bty = "n"
+  )
 
   # Dashed line
   if (curve_method == "roc") {
@@ -483,11 +543,13 @@
 .curve_names <- function(curve_method) {
   if (curve_method == "roc") {
     names <- list(
-      "main" = "ROC", "png" = "roc", "x" = "False Positive Rate (FPR)", "y" = "True Positive Rate (TPR)"
+      "main" = "ROC", "png" = "roc", "x" = "False Positive Rate (FPR)",
+      "y" = "True Positive Rate (TPR)"
     )
   } else {
     names <- list(
-      "main" = "Precision-Recall", "png" = "precision_recall", "x" = "Recall", "y" = "Precision"
+      "main" = "Precision-Recall", "png" = "precision_recall", "x" = "Recall",
+      "y" = "Precision"
     )
   }
 

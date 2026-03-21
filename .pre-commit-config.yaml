@@ -40,7 +40,7 @@ repos:
     -   id: parsable-R
     -   id: no-browser-statement
     -   id: no-print-statement
-        exclude: '.*tests_print.*'
+        exclude: '.*tests_print.*|.*s3methods.*|.*print\.vswift.*'
     -   id: no-debug-statement
     -   id: deps-in-desc
     -   id: pkgdown

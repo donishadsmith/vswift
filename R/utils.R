@@ -98,13 +98,19 @@
 
 
 # Helper function to prep the data for validation
-.prep_data <- function(i = NULL, train = NULL, test = NULL, kwargs = NULL, preprocessed_data = NULL, preproc_kwargs = NULL) {
+.prep_data <- function(
+  i = NULL, train = NULL, test = NULL, kwargs = NULL,
+  preprocessed_data = NULL, preproc_kwargs = NULL
+) {
   is_standardized <- FALSE
 
   if (is.null(preprocessed_data)) {
     # Impute; determine if impute_models is not NULL or an empty list
     if (!is.null(kwargs$impute_models) && length(kwargs$impute_models) > 0) {
-      df_list <- .impute_bake(train = train, test = test, vars = kwargs$vars, prep = kwargs$impute_models[[i]])
+      df_list <- .impute_bake(
+        train = train, test = test, vars = kwargs$vars,
+        prep = kwargs$impute_models[[i]]
+      )
       train <- df_list$train
       test <- df_list$test
       is_standardized <- TRUE
@@ -156,31 +162,6 @@
   }
 
   return(list("test" = test))
-}
-
-# Helper function to get models present in vswift object
-.intersect_models <- function(x, models) {
-  # Get models
-  if (is.null(models)) {
-    models <- x$configs$models
-  } else {
-    # Make lowercase
-    models <- sapply(models, function(x) tolower(x))
-    models <- intersect(models, x$configs$models)
-
-    if (length(models) == 0) stop("no valid models specified in `models`")
-
-    # Warning when invalid models specified
-    invalid_models <- models[which(!models %in% models)]
-    if (length(invalid_models) > 0) {
-      warning(sprintf(
-        "invalid model in models or information for specified model not present in vswift x: %s",
-        paste(unlist(invalid_models), collapse = ", ")
-      ))
-    }
-  }
-
-  return(models)
 }
 
 

@@ -1,4 +1,4 @@
-# Testing classCV function
+# Testing class_cv function
 library(vswift)
 library(testthat)
 
@@ -10,7 +10,7 @@ skip_test <- function() {
 
 test_that("Fail due to `train_params` not being list", {
   data <- iris
-  expect_error(result <- classCV(
+  expect_error(result <- class_cv(
     data = data, target = "Species", models = "lda",
     train_params = NULL
   ), "`train_params` must be a list")
@@ -19,7 +19,7 @@ test_that("Fail due to `train_params` not being list", {
 test_that("Fail due to lack of nesting for `train_params`", {
   data <- iris
   expect_error(
-    result <- classCV(
+    result <- class_cv(
       data = data, target = "Species", models = "lda",
       train_params = list()
     ),
@@ -29,163 +29,181 @@ test_that("Fail due to lack of nesting for `train_params`", {
 
 test_that("test train-test split and no stratified sampling", {
   data <- iris
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = "Species", models = "lda",
     train_params = list(split = 0.8, standardize = TRUE)
   ))
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  split_df <- result$metrics$lda$split
+  split_df <- result$metrics("lda", "split")
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
 })
 
 test_that("test train-test split and no stratified sampling w/ invalid key", {
   data <- iris
-  expect_warning(result <- classCV(
+  expect_warning(result <- class_cv(
     data = data, target = "Species", models = "lda",
     train_params = list(split = 0.8, standardize = TRUE, invalid_key = "1")
   ))
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  split_df <- result$metrics$lda$split
+  split_df <- result$metrics("lda", "split")
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
 })
 
 test_that("test new formula method", {
   data <- iris
-  result1 <- classCV(
+  result1 <- class_cv(
     data = data, target = "Species", models = "qda",
     train_params = list(split = 0.8, random_seed = 123)
   )
-  expect_no_error(result2 <- classCV(
+  expect_no_error(result2 <- class_cv(
     formula = Species ~ ., data = data, models = "qda",
     train_params = list(split = 0.8, random_seed = 123)
   ))
-  expect_equal(result1$metrics$lda$split, result2$metrics$lda$split)
+  expect_equal(result1$metrics("qda", "split"), result2$metrics("qda", "split"))
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  split_df <- result1$metrics$qda$split
+  split_df <- result1$metrics("qda", "split")
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
 })
 
 test_that("CV no stratified sampling", {
   data <- iris
-  expect_no_error(result <- classCV(data = data, target = "Species", models = "svm", train_params = list(n_folds = 3)))
+  expect_no_error(result <- class_cv(data = data, target = "Species", models = "svm", train_params = list(n_folds = 3)))
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  cv_df <- result$metrics$svm$cv
+  cv_df <- result$metrics("svm", "cv")
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
 
 test_that("CV with stratified", {
   data <- iris
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = "Species", models = "nnet", size = 5,
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 123)
   ))
-  expect_true(all(c("proportions", "indices") %in% names(result$class_summary)))
+  class_summary <- result$class_info("proportions")
+  expect_true(!is.null(class_summary))
 })
 
 test_that("train-test split and k-fold CV with stratified", {
   data <- iris
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = "Species", models = "naivebayes",
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE),
     save = list(data = TRUE)
   ))
 
   # Check that data partition indices between train test split are independent
-  expect_false(any(result$data_partitions$split$train %in% result$data_partitions$split$train))
+  split_train <- result$get_partition("indices", "split", "train")
+  split_test <- result$get_partition("indices", "split", "test")
+  expect_false(any(split_train %in% split_test))
 
   # Check that indices are assigned correctly when dataframes are made for modeling
-  expect_true(all(result$data_partitions$indices$split$train %in% rownames(result$data_partitions$dataframes$split$train)))
-  expect_true(all(result$data_partitions$indices$split$test %in% rownames(result$data_partitions$dataframes$split$test)))
+  split_train_df <- result$get_partition("dataframes", "split", "train")
+  split_test_df <- result$get_partition("dataframes", "split", "test")
+  expect_true(all(split_train %in% rownames(split_train_df)))
+  expect_true(all(split_test %in% rownames(split_test_df)))
 
-  train_len <- length(result$data_partitions$indices$split$train)
-  test_len <- length(result$data_partitions$indices$split$test)
+  train_len <- length(split_train)
+  test_len <- length(split_test)
   expect_true(c(train_len + test_len) == nrow(data))
 
   folds <- paste0("fold", 1:3)
 
   # Check that data partition indices between folds are independent
+  cv_indices <- result$get_partition("indices", "cv")
   for (i in folds) {
     for (j in folds) {
       if (i != j) {
-        expect_false(any(result$data_partitions$indices$cv[[i]] %in% result$data_partitions$indices$cv[[j]]))
+        expect_false(any(cv_indices[[i]] %in% cv_indices[[j]]))
       }
     }
   }
 
   # Check that fold train and test data are correct
   for (i in folds) {
-    train_indxs <- as.numeric(unlist(result$data_partitions$indices$cv[!names(result$data_partitions$indices$cv) == i]))
-    test_indxs <- as.numeric(unlist(result$data_partitions$indices$cv[[i]]))
+    train_indxs <- as.numeric(unlist(cv_indices[!names(cv_indices) == i]))
+    test_indxs <- as.numeric(unlist(cv_indices[[i]]))
 
-    expect_true(all(train_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$train)))
-    expect_true(all(test_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$test)))
+    fold_train_df <- result$get_partition("dataframes", "cv")[[i]]$train
+    fold_test_df <- result$get_partition("dataframes", "cv")[[i]]$test
+
+    expect_true(all(train_indxs %in% rownames(fold_train_df)))
+    expect_true(all(test_indxs %in% rownames(fold_test_df)))
   }
 
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  split_df <- result$metrics$naivebayes$split
-  cv_df <- result$metrics$naivebayes$cv
+  split_df <- result$metrics("naivebayes", "split")
+  cv_df <- result$metrics("naivebayes", "cv")
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
 
 test_that("train-test split and k-fold CV without stratified sampling", {
   data <- iris
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = "Species", models = "multinom",
     train_params = list(split = 0.8, n_folds = 3), save = list(data = TRUE)
   ))
 
   # Test again since regular split uses different code from stratified
   # Check that data partition indices between train test split are independent
-  expect_false(any(result$data_partitions$split$train %in% result$data_partitions$split$train))
+  split_train <- result$get_partition("indices", "split", "train")
+  split_test <- result$get_partition("indices", "split", "test")
+  expect_false(any(split_train %in% split_test))
 
   # Check that indices are assigned correctly when dataframes are made for modeling
-  expect_true(all(result$data_partitions$indices$split$train %in% rownames(result$data_partitions$dataframes$split$train)))
-  expect_true(all(result$data_partitions$indices$split$test %in% rownames(result$data_partitions$dataframes$split$test)))
+  split_train_df <- result$get_partition("dataframes", "split", "train")
+  split_test_df <- result$get_partition("dataframes", "split", "test")
+  expect_true(all(split_train %in% rownames(split_train_df)))
+  expect_true(all(split_test %in% rownames(split_test_df)))
 
-  train_len <- length(result$data_partitions$indices$split$train)
-  test_len <- length(result$data_partitions$indices$split$test)
+  train_len <- length(split_train)
+  test_len <- length(split_test)
   expect_true(c(train_len + test_len) == nrow(data))
 
   folds <- paste0("fold", 1:3)
 
   # Check that data partition indices between folds are independent
+  cv_indices <- result$get_partition("indices", "cv")
   for (i in folds) {
     for (j in folds) {
       if (i != j) {
-        expect_false(any(result$data_partitions$indices$cv[[i]] %in% result$data_partitions$indices$cv[[j]]))
+        expect_false(any(cv_indices[[i]] %in% cv_indices[[j]]))
       }
     }
   }
 
   # Check that fold train and test data are correct
   for (i in folds) {
-    train_indxs <- as.numeric(unlist(result$data_partitions$indices$cv[!names(result$data_partitions$indices$cv) == i]))
-    test_indxs <- as.numeric(unlist(result$data_partitions$indices$cv[[i]]))
+    train_indxs <- as.numeric(unlist(cv_indices[!names(cv_indices) == i]))
+    test_indxs <- as.numeric(unlist(cv_indices[[i]]))
 
-    expect_true(all(train_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$train)))
-    expect_true(all(test_indxs %in% rownames(result$data_partitions$dataframes$cv[[i]]$test)))
+    fold_train_df <- result$get_partition("dataframes", "cv")[[i]]$train
+    fold_test_df <- result$get_partition("dataframes", "cv")[[i]]$test
+
+    expect_true(all(train_indxs %in% rownames(fold_train_df)))
+    expect_true(all(test_indxs %in% rownames(fold_test_df)))
   }
 
   # Ensure values are greater than or equal to 0 and less than or equal to one
-  split_df <- result$metrics$multinom$split
-  cv_df <- result$metrics$multinom$cv
+  split_df <- result$metrics("multinom", "split")
+  cv_df <- result$metrics("multinom", "cv")
   expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
   expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
 })
 
 test_that("test final", {
   data <- iris
-  expect_no_error(result <- classCV(
+  expect_no_error(result <- class_cv(
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
     model_params = list(final_model = TRUE)
   ))
 
-  expect_true(all(!is.na(result$models$multinom$final)))
+  final_model <- result$get_trained_model("multinom", "final")
+  expect_true(all(!is.na(final_model)))
 
   # Should stop
-  expect_error(result <- classCV(
+  expect_error(result <- class_cv(
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
     model_params = list(final_model = FALSE)
@@ -201,7 +219,7 @@ test_that("test final w imputation", {
   }
 
   # Without folds
-  expect_warning(expect_warning(result <- classCV(
+  expect_warning(expect_warning(result <- class_cv(
     data = data, target = "Species", models = "multinom",
     train_params = list(standardize = TRUE),
     model_params = list(final_model = TRUE),
@@ -209,10 +227,11 @@ test_that("test final w imputation", {
     save = list(data = TRUE)
   )))
 
-  expect_true(all(!is.na(result$data_partitions$dataframes$final)))
+  final_data <- result$get_partition("dataframes", "preprocessed_data")
+  expect_true(all(!is.na(final_data)))
 
   # With folds
-  expect_warning(expect_warning(result <- classCV(
+  expect_warning(expect_warning(result <- class_cv(
     data = data, target = "Species", models = "multinom",
     train_params = list(n_folds = 3),
     model_params = list(final_model = TRUE),
@@ -220,7 +239,8 @@ test_that("test final w imputation", {
     save = list(data = TRUE)
   )))
 
-  expect_true(all(!is.na(result$data_partitions$dataframes$final)))
+  final_data <- result$get_partition("dataframes", "preprocessed_data")
+  expect_true(all(!is.na(final_data)))
 })
 
 test_that("test imputation and missing data", {
@@ -234,7 +254,7 @@ test_that("test imputation and missing data", {
   data[10, colnames(data)[colnames(data) != "Species"]] <- NA
 
   # knn
-  expect_warning(expect_warning(result <- classCV(
+  expect_warning(expect_warning(result <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 4, stratified = TRUE),
     impute_params = list(method = "impute_knn", args = list(neighbors = 5)),
@@ -242,7 +262,7 @@ test_that("test imputation and missing data", {
   )))
 
   # bag
-  expect_warning(expect_warning(result <- classCV(
+  expect_warning(expect_warning(result <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 4, stratified = FALSE),
     impute_params = list(method = "impute_bag", args = list(trees = 5)),
@@ -250,7 +270,7 @@ test_that("test imputation and missing data", {
   )))
 
   # complete cases only
-  expect_warning(result <- classCV(
+  expect_warning(result <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 4, stratified = TRUE),
     models = "decisiontree", model_params = list(final_model = TRUE),
@@ -260,33 +280,39 @@ test_that("test imputation and missing data", {
 
 test_that("test random seed", {
   data <- iris
-  result_1 <- classCV(
+  result_1 <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
     ks = 5
   )
-  result_2 <- classCV(
+  result_2 <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123), models = "knn",
     model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
-  expect_equal(result_1$data_partitions$indices$split$train, result_2$data_partitions$indices$split$train)
-  expect_equal(result_1$metrics$knn$cv, result_2$metrics$knn$cv)
+  expect_equal(
+    result_1$get_partition("indices", "split", "train"),
+    result_2$get_partition("indices", "split", "train")
+  )
+  expect_equal(result_1$metrics("knn", "cv"), result_2$metrics("knn", "cv"))
 
-  result_1 <- classCV(
+  result_1 <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
     ks = 5
   )
-  result_2 <- classCV(
+  result_2 <- class_cv(
     data = data, target = "Species",
     train_params = list(split = 0.8, n_folds = 3, stratified = FALSE, random_seed = 123), models = "knn",
     model_params = list(map_args = list(knn = list(ks = 5)))
   )
 
-  expect_equal(result_1$data_partitions$indices$split$train, result_2$data_partitions$indices$split$train)
-  expect_equal(result_1$metrics$knn$cv, result_2$metrics$knn$cv)
+  expect_equal(
+    result_1$get_partition("indices", "split", "train"),
+    result_2$get_partition("indices", "split", "train")
+  )
+  expect_equal(result_1$metrics("knn", "cv"), result_2$metrics("knn", "cv"))
 })
 
 test_that("running multiple models", {
@@ -298,7 +324,7 @@ test_that("running multiple models", {
     max_depth = 6
   ), nrounds = 10))
 
-  expect_warning(result <- classCV(
+  expect_warning(result <- class_cv(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(
       split = 0.8, n_folds = 3, stratified = TRUE,
@@ -322,7 +348,7 @@ test_that("running multiple models", {
   )
 
   models <- c("knn", "svm", "logistic", "xgboost", "randomforest")
-  expect_warning(expect_warning(result <- classCV(
+  expect_warning(expect_warning(result <- class_cv(
     data = data, target = 5, models = models,
     train_params = list(
       split = 0.8, n_folds = 3, standardize = TRUE,
@@ -334,8 +360,8 @@ test_that("running multiple models", {
 
   # Ensure values are greater than or equal to 0 and less than or equal to one
   for (model in models) {
-    split_df <- result$metrics[[model]]$split
-    cv_df <- result$metrics[[model]]$cv
+    split_df <- result$metrics(model, "split")
+    cv_df <- result$metrics(model, "cv")
     expect_true(all(split_df[, 2:ncol(split_df)] >= 0 & split_df[, 2:ncol(split_df)] <= 1))
     expect_true(all(cv_df[, 2:ncol(cv_df)] >= 0 & cv_df[, 2:ncol(cv_df)] <= 1))
   }
@@ -352,22 +378,22 @@ test_that("n_cores", {
     max_depth = 6
   ), nrounds = 10))
 
-  expect_warning(result1 <- classCV(
+  expect_warning(result1 <- class_cv(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
-  expect_warning(result2 <- classCV(
+  expect_warning(result2 <- class_cv(
     data = data, target = 5, models = c("knn", "svm", "xgboost", "randomforest"),
     train_params = list(split = 0.8, n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE), model_params = list(map_args = args),
     parallel_configs = list(n_cores = 2, future.seed = 100)
   ))
 
-  expect_equal(result1$metrics$knn$split, result2$metrics$knn$split)
-  expect_equal(result1$metrics$knn$cv, result2$metrics$knn$cv)
+  expect_equal(result1$metrics("knn", "split"), result2$metrics("knn", "split"))
+  expect_equal(result1$metrics("knn", "cv"), result2$metrics("knn", "cv"))
 })
 
 test_that("ensure parallel and nonparallel outputs are equal", {
@@ -375,13 +401,13 @@ test_that("ensure parallel and nonparallel outputs are equal", {
 
   skip_test()
 
-  expect_no_error(result1 <- classCV(
+  expect_no_error(result1 <- class_cv(
     data = data, target = 5, models = "lda",
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE),
   ))
 
-  expect_no_error(result2 <- classCV(
+  expect_no_error(result2 <- class_cv(
     data = data, target = 5, models = "lda",
     train_params = list(n_folds = 3, stratified = TRUE, random_seed = 123),
     save = list(models = TRUE),
@@ -391,8 +417,7 @@ test_that("ensure parallel and nonparallel outputs are equal", {
   expect_true(exists("result1") && !is.null(result1))
   expect_true(exists("result2") && !is.null(result2))
 
-  expect_equal(result1$metrics$lda$split, result2$metrics$lda$split)
-  expect_equal(result1$metrics$lda$cv, result2$metrics$lda$cv)
+  expect_equal(result1$metrics("lda", "cv"), result2$metrics("lda", "cv"))
 })
 
 test_that("xgboost objectives-single", {
@@ -402,7 +427,7 @@ test_that("xgboost objectives-single", {
   bin_obj <- c("reg:logistic", "binary:logistic", "binary:hinge", "binary:logitraw")
 
   for (obj in bin_obj) {
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = "xgboost",
@@ -415,13 +440,13 @@ test_that("xgboost objectives-single", {
       nrounds = 10,
       save = list(models = T)
     )
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
   }
 
   multi_obj <- c("multi:softprob", "multi:softmax")
 
   for (obj in multi_obj) {
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = "xgboost",
@@ -435,7 +460,7 @@ test_that("xgboost objectives-single", {
       nrounds = 10,
       save = list(models = T)
     )
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
   }
 })
 
@@ -453,7 +478,7 @@ test_that("xgboost objectives-multi", {
       max_depth = 6
     ), nrounds = 10))
 
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = c("xgboost", "knn"),
@@ -461,10 +486,10 @@ test_that("xgboost objectives-multi", {
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$xgboost$split)))
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
-    expect_true(all(!is.na(result$metrics$knn$split)))
-    expect_true(all(!is.na(result$metrics$knn$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "split"))))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
+    expect_true(all(!is.na(result$metrics("knn", "split"))))
+    expect_true(all(!is.na(result$metrics("knn", "cv"))))
   }
 
   for (obj in multi_obj) {
@@ -474,7 +499,7 @@ test_that("xgboost objectives-multi", {
       eta = 0.8, max_depth = 6
     ), nrounds = 10))
 
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = c("xgboost", "knn"),
@@ -482,10 +507,10 @@ test_that("xgboost objectives-multi", {
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$xgboost$split)))
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
-    expect_true(all(!is.na(result$metrics$knn$split)))
-    expect_true(all(!is.na(result$metrics$knn$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "split"))))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
+    expect_true(all(!is.na(result$metrics("knn", "split"))))
+    expect_true(all(!is.na(result$metrics("knn", "cv"))))
   }
 })
 
@@ -502,7 +527,7 @@ test_that("binary target", {
       max_depth = 6
     ), nrounds = 10))
 
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = c("logistic", "xgboost"),
@@ -510,12 +535,12 @@ test_that("binary target", {
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$xgboost$split)))
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
-    expect_true(all(!is.na(result$metrics$logistic$split)))
-    expect_true(all(!is.na(result$metrics$logistic$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "split"))))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
+    expect_true(all(!is.na(result$metrics("logistic", "split"))))
+    expect_true(all(!is.na(result$metrics("logistic", "cv"))))
 
-    result <- classCV(
+    result <- class_cv(
       data = df,
       target = "Species",
       models = c("xgboost", "logistic"),
@@ -523,10 +548,10 @@ test_that("binary target", {
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$xgboost$split)))
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
-    expect_true(all(!is.na(result$metrics$logistic$split)))
-    expect_true(all(!is.na(result$metrics$logistic$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "split"))))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
+    expect_true(all(!is.na(result$metrics("logistic", "split"))))
+    expect_true(all(!is.na(result$metrics("logistic", "cv"))))
   }
 })
 
@@ -537,7 +562,7 @@ test_that("test regularized", {
 
   map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3))
 
-  result <- classCV(
+  result <- class_cv(
     data = df,
     target = "Species",
     models = c("regularized_logistic", "regularized_multinomial"),
@@ -545,15 +570,15 @@ test_that("test regularized", {
     model_params = list(map_args = map_args)
   )
 
-  expect_true(all(!is.na(result$metrics$regularized_logistic$split)))
-  expect_true(all(!is.na(result$metrics$regularized_multinomial$split)))
+  expect_true(all(!is.na(result$metrics("regularized_logistic", "split"))))
+  expect_true(all(!is.na(result$metrics("regularized_multinomial", "split"))))
 
-  expect_true(all(!is.na(result$metrics$regularized_logistic$cv)))
-  expect_true(all(!is.na(result$metrics$regularized_multinomial$cv)))
+  expect_true(all(!is.na(result$metrics("regularized_logistic", "cv"))))
+  expect_true(all(!is.na(result$metrics("regularized_multinomial", "cv"))))
 
 
   # With final
-  result <- classCV(
+  result <- class_cv(
     data = df,
     target = "Species",
     models = c("regularized_logistic", "regularized_multinomial"),
@@ -570,7 +595,7 @@ test_that("test threshold no xgboost", {
   mods <- names(vswift:::.MODEL_LIST)[!names(vswift:::.MODEL_LIST) == "xgboost"]
   map_args <- list(regularized_logistic = list(alpha = 1, nfolds = 3), knn = list(ks = 5), nnet = list(size = 4))
 
-  result <- classCV(
+  result <- class_cv(
     data = df,
     target = "Species",
     models = mods,
@@ -579,8 +604,8 @@ test_that("test threshold no xgboost", {
   )
 
   for (mod in mods) {
-    expect_true(all(!is.na(result$metrics[[mod]]$split)))
-    expect_true(all(!is.na(result$metrics[[mod]]$cv)))
+    expect_true(all(!is.na(result$metrics(mod, "split"))))
+    expect_true(all(!is.na(result$metrics(mod, "cv"))))
   }
 })
 
@@ -598,7 +623,7 @@ test_that("test threshold for xgboost", {
       max_depth = 6
     ), nrounds = 10))
 
-    result <- classCV(
+    result <- class_cv(
       data = df,
       formula = Species ~ .,
       models = "xgboost",
@@ -606,7 +631,7 @@ test_that("test threshold for xgboost", {
       model_params = list(map_args = args)
     )
 
-    expect_true(all(!is.na(result$metrics$xgboost$split)))
-    expect_true(all(!is.na(result$metrics$xgboost$cv)))
+    expect_true(all(!is.na(result$metrics("xgboost", "split"))))
+    expect_true(all(!is.na(result$metrics("xgboost", "cv"))))
   }
 })

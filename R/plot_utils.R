@@ -14,7 +14,7 @@
 # Entry point for plotting train-test split and cross-validation evaluation metrics
 .plot <- function(x, metrics, model, plot_title, split, cv, class_names, path, ...) {
   # Get dataframe
-  df <- x$metrics[[model]]
+  df <- x$metrics(model)
 
   if (!is.null(path)) {
     # Get OS separator
@@ -27,11 +27,13 @@
   }
 
   # Create Metrics List
-  metrics_list <- list("precision" = "Precision", "recall" = "Recall", "f1" = "F1")
+  metrics_list <- list(
+    "precision" = "Precision", "recall" = "Recall", "f1" = "F1"
+  )
 
   # Get classes
   if (is.null(class_names)) {
-    classes <- x$class_summary$classes
+    classes <- x$classes
   } else {
     classes <- class_names
   }
@@ -55,7 +57,9 @@
 }
 
 # Function to plot train-test split evaluation metrics
-.plot_split <- function(df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...) {
+.plot_split <- function(
+  df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...
+) {
   # Base plot kwargs
   plot_kwargs <- list(x = 1:2, ylim = 0:1, xlab = "Set", xaxt = "n")
   axis_kwargs <- list(side = 1, at = 1:2, labels = c("Training", "Test"))
@@ -70,7 +74,10 @@
     # Create png
     if (!is.null(path)) {
       png(
-        filename = paste0(path, os.sep, sprintf("%s_train_test_classification_accuracy.png", png_name)),
+        filename = paste0(
+          path, os.sep,
+          sprintf("%s_train_test_classification_accuracy.png", png_name)
+        ),
         ...
       )
     }
@@ -100,7 +107,10 @@
       if (!is.null(path)) {
         png(filename = paste0(
           path, os.sep,
-          sprintf("%s_train_test_%s_%s.png", png_name, metric, paste(unlist(strsplit(class, split = " ")), collapse = "_"))
+          sprintf(
+            "%s_train_test_%s_%s.png", png_name, tolower(metric),
+            paste(unlist(strsplit(class, split = " ")), collapse = "_")
+          )
         ), ...)
       }
 
@@ -115,9 +125,12 @@
 }
 
 # Function to plot cross-validation evaluation metrics
-.plot_cv <- function(df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...) {
-  # Get the last row index subtracted by three to avoid getting mean, standard dev, and standard error
-  idx <- nrow(df$cv) - 3
+.plot_cv <- function(
+  df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...
+) {
+  # Get the last row index subtracted by three to avoid getting mean,
+  # standard dev, and standard error
+  index <- nrow(df$cv) - 3
   # Create vector of metrics to obtain
   col_names <- c()
 
@@ -129,15 +142,18 @@
     intersected_metrics <- intersect(metrics, names(metrics_list))
     converted_metrics <- lapply(intersected_metrics, function(x) metrics_list[[x]])
     # Get column names from dataframe
-    col_names <- c(col_names, as.vector(sapply(classes, function(x) paste("Class:", x, converted_metrics))))
+    col_names <- c(
+      col_names,
+      as.vector(sapply(classes, function(x) paste("Class:", x, converted_metrics)))
+    )
   }
 
   # Base plot kwargs
-  plot_kwargs <- list(x = 1:idx, ylim = c(0, 1), xlab = "Folds", xaxt = "n")
+  plot_kwargs <- list(x = 1:index, ylim = c(0, 1), xlab = "Folds", xaxt = "n")
 
   for (col_name in col_names) {
     # Get values
-    plot_kwargs$y <- df$cv[1:idx, col_name]
+    plot_kwargs$y <- df$cv[1:index, col_name]
 
     # Get Title and
     if (col_name == "Classification Accuracy") {
@@ -164,7 +180,10 @@
       plot_kwargs$main <- sprintf("%s - Class: %s", plot_title, class_name)
 
       if (!is.null(path)) {
-        full_png_name <- sprintf("%s_cv_%s_%s.png", png_name, metric_name, paste(class_name, collapse = "_"))
+        full_png_name <- sprintf(
+          "%s_cv_%s_%s.png", png_name, tolower(metric_name),
+          paste(class_name, collapse = "_")
+        )
         filename <- paste0(path, os.sep, full_png_name)
       }
     }
@@ -175,14 +194,22 @@
     # Generate plot
     do.call(plot, plot_kwargs)
     # Add axis info
-    axis(side = 1, at = as.integer(1:idx), labels = as.integer(1:idx))
+    axis(side = 1, at = as.integer(1:index), labels = as.integer(1:index))
     # Add mean and standard deviation to the plot
     abline(h = mean(plot_kwargs$y, na.rm = TRUE), col = "red", lwd = 1)
-    abline(h = mean(plot_kwargs$y, na.rm = TRUE) + sd(plot_kwargs$y, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
-    abline(h = mean(plot_kwargs$y, na.rm = TRUE) - sd(plot_kwargs$y, na.rm = TRUE), col = "blue", lty = 2, lwd = 1)
+    abline(
+      h = mean(plot_kwargs$y, na.rm = TRUE) + sd(plot_kwargs$y, na.rm = TRUE),
+      col = "blue", lty = 2, lwd = 1
+    )
+    abline(
+      h = mean(plot_kwargs$y, na.rm = TRUE) - sd(plot_kwargs$y, na.rm = TRUE),
+      col = "blue", lty = 2, lwd = 1
+    )
 
-    # Add legend
-    legend("bottomright", legend = c("Mean", "Mean \U00B1 SD"), col = c("red", "blue"), lty = c(1, 2), lwd = 1)
+    legend("bottomright",
+      legend = c("Mean", "Mean \U00B1 SD"),
+      col = c("red", "blue"), lty = c(1, 2), lwd = 1, bty = "n"
+    )
 
     # Use dev.new for certain R environments or dev.off if png is used
     .display(path)
