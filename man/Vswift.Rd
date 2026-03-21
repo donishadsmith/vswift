@@ -119,7 +119,7 @@ results$pr_curve(return_output = FALSE)
 
 \item{\code{n_models}}{Number of models in this result.}
 
-\item{\code{model_names}}{Character vector of model names.}
+\item{\code{available_models}}{Character vector of model names.}
 
 \item{\code{has_split}}{TRUE if train-test split was performed.}
 
@@ -140,7 +140,6 @@ results$pr_curve(return_output = FALSE)
 \item \href{#method-Vswift-get_missing_data_summary}{\code{Vswift$get_missing_data_summary()}}
 \item \href{#method-Vswift-get_partition}{\code{Vswift$get_partition()}}
 \item \href{#method-Vswift-class_info}{\code{Vswift$class_info()}}
-\item \href{#method-Vswift-available_models}{\code{Vswift$available_models()}}
 \item \href{#method-Vswift-print}{\code{Vswift$print()}}
 \item \href{#method-Vswift-plot}{\code{Vswift$plot()}}
 \item \href{#method-Vswift-summary}{\code{Vswift$summary()}}
@@ -347,19 +346,6 @@ Retrieve class summary information.
 }
 \subsection{Returns}{
 The requested class summary component.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Vswift-available_models"></a>}}
-\if{latex}{\out{\hypertarget{method-Vswift-available_models}{}}}
-\subsection{Method \code{available_models()}}{
-List models present in this result object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Vswift$available_models()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-Character vector of model names.
 }
 }
 \if{html}{\out{<hr>}}

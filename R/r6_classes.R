@@ -202,11 +202,6 @@ Vswift <- R6Class("Vswift",
     class_info = function(what) {
       return(.get_object(private$.class_summary, what))
     },
-    #' @description List models present in this result object.
-    #' @return Character vector of model names.
-    available_models = function() {
-      return(self$configs("models"))
-    },
     #' @description Prints model configuration details and/or model evaluation
     #' metrics (classification accuracy, precision, recall, and F1 scores).
     #'
@@ -380,7 +375,7 @@ Vswift <- R6Class("Vswift",
     summary = function() {
       cat("Classification Results\n")
       cat("-----------------------------\n")
-      cat("  Models:  ", paste(self$available_models(), collapse = ", "), "\n")
+      cat("  Models:  ", paste(self$available_models, collapse = ", "), "\n")
       cat("  Classes: ", paste(self$classes, collapse = ", "), "\n")
       if (self$has_split) {
         train_split <- self$configs("train_params", "split")
@@ -390,7 +385,7 @@ Vswift <- R6Class("Vswift",
       if (self$has_cv) cat("  Folds:   ", self$n_folds, "\n")
 
       if (self$has_split) cat("\n  Mean Classification Accuracy (Train-Test Split):\n")
-      for (model in self$available_models()) {
+      for (model in self$available_models) {
         split_df <- self$metrics(model, "split")
         if (is.data.frame(split_df)) {
           train_acc <- split_df[split_df$Set == "Training", "Classification Accuracy"]
@@ -405,7 +400,7 @@ Vswift <- R6Class("Vswift",
       }
 
       cat("\n  Mean Classification Accuracy (CV):\n")
-      for (model in self$available_models()) {
+      for (model in self$available_models) {
         cv_df <- self$metrics(model, "cv")
         if (is.data.frame(cv_df)) {
           acc <- cv_df[cv_df$Fold == "Mean CV:", "Classification Accuracy"]
@@ -603,11 +598,11 @@ Vswift <- R6Class("Vswift",
     .resolve_models = function(target_models) {
       # Get models
       if (is.null(target_models)) {
-        models <- self$available_models()
+        models <- self$available_models
       } else {
         # Make lowercase
         models <- sapply(target_models, tolower)
-        models <- intersect(models, self$available_models())
+        models <- intersect(models, self$available_models)
 
         if (length(models) == 0) stop("no valid models specified in `models`")
 
@@ -630,8 +625,8 @@ Vswift <- R6Class("Vswift",
     classes = function() private$.class_summary$classes,
     #' @field n_models Number of models in this result.
     n_models = function() length(private$.metrics),
-    #' @field model_names Character vector of model names.
-    model_names = function() names(private$.metrics),
+    #' @field available_models Character vector of model names.
+    available_models = function() self$configs("models"),
     #' @field has_split TRUE if train-test split was performed.
     has_split = function() !is.null(private$.configs$train_params$split),
     #' @field has_cv TRUE if cross-validation was performed.

@@ -14,6 +14,11 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.6.1] - 2026-03-21
+### ♻ Changed
+- Remove redundant function outputting model names and make
+`available_models` a field.
+
 ## [0.6.0] - 2026-03-21
 ### 🚀 New/Added
 - Returns R6 classes

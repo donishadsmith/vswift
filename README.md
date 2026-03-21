@@ -214,9 +214,7 @@ Classification Results
 results$print(configs = TRUE, metrics = TRUE)
 ```
 
-<details>
-
-<summary><strong>Output</strong></summary>
+**Output**
 
 ```
  - - - - - -- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -282,8 +280,6 @@ Yes            0.97 ± 0.03 (SD)       0.84 ± 0.12 (SD)       0.90 ± 0.06 (SD)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ```
-
-</details>
 
 ```R
 # Plot model evaluation metrics
@@ -352,9 +348,7 @@ pr_output <- results$pr_curve(
 )
 ```
 
-<details>
-
-<summary><strong>Output</strong></summary>
+**Output**
 
 ```
 Warning message:
@@ -373,7 +367,6 @@ In .create_dictionary(x$classes, TRUE) :
 ![image](assets/curves/naivebayes_train_test_precision_recall_curve.png)
 ![image](assets/curves/naivebayes_cv_precision_recall_curve.png)
 
-</details>
 
 Access curve results using the `CurveResult` methods:
 
