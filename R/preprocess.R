@@ -270,8 +270,7 @@
       test_dt[, (filtered_col_names) := Map(function(x, m, s) (x - m) / s, .SD, means, stdevs), .SDcols = filtered_col_names]
     }
   } else {
-    warning("no standardization has been done; either do to specified features not being in dataframe or no features
-    being of class 'numeric'")
+    warning("no standardization has been done; either do to specified features not being in dataframe or no features being of class 'numeric'")
   }
 
   if (caller != ".impute_prep") {
@@ -294,8 +293,7 @@
       scale(preprocessed_data[, filtered_col_names], center = TRUE, scale = TRUE)
     )
   } else {
-    warning("no standardization has been done; either do to features columns not being in dataframe or no features
-    being of class 'numeric'")
+    warning("no standardization has been done; either do to features columns not being in dataframe or no features being of class 'numeric'")
   }
 
   return(list("preprocessed_data" = preprocessed_data))

@@ -6,9 +6,10 @@
   valid_imputes <- names(.VALID_ARGS$imputation)
 
   params_list <- list(
-    data = data, formula = formula, target = target, predictors = predictors, models = models,
-    train_params = train_params, model_params = model_params, impute_params = impute_params,
-    save = save, parallel_configs = parallel_configs
+    data = data, formula = formula, target = target, predictors = predictors,
+    models = models, train_params = train_params, model_params = model_params,
+    impute_params = impute_params, save = save,
+    parallel_configs = parallel_configs
   )
 
   # Check types
