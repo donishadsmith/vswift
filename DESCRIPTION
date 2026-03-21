@@ -1,7 +1,7 @@
 Package: vswift
 Title: Classification Model Evaluation
-Version: 0.5.0.9006
-Date: 2025-08-15
+Version: 0.6.0
+Date: 2026-03-21
 Authors@R: person(given = "Donisha",
                   family = "Smith",
                   role = c("aut", "cre"),
@@ -25,7 +25,8 @@ Imports:
     future.apply,
     kknn,
     glmnet,
-    data.table
+    data.table,
+    R6
 Suggests:
     testthat,
     covr,
@@ -34,5 +35,5 @@ Suggests:
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Config/testthat/edition: 3

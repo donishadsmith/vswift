@@ -14,7 +14,7 @@
     "due to %s being specified", ifelse(is.null(threshold), "'logistic' or 'xgboost'", "`model_params$threshold`")
   )
 
-  msg <- if (!alternate_warning) standard_msg else sprintf("for `%sCurve`", curve_method)
+  msg <- if (!alternate_warning) standard_msg else sprintf("for `%s_curve`", curve_method)
 
   warning(sprintf(
     "creating keys for target variable %s;\n  classes are now encoded: %s",

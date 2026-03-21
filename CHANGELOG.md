@@ -14,6 +14,12 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.6.0] - 2026-03-21
+### 🚀 New/Added
+- Returns R6 classes
+- Deleted `genFolds`
+- Change all methods from camelcase to snakecase
+
 ## [0.5.0.9006] - 2025-08-15
 ### 🐛 Fixes
 - Correct misspelling of youden in docs and list components

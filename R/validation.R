@@ -86,7 +86,9 @@
   if (!is.null(add_args)) mod_args <- c(mod_args, add_args)
 
   # Prevent default internal scaling for models with the scale parameter
-  if (!model %in% c("decisiontree", "xgboost", "logistic")) mod_args$scale <- FALSE
+  if (!model %in% c("decisiontree", "xgboost", "logistic")) {
+    mod_args$scale <- FALSE
+  }
 
   switch(model,
     "decisiontree" = {

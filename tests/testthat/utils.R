@@ -5,7 +5,6 @@ check_png <- function() {
     expect_true(file.size(png_file) > 0)
     file.remove(png_file)
   }
-
   file.remove(list.files(getwd(), pattern = "Rplots.pdf"))
 }
 
@@ -16,9 +15,7 @@ check_conditions <- function(x, curve) {
   } else {
     met_names <- c("precision", "recall", "maxF1", "optimal_threshold")
   }
-
   met_names <- c(met_names, "auc", "thresholds", "probs")
-
   for (name in met_names) {
     if (name %in% c("tpr", "fpr", "precision", "recall")) {
       expect_true(all(x$metrics[[name]] >= 0))
@@ -30,12 +27,12 @@ check_conditions <- function(x, curve) {
   }
 }
 
-
 check_metrics <- function(out, curve) {
-  for (mod in names(out)) {
-    for (split_method in names(out[[mod]])) {
-      for (id in names(out[[mod]][[split_method]])) {
-        x <- out[[mod]][[split_method]][[id]]
+  results <- out$get_model()
+  for (mod in names(results)) {
+    for (split_method in names(results[[mod]])) {
+      for (id in names(results[[mod]][[split_method]])) {
+        x <- results[[mod]][[split_method]][[id]]
         check_conditions(x, curve)
       }
     }
