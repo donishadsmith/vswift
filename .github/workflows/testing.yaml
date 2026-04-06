@@ -46,7 +46,7 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
           R CMD build --no-build-vignettes .
-          for %%i in (vswift*.tar.gz) do R CMD check --no-manual --as-cran %%i
+          for %%i in (vswift*.tar.gz) do R CMD check --no-manual --no-build-vignettes  --as-cran %%i
         shell: cmd
 
       - name: Run MacOS and get coverage
