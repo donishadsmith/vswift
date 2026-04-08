@@ -14,6 +14,10 @@ All notable future changes to vswift will be documented in this file.
 noted in the changelog (i.e new functions or parameters, changes in parameter defaults or function names, etc).
 - *.patch* : Contains no new features, simply fixes any identified bugs.
 
+## [0.6.2] - 2026-04-08
+### 🚀 New/Added
+- Method chaining for `summary` method in class
+
 ## [0.6.1] - 2026-03-21
 ### ♻ Changed
 - Remove redundant function outputting model names and make
@@ -21,7 +25,7 @@ noted in the changelog (i.e new functions or parameters, changes in parameter de
 
 ## [0.6.0] - 2026-03-21
 ### 🚀 New/Added
-- Returns R6 classes
+- `class_cv` returns R6 classes
 - Deleted `genFolds`
 - Change all methods from camelcase to snakecase
 

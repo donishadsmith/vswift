@@ -407,6 +407,8 @@ Vswift <- R6Class("Vswift",
           cat(sprintf("    %-30s %.3f\n", .MODEL_LIST[[model]], acc))
         }
       }
+
+      invisible(self)
     },
     #' @description Produces ROC curves and computes the area under the curve
     #' (AUC) and Youden's Index. Only works for binary classification tasks.
