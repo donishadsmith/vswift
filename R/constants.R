@@ -1,42 +1,34 @@
-# A list mapping default keys to certain parameters; Lazy evaluation
-.DEFAULT_KEYS <- substitute({
-  list(
-    "model_params" = list(
-      "map_args" = NULL,
-      "threshold" = NULL,
-      "rule" = "min",
-      "final_model" = FALSE,
-      "verbose" = TRUE
-    ),
-    "train_params" = .train_params_keys(),
-    "impute_params" = list(
-      "method" = NULL,
-      "args" = NULL
-    ),
-    "save" = list(
-      "models" = FALSE,
-      "data" = FALSE
-    ),
-    "parallel_configs" = list(
-      "n_cores" = NULL,
-      "future.seed" = NULL
-    )
-  )
-})
-
-# Helper function to return train keys depending on function call
-.train_params_keys <- function() {
-  keys <- list(
+# A list mapping default keys to certain parameters
+.DEFAULT_KEYS <- list(
+  "model_params" = list(
+    "map_args" = NULL,
+    "threshold" = NULL,
+    "rule" = "min",
+    "final_model" = FALSE,
+    "verbose" = TRUE
+  ),
+  "train_params" = list(
     "split" = NULL,
     "n_folds" = NULL,
     "stratified" = FALSE,
     "random_seed" = NULL,
     "standardize" = FALSE,
     "remove_obs" = FALSE
+  ),
+  "impute_params" = list(
+    "method" = NULL,
+    "args" = NULL
+  ),
+  "save" = list(
+    "models" = FALSE,
+    "data" = FALSE
+  ),
+  "parallel_configs" = list(
+    "n_cores" = NULL,
+    "future.seed" = NULL
   )
+)
 
-  return(keys)
-}
 
 # A list mapping parameters to certain types; The %s_params parameters not included since their class is checked
 # by .append_param_keys

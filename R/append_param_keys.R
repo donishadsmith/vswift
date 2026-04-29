@@ -1,7 +1,7 @@
 # Function for appending missing keys to parameters that are lists
 .append_param_keys <- function(param, struct, models = NULL, ...) {
   # Evaluate to get default keys for specific parameters
-  default_keys <- eval(as.list(.DEFAULT_KEYS[[2]])[[param]])
+  default_keys <- .DEFAULT_KEYS[[param]]
 
   # Ensure struct is a list
   if (!inherits(struct, "list")) stop(sprintf("`%s` must be a list", param))
