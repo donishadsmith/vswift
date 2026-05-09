@@ -17,8 +17,6 @@
   df <- x$metrics(model)
 
   if (!is.null(path)) {
-    # Get OS separator
-    os.sep <- ifelse(as.vector(Sys.info()["sysname"] == "Windows"), "\\", "/")
     # Get name for png by replacing whitespace with underscores
     png_name <- strsplit(plot_title, split = " ") |>
       unlist() |>
@@ -41,7 +39,6 @@
   # Plot train-test split evaluation metrics
   if (all(is.data.frame(df$split), isTRUE(split))) {
     .plot_split(df, classes, metrics, metrics_list, plot_title, path,
-      os.sep = if (exists("os.sep")) os.sep else NULL,
       png_name = if (exists("png_name")) png_name else NULL,
       ...
     )
@@ -50,7 +47,6 @@
   # Plot cross-validation evaluation metrics
   if (all(is.data.frame(df$cv), isTRUE(cv))) {
     .plot_cv(df, classes, metrics, metrics_list, plot_title, path,
-      os.sep = if (exists("os.sep")) os.sep else NULL,
       png_name = if (exists("png_name")) png_name else NULL, ...
     )
   }
@@ -58,7 +54,7 @@
 
 # Function to plot train-test split evaluation metrics
 .plot_split <- function(
-  df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...
+  df, classes, metrics, metrics_list, plot_title, path, png_name, ...
 ) {
   # Base plot kwargs
   plot_kwargs <- list(x = 1:2, ylim = 0:1, xlab = "Set", xaxt = "n")
@@ -74,9 +70,8 @@
     # Create png
     if (!is.null(path)) {
       png(
-        filename = paste0(
-          path, os.sep,
-          sprintf("%s_train_test_classification_accuracy.png", png_name)
+        filename = file.path(
+          path, sprintf("%s_train_test_classification_accuracy.png", png_name)
         ),
         ...
       )
@@ -105,9 +100,8 @@
 
       # Create png
       if (!is.null(path)) {
-        png(filename = paste0(
-          path, os.sep,
-          sprintf(
+        png(filename = file.path(
+          path, sprintf(
             "%s_train_test_%s_%s.png", png_name, tolower(metric),
             paste(unlist(strsplit(class, split = " ")), collapse = "_")
           )
@@ -126,7 +120,7 @@
 
 # Function to plot cross-validation evaluation metrics
 .plot_cv <- function(
-  df, classes, metrics, metrics_list, plot_title, path, os.sep, png_name, ...
+  df, classes, metrics, metrics_list, plot_title, path, png_name, ...
 ) {
   # Get the last row index subtracted by three to avoid getting mean,
   # standard dev, and standard error
@@ -163,7 +157,7 @@
 
       if (!is.null(path)) {
         full_png_name <- sprintf("%s_cv_classification_accuracy.png", png_name)
-        filename <- paste0(path, os.sep, full_png_name)
+        filename <- file.path(path, full_png_name)
       }
     } else {
       # Get name of metric - "Precision", "Recall", "F1"
@@ -184,7 +178,7 @@
           "%s_cv_%s_%s.png", png_name, tolower(metric_name),
           paste(class_name, collapse = "_")
         )
-        filename <- paste0(path, os.sep, full_png_name)
+        filename <- file.path(path, full_png_name)
       }
     }
 
